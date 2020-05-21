@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">Privacy Preserving Indoor Localization</string>
+    <string name="scan">SCAN</string>
+    <string name="start">Wi-fi Localization App</string>
+    <string name="MapDescription">Third Floor of EC</string>
+    <string name="Training">Train Database</string>
+    <string name="AcceptData">Send Location</string>
+    <string name="ViewMap">ViewMap</string>
+    <string name="Process">Process Data</string>
+    <string name="send">\n REU 2017 \n</string>
+    <string name="process_db">Process DB</string>
+    <string name="scan_completed">Scan Completed!</string>
+    <string name="secs">secs.</string>
+    <string name="undo">UNDO</string>
+    <string name="reset">RESET</string>
+    <string name="time">time</string>
+    <string name="Select_Failed">Select Failed</string>
+    <string name="reset_complete">Reset Complete</string>
+    <string name="undo_complete">Undo Complete</string>
+    <string name="key_gen">Completion time for Key Gen: </string>
+    <string name="seconds">seconds</string>
+    <string name="train_activity">TRAIN_ACTIVITY</string>
+    <string name="REU2017">Switch</string>
+    <string name="reu2017">REU2017</string>
+    <string name="localize">Localize</string>
+    <string name="localizing">Localizing</string>
+    <string name="select_image">select_image</string>
+    <string name="cd_map_image">cd_map_image</string>
+    <string name="hint_map_name">hint_map_name</string>
+    <string name="action_save">action_save</string>
+    <string name="toast_name_warning">Warning: Map has no name</string>
+    <string name="toast_map_warning">Warning! No Map detected!</string>
+</resources>

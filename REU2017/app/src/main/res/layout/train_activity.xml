@@ -1,0 +1,63 @@
+<!-- android:screenOrientation="portrait" , is to force vertical NO MATTER WHAT-->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:weightSum="1"
+    tools:context="ui.TrainActivity"
+    tools:layout_editor_absoluteY="81dp"
+    tools:layout_editor_absoluteX="0dp"
+    android:noHistory="true"
+    android:screenOrientation="portrait" >
+
+    <ImageView
+        android:id="@+id/map"
+        android:name=".LocalizeActivity"
+        android:layout_width="409dp"
+        android:layout_height="553dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="2dp"
+        android:layout_marginLeft="2dp"
+        android:layout_marginBottom="0dp"
+        android:contentDescription="@string/MapDescription"
+        android:scaleType="matrix"
+        android:src="@drawable/broadway3">
+
+    </ImageView>
+
+    <TextView
+        android:id="@+id/time"
+        android:layout_width="130dp"
+        android:layout_height="48dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="0dp"
+        android:text="@string/train_activity"
+        tools:text="TRAIN_ACTIVITY" />
+
+    <Button
+        android:id="@+id/scan"
+        android:layout_width="137dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:text="@string/scan" />
+
+    <ProgressBar
+        android:id="@+id/train_bar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="136dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="1dp"
+        android:layout_marginEnd="6dp"
+        android:layout_marginRight="6dp"
+        android:layout_toStartOf="@+id/time"
+        android:layout_toLeftOf="@+id/time"
+        android:visibility="invisible" />
+
+</RelativeLayout>
