@@ -1,48 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context="ui.AddMapActivity">
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
 
-    <LinearLayout
+    <Switch
+        android:id="@+id/pick"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_margin="15dp"
-        android:layout_weight="1"
-        android:orientation="vertical">
-
-        <ImageButton
-            android:id="@+id/btn_choose_map_image"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="4dp"
-            android:background="@android:drawable/btn_default"
-            android:contentDescription="@string/select_image"
-            android:gravity="center"
-            android:onClick="startPhotoPicker"
-            android:src="@android:drawable/ic_menu_gallery" />
-
-        <ImageView
-            android:id="@+id/img_map"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:contentDescription="@string/cd_map_image"
-            android:visibility="gone" />
-    </LinearLayout>
-
-    <EditText
-        android:id="@+id/map_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="4dp"
-        android:hint="@string/hint_map_name"
-        android:inputType="textShortMessage" />
+        android:layout_height="39dp"
+        android:text="@string/send_map" />
 
     <Button
-        android:layout_width="match_parent"
+        android:id="@+id/loadimage"
+        android:textAlignment="center"
+        android:layout_width="528dp"
         android:layout_height="wrap_content"
-        android:onClick="saveMap"
-        android:text="@string/action_save" />
+        android:text="@string/load_image" />
+
+    <EditText
+        android:id="@+id/targeturi"
+        android:autofillHints="@string/insert_map_name"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/send"
+        android:layout_width="523dp"
+        android:textAlignment="center"
+        android:layout_height="wrap_content"
+        android:text="@string/send_receive" />
+
+    <ImageView
+        android:id="@+id/targetimage"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:contentDescription="@string/MapDescription"
+        />
 
 </LinearLayout>

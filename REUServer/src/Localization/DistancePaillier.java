@@ -33,17 +33,17 @@ public class DistancePaillier extends Distance
 		scanAPs = in.APs;
 		if(column == null)
 		{
-			column = LocalizationLUT.getColumnMAC();
+			column = LocalizationLUT.getColumnMAC(in.map);
 		}
 		
 		// Read from Database, get S_1 and S_2 Parts!
 		if(server.multi_phone)
 		{
-			MultiphoneLocalization.getPlainLookup(this.RSS_ij, this.coordinates, in.phone_data);	
+			MultiphoneLocalization.getPlainLookup(this.RSS_ij, this.coordinates, in.phone_data, in.map);	
 		}
 		else
 		{
-			LocalizationLUT.getPlainLookup(RSS_ij, coordinates);
+			LocalizationLUT.getPlainLookup(this.RSS_ij, this.coordinates, in.map);
 		}
 		//MINIMUM_AP_MATCH = (int) (VECTOR_SIZE * FSF);
 		// THIS NUMBER SHOULD ALWAYS BE >= 1 FOR THE FOLLOWING REASONS

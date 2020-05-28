@@ -7,7 +7,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.NumberPicker;
@@ -17,46 +16,30 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.security.KeyPair;
-import java.security.SecureRandom;
 import java.util.HashMap;
 
 import Localization.ClientThread;
-import Localization.LOCALIZATION_SCHEME;
-import security.DGK.DGKKeyPairGenerator;
-import security.DGK.DGKPrivateKey;
-import security.DGK.DGKPublicKey;
-import security.paillier.PaillierKeyPairGenerator;
-import security.paillier.PaillierPrivateKey;
-import security.paillier.PaillierPublicKey;
+import Localization.KeyMaster;
 import sensors.WifiReceiver;
 
-//import security.elgamal.ElGamalKeyPairGenerator;
-import security.elgamal.ElGamalPrivateKey;
-import security.elgamal.ElGamalPublicKey;
-
-import static Localization.LOCALIZATION_SCHEME.EL_GAMAL_DMA;
-import static Localization.LOCALIZATION_SCHEME.EL_GAMAL_MCA;
-import static Localization.LOCALIZATION_SCHEME.EL_GAMAL_MIN;
 import static edu.fiu.reu2017.R.*;
 
 
-public class MainActivity extends AppCompatActivity implements Runnable
+public class MainActivity extends AppCompatActivity
 {
     public final static String SQLDatabase = "192.168.1.208";
     public final static int portNumber = 9254;
-    public final static boolean multi_phone = true;
-    private final static String TAG = "MAIN_ACTIVITY";
+    public final static int TIMEOUT = 2 * 1000;
+    public final static boolean multi_phone = false;
     private static final int PERMISSIONS_REQUEST_CODE_ACCESS_COARSE_LOCATION = 1001;
     public static int VECTOR_SIZE = -1;
 
-    public final static int KEY_SIZE = 2048;
     //public final static int KEY_SIZE = 1024;
     public final static long BILLION = 1000000000; // 10^9
     public final static long FACTOR = 10; // Applies for DMA/MCA ONLY!
     public final static int k = 2;//Number of Minimum distances used!
-    private long startTime, endTime;
 
     protected WifiReceiver mWifiManager;
     protected Button StartScan;
@@ -84,14 +67,6 @@ public class MainActivity extends AppCompatActivity implements Runnable
             "12: ElGamal/DMA"
     };
 
-    // Key Master
-    public static DGKPrivateKey DGKsk;
-    public static DGKPublicKey DGKpk;
-    public static PaillierPublicKey pk;
-    public static PaillierPrivateKey sk;
-    public static ElGamalPublicKey e_pk = null;
-    public static ElGamalPrivateKey e_sk = null;
-
     // IP Communication
     private Socket ClientSocket;
     private ObjectInputStream fromServer;
@@ -111,8 +86,11 @@ public class MainActivity extends AppCompatActivity implements Runnable
         setContentView(layout.activity_main);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
 
-        Thread keyGen;
-        (keyGen = new Thread(this)).start();
+        if (!KeyMaster.finished)
+        {
+            KeyMaster.init();
+        }
+        KeyMaster.last_device = getDeviceName();
 
         good_train = Toast.makeText(getApplicationContext(), "Training Successful!", Toast.LENGTH_SHORT);
         bad_train = Toast.makeText(getApplicationContext(), "Training NOT Successful!", Toast.LENGTH_SHORT);
@@ -179,61 +157,37 @@ public class MainActivity extends AppCompatActivity implements Runnable
         UNDO.setOnClickListener(new undo());
 
         // Get Mapping
-        //this.MAC_to_AP_Name();
+        // this.MAC_to_AP_Name();
 
-        // Build El Gamal Keys
-        // this.El_Gamal();
-
-        try
-        {
-            keyGen.join();
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
-        String msg = getString(string.key_gen) + (endTime - startTime)/BILLION + " " + getString(string.seconds);
+        String msg = getString(string.key_gen) + KeyMaster.duration/BILLION + " " + getString(string.seconds);
         //msg += " " + KEY_SIZE;
         msg += " K =" + k;
         Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
         output.setText(msg);
     }
 
-    private class process_db implements View.OnClickListener, Runnable
+    private static class process_db implements View.OnClickListener
     {
-        boolean connected = false;
         public void onClick(View v)
         {
-            Thread t = new Thread(this);
-            t.start();
+            test_connection t = new test_connection();
+            Thread th = new Thread(t);
+            th.start();
             try
             {
-                t.join();
+                th.join();
             }
             catch (InterruptedException e)
             {
                 e.printStackTrace();
             }
-            if(connected)
+            if(t.connected)
             {
                 new Thread(new ClientThread()).start();
             }
-        }
-
-        public void run()
-        {
-            try
-            {
-                ClientSocket = new Socket(SQLDatabase, portNumber);
-                toServer = new ObjectOutputStream(ClientSocket.getOutputStream());
-                toServer.writeObject("Hello");
-                toServer.flush();
-                connected = true;
-            }
-            catch (IOException e)
+            else
             {
                 Wifi_needed.show();
-                connected = false;
             }
         }
     }
@@ -255,9 +209,16 @@ public class MainActivity extends AppCompatActivity implements Runnable
             }
             if(connected)
             {
-                Intent train = new Intent(MainActivity.this, TrainActivity.class);
-                //train.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                startActivity(train);
+                if(KeyMaster.map_name.length() == 0 || KeyMaster.map == null)
+                {
+                    Toast.makeText(getApplicationContext(), "PICK A MAP!", Toast.LENGTH_LONG).show();
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "Loading Map: " + KeyMaster.map_name, Toast.LENGTH_LONG).show();
+                    Intent train = new Intent(MainActivity.this, TrainActivity.class);
+                    startActivity(train);
+                }
             }
         }
 
@@ -265,7 +226,8 @@ public class MainActivity extends AppCompatActivity implements Runnable
         {
             try
             {
-                ClientSocket = new Socket(SQLDatabase, portNumber);
+                ClientSocket = new Socket();
+                ClientSocket.connect(new InetSocketAddress(SQLDatabase, portNumber), TIMEOUT);
                 toServer = new ObjectOutputStream(ClientSocket.getOutputStream());
                 toServer.writeObject("Hello");
                 toServer.flush();
@@ -294,7 +256,6 @@ public class MainActivity extends AppCompatActivity implements Runnable
             {
                 e.printStackTrace();
             }
-
             if(connected)
             {
                 LOCALIZATION_SCHEME = LocalizationSelect.getValue();
@@ -305,18 +266,24 @@ public class MainActivity extends AppCompatActivity implements Runnable
                     case 10:
                     case 11:
                     case 12:
-                        if (e_pk == null || e_sk == null)
+                        if (!KeyMaster.ElGamal)
                         {
                             Toast.makeText(getApplicationContext(), "El Gamal Keys not generated!", Toast.LENGTH_SHORT).show();
                             return;
                         }
                         break;
                 }
-                Intent Localize = new Intent(MainActivity.this, LocalizeActivity.class);
-                Localize.putExtra("Localization", LOCALIZATION_SCHEME);
-                // CRITICAL: USEFUL FOR KEEPING MAIN ACTIVITY ALIVE
-                Localize.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                startActivity(Localize);
+                if(KeyMaster.map == null || KeyMaster.map_name.length() == 0)
+                {
+                    Toast.makeText(getApplicationContext(), "PICK A MAP!", Toast.LENGTH_LONG).show();
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "Loading Map: " + KeyMaster.map_name, Toast.LENGTH_LONG).show();
+                    Intent Localize = new Intent(MainActivity.this, LocalizeActivity.class);
+                    Localize.putExtra("Localization", LOCALIZATION_SCHEME);
+                    startActivity(Localize);
+                }
             }
         }
 
@@ -324,7 +291,8 @@ public class MainActivity extends AppCompatActivity implements Runnable
         {
             try
             {
-                ClientSocket = new Socket(SQLDatabase, portNumber);
+                ClientSocket = new Socket();
+                ClientSocket.connect(new InetSocketAddress(SQLDatabase, portNumber), TIMEOUT);
                 toServer = new ObjectOutputStream(ClientSocket.getOutputStream());
                 toServer.writeObject("Hello");
                 toServer.flush();
@@ -349,14 +317,8 @@ public class MainActivity extends AppCompatActivity implements Runnable
         {
             try
             {
-                ClientSocket = new Socket(SQLDatabase, portNumber);
-
-                //Troubleshoot/Confirm the Socket Successfully connected
-                if (!ClientSocket.isConnected())
-                {
-                    Log.d(TAG, "Client Socket is NOT connected" + portNumber);
-                }
-                Log.d(TAG, "Client Socket Successfully Connected: " + portNumber);
+                ClientSocket = new Socket();
+                ClientSocket.connect(new InetSocketAddress(SQLDatabase, portNumber), TIMEOUT);
 
                 //Prepare I/O Stream
                 toServer = new ObjectOutputStream(ClientSocket.getOutputStream());
@@ -367,7 +329,6 @@ public class MainActivity extends AppCompatActivity implements Runnable
                 {
                     runOnUiThread(new Runnable()
                     {
-                        @Override
                         public void run()
                         {
                             Toast.makeText(getApplicationContext(), "RESET COMPLETE!", Toast.LENGTH_LONG).show();
@@ -404,19 +365,16 @@ public class MainActivity extends AppCompatActivity implements Runnable
         {
             try
             {
-                ClientSocket = new Socket(SQLDatabase, portNumber);
-
-                //Troubleshoot/Confirm the Socket Successfully connected
-                if (!ClientSocket.isConnected())
-                {
-                    Log.d(TAG, "Client Socket is NOT connected" + portNumber);
-                }
-                Log.d(TAG, "Client Socket Successfully Connected" + portNumber);
-
+                ClientSocket = new Socket();
+                ClientSocket.connect(new InetSocketAddress(SQLDatabase, portNumber), TIMEOUT);
                 //Prepare I/O Stream
                 toServer = new ObjectOutputStream(ClientSocket.getOutputStream());
                 fromServer = new ObjectInputStream(ClientSocket.getInputStream());
                 toServer.writeObject("UNDO");
+                // Need to send Coordinates, Phone and DeviceName
+                toServer.writeObject(KeyMaster.last_coordinates);
+                toServer.writeObject(KeyMaster.map_name);
+                toServer.writeObject(KeyMaster.last_device);
                 toServer.flush();
 
                 if (fromServer.readBoolean())
@@ -453,6 +411,7 @@ public class MainActivity extends AppCompatActivity implements Runnable
     {
         public void onClick(View v)
         {
+            /*
             if(mWifiManager.startScan())
             {
                 Toast.makeText(getApplicationContext(), "Got reading from Wifi Manager", Toast.LENGTH_LONG).show();
@@ -461,44 +420,11 @@ public class MainActivity extends AppCompatActivity implements Runnable
             {
                 Toast.makeText(getApplicationContext(), "Scanning Wi-Fi failed!", Toast.LENGTH_LONG).show();
             }
+            */
+            Intent map = new Intent(MainActivity.this, AddMapActivity.class);
+            startActivity(map);
         }
     }
-
-    // Build the Paillier and DGK Public/Private Key pairs!
-    public void run()
-    {
-        // Key Generation
-        startTime = System.nanoTime();
-
-        // Build DGK Keys
-        DGKKeyPairGenerator gen = new DGKKeyPairGenerator(16, 160, KEY_SIZE);
-        gen.initialize(1024, new SecureRandom()); //Speed up Key Making Process
-        KeyPair DGK = gen.generateKeyPair();
-        DGKsk = (DGKPrivateKey) DGK.getPrivate();
-        DGKpk = (DGKPublicKey) DGK.getPublic();
-
-        // Build Paillier Keys
-        PaillierKeyPairGenerator p = new PaillierKeyPairGenerator();
-        p.initialize(KEY_SIZE, new SecureRandom());
-        KeyPair paillier = p.generateKeyPair();
-        pk = (PaillierPublicKey) paillier.getPublic();
-        sk = (PaillierPrivateKey) paillier.getPrivate();
-
-        endTime = System.nanoTime();
-        Log.d(TAG, "Time to complete Key Generation: " + (endTime-startTime)/BILLION + " seconds");
-    }
-
-    /*
-    public void El_Gamal()
-    {
-        // Build ElGamal Keys
-        ElGamalKeyPairGenerator pg = new ElGamalKeyPairGenerator();
-        pg.initialize(KEY_SIZE, new SecureRandom());
-        KeyPair el_gamal = pg.generateKeyPair();
-        e_pk = (ElGamalPublicKey) el_gamal.getPublic();
-        e_sk = (ElGamalPrivateKey) el_gamal.getPrivate();
-    }
-    */
 
     public void onResume()
     {
@@ -524,7 +450,7 @@ public class MainActivity extends AppCompatActivity implements Runnable
 
     // source: https://stackoverflow.com/questions/1995439/get-android-phone-model-programmatically
     // Better way to get model
-    private static String getDeviceName()
+    protected static String getDeviceName()
     {
         String manufacturer = Build.MANUFACTURER;
         String model = Build.MODEL;

@@ -1,5 +1,10 @@
 package Localization;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -7,9 +12,11 @@ import java.net.Socket;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
+
 import Localization.structs.LocalizationResult;
 import Localization.structs.SendLocalizationData;
-import Localization.structs.SendTrainingArray;
+import Localization.structs.SendTrainingData;
 import security.DGK.DGKPublicKey;
 import security.elgamal.ElGamalPublicKey;
 import security.paillier.PaillierPublicKey;
@@ -33,7 +40,7 @@ public class LocalizationThread implements Runnable
 	
 	// Communication
     private SendLocalizationData transmission;	// Data from Android Phone to Localize
-    private SendTrainingArray trainDatabase;	// For Training  Data
+    private SendTrainingData trainDatabase;	// For Training  Data
  
     // I am measuring in nano-seconds, this converts back to seconds...
     private final static long BILLION = 1000000000;
@@ -50,6 +57,9 @@ public class LocalizationThread implements Runnable
 	private DistancePaillier PaillierLocalization = null;
 	private DistanceElGamal ElGamalLocalization = null;
 	
+	// For File safety
+	private String BASEDIR;
+	
 	//To either return Encrypted Values...or Send encrypted distances back...
 	private ArrayList<LocalizationResult> replyToClient = new ArrayList<LocalizationResult>();
 	private alice Niu = null;
@@ -61,6 +71,15 @@ public class LocalizationThread implements Runnable
 
 	public void run()
     {
+        try 
+        {
+			BASEDIR = new File(".").getCanonicalPath() + "/";
+		}
+        catch (IOException e) 
+        {
+			e.printStackTrace();
+		}
+        
 		try
 		{
 			fromClient= new ObjectInputStream(clientSocket.getInputStream());
@@ -76,7 +95,11 @@ public class LocalizationThread implements Runnable
 				if (command.equalsIgnoreCase("UNDO"))
 				{
 					System.out.println("Command acquired: UNDO");
-					toClient.writeBoolean(LocalizationLUT.undo());
+					Double [] coordinate = (Double []) fromClient.readObject();
+					String map = (String) fromClient.readObject();
+					String device = (String) fromClient.readObject();
+					System.out.println(coordinate[0] + " " + coordinate[1] + " " + map + " " + device);
+					toClient.writeBoolean(LocalizationLUT.undo(coordinate, map, device));
 					System.out.println("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
 
 					// Flush and Close I/O streams and Socket
@@ -97,26 +120,28 @@ public class LocalizationThread implements Runnable
 				else if (command.equals("Acquire all current training points"))
 				{
 					System.out.println("Command acquired: Obtain all Fingerprints!");
+					String Map = (String) fromClient.readObject();
 					if(server.multi_phone)
 					{
 						x = fromClient.readObject();
 						if(x instanceof String [])
 						{
 							String [] phone_data = (String []) x;
+							String map = (String) fromClient.readObject();
 							// Get All X-Y Coordinates from Training Table
 							// Multi-Phone patch, Give only training points with specific phone
 		                    String OS = phone_data[0];
 		                    String Device = phone_data[1];
 		                    String Model = phone_data[2];
 		                    String Product = phone_data[3];
-							toClient.writeObject(MultiphoneLocalization.getX(OS, Device, Model, Product));
-							toClient.writeObject(MultiphoneLocalization.getY(OS, Device, Model, Product));
+							toClient.writeObject(MultiphoneLocalization.getX(OS, Device, Model, Product, map));
+							toClient.writeObject(MultiphoneLocalization.getY(OS, Device, Model, Product, map));
 						}
 					}
 					else
 					{
-						toClient.writeObject(LocalizationLUT.getX());
-						toClient.writeObject(LocalizationLUT.getY());
+						toClient.writeObject(LocalizationLUT.getX(Map));
+						toClient.writeObject(LocalizationLUT.getY(Map));
 					}
 					System.out.println("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
 
@@ -145,7 +170,8 @@ public class LocalizationThread implements Runnable
 				else if(command.equals("Get Lookup Columns"))
 				{
 					System.out.println("Command acquired: Get Lookup MAC Addresses!");
-					toClient.writeObject(LocalizationLUT.getColumnMAC());
+					String map = (String) fromClient.readObject();
+					toClient.writeObject(LocalizationLUT.getColumnMAC(map));
 					toClient.flush();
 					System.out.println("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
 
@@ -153,9 +179,85 @@ public class LocalizationThread implements Runnable
 					this.closeClientConnection();
 					return;
 				}
+				// AddMapActivity, download Bitmap and save to storage
+				else if(command.equals("GET"))
+				{
+					String map_name = (String) fromClient.readObject();
+					File file = null;
+					try
+					{
+						file = new File(BASEDIR + map_name);
+						//System.out.println(file.getAbsolutePath());
+						if (file.getCanonicalPath().startsWith(BASEDIR))
+						{
+						    // process file
+							byte[] map = new byte[(int) file.length()];
+
+							// Convert file into array of bytes
+							FileInputStream fileInputStream = new FileInputStream(file);
+							fileInputStream.read(map);
+							fileInputStream.close();
+
+							// Send Size and bytes itself
+							toClient.writeInt((int) file.length());
+							toClient.flush();
+							toClient.write(map);
+							toClient.flush();
+						}
+						else
+						{
+							// Security Risk Attempt to traverse directory
+							toClient.writeInt(0);
+							toClient.flush();
+						}
+					}
+					catch(FileNotFoundException e)
+					{
+						e.printStackTrace();
+						toClient.writeInt(0);
+						toClient.flush();
+					}
+					
+					// Flush and Close I/O streams and Socket
+					this.closeClientConnection();
+					return;
+				}
+				// Get the correct Map back to the User
+				else if(command.equals("SET"))
+				{
+					try
+					{
+						String map_name = (String) fromClient.readObject();
+						int map_size = fromClient.readInt();
+						
+						if (new File(map_name).getCanonicalPath().startsWith(BASEDIR))
+						{
+							byte [] map = new byte[map_size];
+							fromClient.readFully(map);
+							
+							BufferedImage image = ImageIO.read(new ByteArrayInputStream(map));
+							ImageIO.write(image, "BMP", new File(map_name));
+							toClient.writeBoolean(true);
+							System.out.println("New Map: " + map_name +" Sucessfully uploaded!");
+						}
+						else
+						{
+							toClient.writeBoolean(false);
+						}
+					}
+					catch (Exception e)
+					{
+						toClient.writeBoolean(false);
+						e.printStackTrace();
+					}
+					// Flush and Close I/O streams and Socket
+					
+					this.closeClientConnection();
+					return;
+				}
 				else
 				{
-					System.out.println("Command acquired: INVALID");
+					System.out.println("INVALID Command acquired: " + command);
 					System.out.println("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
 					// Flush and Close I/O streams and Socket
 					this.closeClientConnection();
@@ -165,13 +267,10 @@ public class LocalizationThread implements Runnable
 			
 			// Train the Database
 			// dataType = 0
-			else if(x instanceof SendTrainingArray)
+			else if(x instanceof SendTrainingData)
 			{
-				trainDatabase = (SendTrainingArray) x;
+				trainDatabase = (SendTrainingData) x;
 				System.out.println("TRAINING DATA RECEIVED...");
-				server.lastX = trainDatabase.getX();
-				server.lastY = trainDatabase.getY();
-
 				toClient.writeBoolean(LocalizationLUT.submitTrainingData(trainDatabase));
 				System.out.println("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
 

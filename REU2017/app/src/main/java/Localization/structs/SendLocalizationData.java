@@ -47,13 +47,17 @@ public class SendLocalizationData implements Serializable
     // Phone data just in case it filtering by phone data
     public final String [] phone_data;
     
+    // Also, now the tables are by map
+    public final String map;
+    
     // PlainText
     public SendLocalizationData(String [] APs, Integer [] RSS, DGKPublicKey pubKey,
-                                LOCALIZATION_SCHEME local, boolean isREU2017, String [] phone_data)
+                                LOCALIZATION_SCHEME local, boolean isREU2017, String [] phone_data,
+                                String map)
     {
         this.RSS = RSS;
         this.APs = APs;
-        LOCALIZATION_SCHEME = local;
+        this.LOCALIZATION_SCHEME = local;
 
         this.S2 = null;
         this.S3 = null;
@@ -67,11 +71,12 @@ public class SendLocalizationData implements Serializable
         this.e_pk = null;
         this.isREU2017 = isREU2017;
         this.phone_data = phone_data;
+        this.map = map;
     }
 
     // Paillier, yes you need the DGK Key just in case you run comparison protocol!
     public SendLocalizationData(String [] APs, BigInteger[] S2, BigInteger S3, BigInteger [] S3_comp,
-    	PaillierPublicKey pk, DGKPublicKey _pubKey, LOCALIZATION_SCHEME local, boolean isREU2017, String [] phone_data)
+    	PaillierPublicKey pk, DGKPublicKey _pubKey, LOCALIZATION_SCHEME local, boolean isREU2017, String [] phone_data, String map)
     {
         this.RSS = null;
         this.APs = APs;
@@ -88,12 +93,14 @@ public class SendLocalizationData implements Serializable
         this.e_pk = null;
         this.isREU2017 = isREU2017;
         this.phone_data = phone_data;
+        this.map = map;
     }
 
     // DGK
     public SendLocalizationData(String [] APs, BigInteger [] S2,
                    BigInteger S3, BigInteger [] S3_comp,
-                          DGKPublicKey pubKey, LOCALIZATION_SCHEME local, boolean isREU2017, String [] phone_data)
+                          DGKPublicKey pubKey, LOCALIZATION_SCHEME local, boolean isREU2017, 
+                          String [] phone_data, String map)
     {
         this.RSS = null;
         this.APs = APs;
@@ -110,13 +117,14 @@ public class SendLocalizationData implements Serializable
         this.e_pk = null;
         this.isREU2017 = isREU2017;
         this.phone_data = phone_data;
+        this.map = map;
     }
     
     // ElGamal, yes you need the DGK Key just in case you run comparison protocol!
     public SendLocalizationData(String [] APs, List<ElGamal_Ciphertext> e_S2, ElGamal_Ciphertext e_S3,
                                 List<ElGamal_Ciphertext> e_S3_comp,
                                 ElGamalPublicKey pk, DGKPublicKey pubKey, LOCALIZATION_SCHEME local,
-                                boolean isREU2017, String [] phone_data)
+                                boolean isREU2017, String [] phone_data, String map)
     {
         this.RSS = null;
         this.APs = APs;
@@ -132,6 +140,7 @@ public class SendLocalizationData implements Serializable
         this.e_pk = pk;
         this.isREU2017 = isREU2017;
         this.phone_data = phone_data;
+        this.map = map;
     }
 
     private void readObject(ObjectInputStream aInputStream) throws ClassNotFoundException, IOException

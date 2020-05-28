@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.github.chrisbanes.photoview.OnPhotoTapListener;
 import com.github.chrisbanes.photoview.PhotoViewAttacher;
 
+import Localization.KeyMaster;
 import Localization.LOCALIZATION_SCHEME;
 import edu.fiu.reu2017.R;
 import Localization.background;
@@ -58,11 +59,19 @@ public class LocalizeActivity extends AppCompatActivity
 
         Intent i = getIntent();
         SCHEME = i.getIntExtra("Localization", SCHEME);
-        my_Attach = new PhotoViewAttacher(imageView);
-        my_Attach.setMaximumScale((float) 7.0);
 
         location = BitmapFactory.decodeResource(getResources(), R.drawable.o);
         wifi_wrapper = new WifiReceiver(this, loading);
+        imageView.post(new Runnable()
+        {
+            public void run()
+            {
+                imageView.setImageBitmap(Bitmap.createScaledBitmap(KeyMaster.map, imageView.getWidth(),
+                        imageView.getHeight(), false));
+            }
+        });
+        my_Attach = new PhotoViewAttacher(imageView);
+        my_Attach.setMaximumScale((float) 7.0);
 
         if (SCHEME >= 1 && SCHEME <= 12)
         {
@@ -75,6 +84,9 @@ public class LocalizeActivity extends AppCompatActivity
         scan.setOnClickListener(new scan());
         my_Attach.setOnPhotoTapListener(new attach());
     }
+
+    // Need a GET Map()
+    // Also, each time you train, you need to send MAP data too now
 
     private class scan implements View.OnClickListener
     {
@@ -94,7 +106,14 @@ public class LocalizeActivity extends AppCompatActivity
         public void onPhotoTap (ImageView view, float x, float y)
         {
             // CLEAR RED DOT, RE-LOAD
-            imageView.setImageResource(R.drawable.broadway3);
+            imageView.post(new Runnable()
+            {
+                public void run()
+                {
+                    imageView.setImageBitmap(Bitmap.createScaledBitmap(KeyMaster.map, imageView.getWidth(),
+                            imageView.getHeight(), false));
+                }
+            });
             my_Attach.update();
 
             if(scan_complete)

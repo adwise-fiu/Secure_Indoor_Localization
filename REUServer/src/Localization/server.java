@@ -38,10 +38,8 @@ public class server implements Runnable
 	protected ServerSocket serverSocket = null;
 	protected boolean      isStopped    = false;
 	protected Thread       runningThread= null;
-	public static Double   lastX = 0.0;
-	public static Double   lastY = 0.0;
 	public static boolean  preprocessed = false;
-	public static boolean  multi_phone = true;
+	public static boolean  multi_phone = false;
 	
 	public server(int port)
 	{
@@ -172,7 +170,7 @@ public class server implements Runnable
 		}
 		else
 		{
-			System.out.println("Failed to create initial Tables! They probably exist already if you ran this before...");
+			System.out.println("Failed to create Training Table! It probably already exists!!!");
 		}
 		
 		System.out.println("==================FIU Indoor Localization Server Online=========================");
@@ -189,7 +187,7 @@ public class server implements Runnable
 				System.out.println("Database preprocessed? " + server.preprocessed);
 				System.out.println("Vector size: " + Distance.VECTOR_SIZE);
 				System.out.println("APs in Training Data: " + LocalizationLUT.getVectorSize(0.0));
-				System.out.println("N_F: " + LocalizationLUT.getX().length);
+				System.out.println("N_F: " + LocalizationLUT.getX("BWY_FL_03").length);
 				System.out.println("Current value of K is: " + Distance.k);
 				
 				//Clear CLI

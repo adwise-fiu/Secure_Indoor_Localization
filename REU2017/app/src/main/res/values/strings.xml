@@ -30,4 +30,9 @@
     <string name="action_save">action_save</string>
     <string name="toast_name_warning">Warning: Map has no name</string>
     <string name="toast_map_warning">Warning! No Map detected!</string>
+    <string name="hello">hello</string>
+    <string name="load_image">Load Image</string>
+    <string name="send_receive">Send/Receive</string>
+    <string name="send_map">Send Map</string>
+    <string name="insert_map_name">Insert Map Name</string>
 </resources>

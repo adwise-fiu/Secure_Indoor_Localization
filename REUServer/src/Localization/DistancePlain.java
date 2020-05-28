@@ -21,16 +21,16 @@ public class DistancePlain extends Distance
 		
 		if(column == null)
 		{
-			column = LocalizationLUT.getColumnMAC();
+			column = LocalizationLUT.getColumnMAC(in.map);
 		}
 		// Read from Database
 		if(server.multi_phone)
 		{
-			MultiphoneLocalization.getPlainLookup(this.RSS_ij, this.coordinates, in.phone_data);
+			MultiphoneLocalization.getPlainLookup(this.RSS_ij, this.coordinates, in.phone_data, in.map);
 		}
 		else
 		{
-			LocalizationLUT.getPlainLookup(RSS_ij, coordinates);
+			LocalizationLUT.getPlainLookup(this.RSS_ij, this.coordinates, in.map);
 		}
 	}
 

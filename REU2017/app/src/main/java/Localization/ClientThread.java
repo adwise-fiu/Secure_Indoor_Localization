@@ -12,15 +12,15 @@ import java.util.ArrayList;
 
 import Localization.structs.SendLocalizationData;
 import Localization.structs.LocalizationResult;
-import Localization.structs.SendTrainingArray;
+import Localization.structs.SendTrainingData;
 import security.elgamal.ElGamalCipher;
 import security.elgamal.ElGamal_Ciphertext;
 import ui.MainActivity;
 import ui.TrainActivity;
 
+import static Localization.KeyMaster.e_sk;
+import static Localization.KeyMaster.e_pk;
 import static ui.MainActivity.SQLDatabase;
-import static ui.MainActivity.e_pk;
-import static ui.MainActivity.e_sk;
 import static ui.MainActivity.portNumber;
 
 import security.DGK.DGKOperations;
@@ -44,14 +44,14 @@ public class ClientThread implements Runnable
     private background getColumns;
 
     //Data Objects
-    private SendTrainingArray sendTraining;     //Training Data
+    private SendTrainingData sendTraining;     //Training Data
     private SendLocalizationData transmission;  //For Encrypted Paillier/DGK Transmission
 
     // Have all Keys in case comparison is needed!!
-    private DGKPublicKey pubKey = MainActivity.DGKpk;
-    private DGKPrivateKey privKey = MainActivity.DGKsk;
-    private PaillierPublicKey pk = MainActivity.pk;
-    private PaillierPrivateKey sk = MainActivity.sk;
+    private DGKPublicKey pubKey = KeyMaster.DGKpk;
+    private DGKPrivateKey privKey = KeyMaster.DGKsk;
+    private PaillierPublicKey pk = KeyMaster.pk;
+    private PaillierPrivateKey sk = KeyMaster.sk;
 
     private LOCALIZATION_SCHEME LOCALIZATIONSCHEME;
     private Socket clientSocket;
@@ -80,7 +80,7 @@ public class ClientThread implements Runnable
     }
 
     // Send Training Data
-    public ClientThread (SendTrainingArray in)
+    public ClientThread (SendTrainingData in)
     {
         this.LOCALIZATIONSCHEME = LOCALIZATION_SCHEME.from_int(0);
         this.sendTraining = in;
@@ -111,6 +111,10 @@ public class ClientThread implements Runnable
             {
                 case GETXY:
                     toServer.writeObject("Acquire all current training points");
+                    toServer.flush();
+
+                    // Send the Map Name as well
+                    toServer.writeObject(KeyMaster.map_name);
                     toServer.flush();
 
                     // Following this patch the server needs to know the Phone as well
@@ -166,7 +170,11 @@ public class ClientThread implements Runnable
                     break;
                 case GET_COLUMN:
                     toServer.writeObject("Get Lookup Columns");
+
+                    // Send the Map with all (x, y)
+                    toServer.writeObject(KeyMaster.map_name);
                     toServer.flush();
+
                     in = fromServer.readObject();
                     if (in instanceof String [])
                     {

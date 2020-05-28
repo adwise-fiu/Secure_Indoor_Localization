@@ -36,6 +36,7 @@ import security.paillier.PaillierPublicKey;
 
 import static android.graphics.Color.RED;
 import static Localization.LOCALIZATION_SCHEME.*;
+import static ui.LocalizeActivity.off_map;
 
 // https://www.concretepage.com/android/android-asynctask-example-with-progress-bar
 public final class background extends AsyncTask<Void, Integer, Float[]>
@@ -49,12 +50,12 @@ public final class background extends AsyncTask<Void, Integer, Float[]>
     private LOCALIZATION_SCHEME LOCALIZATION_SCHEME;
 
     //Keys and read Keys
-    private static PaillierPublicKey pk = MainActivity.pk;
-    private static DGKPublicKey DGKpk = MainActivity.DGKpk;
-    private static PaillierPrivateKey sk = MainActivity.sk;
-    private static DGKPrivateKey DGKsk = MainActivity.DGKsk;
-    private static ElGamalPublicKey e_pk = MainActivity.e_pk;
-    private static ElGamalPrivateKey e_sk = MainActivity.e_sk;
+    private static PaillierPublicKey pk = KeyMaster.pk;
+    private static DGKPublicKey DGKpk = KeyMaster.DGKpk;
+    private static PaillierPrivateKey sk = KeyMaster.sk;
+    private static DGKPrivateKey DGKsk = KeyMaster.DGKsk;
+    private static ElGamalPublicKey e_pk = KeyMaster.e_pk;
+    private static ElGamalPrivateKey e_sk = KeyMaster.e_sk;
 
     // Localization variables
     private long distanceSUM = 0;
@@ -84,11 +85,11 @@ public final class background extends AsyncTask<Void, Integer, Float[]>
     // SST REU 2017
     String [] CommonMAC;
 
-    public background(int SCHEME, boolean _isREU2017, String [] MAC_send, Integer [] RSS_send,
+    public background(int SCHEME, boolean isREU2017, String [] MAC_send, Integer [] RSS_send,
                       TextView output, ProgressBar progress, Bitmap location, ImageView imageView, PhotoViewAttacher my_Attach)
     {
         this.LOCALIZATION_SCHEME = from_int(SCHEME);
-        this.isREU2017 = _isREU2017;
+        this.isREU2017 = isREU2017;
         this.Found_APs = MAC_send;
         this.Found_RSS = RSS_send;
         this.results = new WeakReference<>(output);
@@ -100,6 +101,7 @@ public final class background extends AsyncTask<Void, Integer, Float[]>
         phone_data = MainActivity.getPhoneData();
     }
 
+    // Get Columns and normalize them
     protected void onPreExecute()
     {
         startTime = System.nanoTime();
@@ -142,6 +144,7 @@ public final class background extends AsyncTask<Void, Integer, Float[]>
         }
     }
 
+    // Do heavy encryption here
     protected Float [] doInBackground(Void... voids)
     {
         Float [] location = new Float[2];
@@ -173,7 +176,7 @@ public final class background extends AsyncTask<Void, Integer, Float[]>
             case PLAIN_MCA:
 
                 ClientThread plainSend = new ClientThread(new SendLocalizationData(MAC_send, RSS_send, DGKpk,
-                        LOCALIZATION_SCHEME, isREU2017, phone_data), this, LOCALIZATION_SCHEME.value);
+                        LOCALIZATION_SCHEME, isREU2017, phone_data, KeyMaster.map_name), this, LOCALIZATION_SCHEME.value);
                 t = new Thread(plainSend);
                 t.start();
                 try
@@ -238,7 +241,7 @@ public final class background extends AsyncTask<Void, Integer, Float[]>
 
                         t = new Thread( new ClientThread(
                                 new SendLocalizationData(MAC_send, S2, null, S3_comp,
-                                        DGKpk, LOCALIZATION_SCHEME, isREU2017, phone_data),
+                                        DGKpk, LOCALIZATION_SCHEME, isREU2017, phone_data, KeyMaster.map_name),
                                 this, LOCALIZATION_SCHEME.value));
                         t.start();
                     }
@@ -261,7 +264,7 @@ public final class background extends AsyncTask<Void, Integer, Float[]>
 
                         t = new Thread( new ClientThread(
                                 new SendLocalizationData(MAC_send, S2, S3, null,
-                                        DGKpk, LOCALIZATION_SCHEME, isREU2017, phone_data),
+                                        DGKpk, LOCALIZATION_SCHEME, isREU2017, phone_data, KeyMaster.map_name),
                                 this, LOCALIZATION_SCHEME.value));
                         t.start();
                     }
@@ -314,7 +317,7 @@ public final class background extends AsyncTask<Void, Integer, Float[]>
                 }
                 catch (IndexOutOfBoundsException | NullPointerException e)
                 {
-                    LocalizeActivity.off_map.show();
+                    off_map.show();
                 }
 
             case PAILLIER_MIN:
@@ -333,7 +336,7 @@ public final class background extends AsyncTask<Void, Integer, Float[]>
                         (t = new Thread(new ClientThread(
                                 new SendLocalizationData(MAC_send, S2, null, S3_comp,
                                         pk, DGKpk,
-                                        LOCALIZATION_SCHEME, isREU2017, phone_data),
+                                        LOCALIZATION_SCHEME, isREU2017, phone_data,  KeyMaster.map_name),
                                 this, LOCALIZATION_SCHEME.value))).start();
                     }
                     else
@@ -348,7 +351,7 @@ public final class background extends AsyncTask<Void, Integer, Float[]>
                         (t = new Thread(new ClientThread(
                                 new SendLocalizationData(MAC_send, S2, S3, null,
                                         pk, DGKpk,
-                                        LOCALIZATION_SCHEME, isREU2017, phone_data),
+                                        LOCALIZATION_SCHEME, isREU2017, phone_data,  KeyMaster.map_name),
                                 this, LOCALIZATION_SCHEME.value))).start();
                     }
                     t.join();
@@ -394,7 +397,7 @@ public final class background extends AsyncTask<Void, Integer, Float[]>
                 }
                 catch (IndexOutOfBoundsException | NullPointerException e)
                 {
-                    LocalizeActivity.off_map.show();
+                    off_map.show();
                 }
 
             case EL_GAMAL_MIN:
@@ -413,7 +416,7 @@ public final class background extends AsyncTask<Void, Integer, Float[]>
                         (t = new Thread(new ClientThread(
                                 new SendLocalizationData(MAC_send, e_S2, null, e_S3_comp,
                                         e_pk, DGKpk,
-                                        LOCALIZATION_SCHEME, isREU2017, phone_data),
+                                        LOCALIZATION_SCHEME, isREU2017, phone_data,  KeyMaster.map_name),
                                 this, LOCALIZATION_SCHEME.value))).start();
                     }
                     else
@@ -428,7 +431,7 @@ public final class background extends AsyncTask<Void, Integer, Float[]>
                         (t = new Thread(new ClientThread(
                                 new SendLocalizationData(MAC_send, e_S2, e_S3, null,
                                         e_pk, DGKpk,
-                                        LOCALIZATION_SCHEME, isREU2017, phone_data),
+                                        LOCALIZATION_SCHEME, isREU2017, phone_data, KeyMaster.map_name),
                                 this, LOCALIZATION_SCHEME.value))).start();
                     }
                     t.join();
@@ -474,7 +477,7 @@ public final class background extends AsyncTask<Void, Integer, Float[]>
                 catch (IndexOutOfBoundsException | NullPointerException e)
                 {
                     e.printStackTrace();
-                    LocalizeActivity.off_map.show();
+                    off_map.show();
                 }
                 catch (InterruptedException e)
                 {
@@ -552,12 +555,12 @@ public final class background extends AsyncTask<Void, Integer, Float[]>
         catch (NullPointerException e)
         {
             // This will happen if your FSF is too strict or you are off the map.
+            off_map.show();
         }
         finally
         {
             String msg = (System.nanoTime() - startTime) / MainActivity.BILLION + " seconds.";
             results.get().setText(msg);
-            Log.d(TAG, " Localization Scheme: " + LOCALIZATION_SCHEME + ", time to complete: " + (System.nanoTime() - startTime) / MainActivity.BILLION);
         }
     }
 }
