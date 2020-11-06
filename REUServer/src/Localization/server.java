@@ -135,29 +135,35 @@ public class server implements Runnable
 				port = Integer.parseInt(args[0]);
 				if(port <= 1024)
 				{
-					System.err.println("Invalid Port!");
-					System.exit(0);
+					System.err.println("Invalid Port! " + port + " use value over 1024!");
+					System.exit(1);
+				}
+				else if(port > 65535)
+				{
+					System.err.println("Invalid Port! " + port + " use value below 65535!");
+					System.exit(1);					
 				}
 			}
 		}
 		catch(CommunicationsException e)
 		{
 			System.out.println("You don't have MySQL Running...Do you?");
-			System.exit(0);
+			System.exit(1);
 		}
 		catch (ClassNotFoundException | SQLException e)
 		{
 			e.printStackTrace();
+			System.exit(1);
 		}
 		catch (NumberFormatException nfe)
 		{
 			System.out.println("Please enter a valid custom port number");
-			System.exit(0);
+			System.exit(1);
 		}
 		catch (IOException e) 
 		{
 			System.out.println("Missing Login file");
-			System.exit(0);
+			System.exit(1);
 		}
 
 		server Localizationserver = new server(port);
