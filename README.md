@@ -26,7 +26,7 @@ https://developer.android.com/training/basics/firstapp/running-app
 
 ## Usage
 
-** Server set up
+**Server set up**  
 Please place your MySQL server login crendetials on the empty login.properties file
 ./REUServer/src/Localization/login.properties
 
@@ -43,11 +43,25 @@ Upon initializing the server will
 - Create the database called "FIU" and a Table called "trainingpoints" to store the raw Wi-Fi scans.
 
 It will also create a shell to do the following operations:  
+- **clr** Clear the shell
+- **print** Assuming the fingerprint database preprocessed the training data, print the lookup tables to a CSV file.
+- **frequency** Print a frequency map of all detected Access Points. Use this to tune your FSF parameter.
+- **k <int>** Disabled for now. 
+- **test-FSF [0, 1]** For a value between 0 and 1, determine how many access points would get filtered.
+- **FSF [0, 1]** Sets new FSF parameter. However, if you want to see this change, you will need to build a new lookup table.
+- **process** Build the lookup table for all floor maps
+- **reset** delete all lookup tables
+- **exit** close the shell and server
 
+Upon each iteration of the shell, it will update you on:
+- If the fingerprint server has a lookup table
+- Number of columns in the lookup table
+- Number of Access Points detected in training data
+- Number of fingerprints of each floor map
+- Current value of K, for MCA/DMA (default set to 2). Currently, this is hard set as I fail to see the benefit in changing this value.
 
-** Phone setup
-This is the 
-![Main Menu]((https://github.com/AndrewQuijano/SST_REU_2017/blob/master/images/main-menu.png?raw=true)
+**Phone setup**  
+This is the ![Main Menu](images/main-menu.png?raw=true)
 
 - Reset: Delete the Lookup table on the server
 - Undo: Delete the last scan of Access Points/Wi-Fi signals
@@ -57,14 +71,15 @@ This is the
 - Localize: Open up new menu, and select which floor map you want to find your location in.
 - Localization Scheme: On the bottom right, you can select a combination of server/client side, homormorphic encryption scheme, and localization algorithm.
 
-** Training Workflow
+**Training Workflow**
 
-** Localization Workflow
+**Localization Workflow**
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 ## Authors and acknowledgment
+Code Author: Andrew Quijano
 
 A. Quijano and K. Akkaya, "Server-Side Fingerprint-Based Indoor Localization Using Encrypted Sorting," 2019 IEEE 16th International Conference on Mobile Ad Hoc and Sensor Systems Workshops (MASSW), Monterey, CA, USA, 2019, pp. 53-57, doi: 10.1109/MASSW.2019.00017.https://arxiv.org/abs/2008.11612
 
@@ -77,3 +92,8 @@ The work to create this repository was initially funded by the US NSF REU Site a
 
 ## Project status
 The project is functional at its current state. However some optimizations do need to made for ease of use. This would only work best if I can reobtain access to Broadway to test on multiple floors/add new floors as needed.
+
+Also, there are a few things I want to upgrade:
+- Steamline the process of the client uploading/receiving floor maps.
+- See how to allow the client to set the value **k** for localizations.
+- I will provide screenshots on the Localization/Training Phase later this week.
