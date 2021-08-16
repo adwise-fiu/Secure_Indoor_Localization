@@ -19,6 +19,7 @@ import Localization.structs.SendLocalizationData;
 import Localization.structs.SendTrainingData;
 import security.DGK.DGKPublicKey;
 import security.elgamal.ElGamalPublicKey;
+import security.misc.HomomorphicException;
 import security.paillier.PaillierPublicKey;
 import security.socialistmillionaire.alice;
 
@@ -486,6 +487,9 @@ public class LocalizationThread implements Runnable
 		}
 		catch(IOException | SQLException | ClassNotFoundException | IllegalArgumentException e) 
 		{
+			e.printStackTrace();
+		} 
+		catch (HomomorphicException e) {
 			e.printStackTrace();
 		}
     }

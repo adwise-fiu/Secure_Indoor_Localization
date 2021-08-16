@@ -12,6 +12,7 @@ import Localization.structs.SendLocalizationData;
 import security.elgamal.ElGamalCipher;
 import security.elgamal.ElGamalPublicKey;
 import security.elgamal.ElGamal_Ciphertext;
+import security.misc.HomomorphicException;
 import security.socialistmillionaire.alice;
 
 public class DistanceElGamal extends Distance
@@ -59,7 +60,7 @@ public class DistanceElGamal extends Distance
 	}
 
 	protected ArrayList<LocalizationResult> MinimumDistance(alice Niu)
-			throws ClassNotFoundException, IOException, IllegalArgumentException
+			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
 	{
 		this.MissConstantAlgorithm();
 		// REU 2015, let the phone do the work!
@@ -119,22 +120,22 @@ public class DistanceElGamal extends Distance
 			}
 			
 			// Repeat MCA/DMA as shown in the paper to compute distance
-			S2_Row = ElGamalCipher.encrypt(pk, 0);
+			S2_Row = ElGamalCipher.encrypt(0, pk);
 			
 			for (int j = 0; j < VECTOR_SIZE;j++)
 			{
 				if(scanAPs[j].equals(column[j]))
 				{
 					S1_temp += RSS_ij.get(i)[j] * RSS_ij.get(i)[j];
-					S2_Row = ElGamalCipher.add(S2_Row, ElGamalCipher.multiply(S2.get(j), RSS_ij.get(i)[j], pk), pk);
+					S2_Row = ElGamalCipher.add(S2_Row, ElGamalCipher.multiply_scalar(S2.get(j), RSS_ij.get(i)[j], pk), pk);
 				}
 				else
 				{
 					S1_temp += Distance.v_c * Distance.v_c;
-					S2_Row = ElGamalCipher.add(S2_Row, ElGamalCipher.multiply(S2.get(j), v_c, pk), pk);
+					S2_Row = ElGamalCipher.add(S2_Row, ElGamalCipher.multiply_scalar(S2.get(j), v_c, pk), pk);
 				}
 			}
-			S1_Row = ElGamalCipher.encrypt(pk, S1_temp);
+			S1_Row = ElGamalCipher.encrypt(S1_temp, pk);
 			d = ElGamalCipher.add(S1_Row, S3, pk);
 			d = ElGamalCipher.add(d, S2_Row, pk);
 			e_distances.add(d);
@@ -172,19 +173,19 @@ public class DistanceElGamal extends Distance
 			}
 			
 			// Repeat MCA/DMA as shown in the paper to compute distance
-			S2_Row = ElGamalCipher.encrypt(pk, 0);
-			S3_Row = ElGamalCipher.encrypt(pk, 0);
+			S2_Row = ElGamalCipher.encrypt(0, pk);
+			S3_Row = ElGamalCipher.encrypt(0, pk);
 			
 			for (int j = 0; j < VECTOR_SIZE;j++)
 			{
 				if(scanAPs[j].equals(column[j]))
 				{
 					S1_temp += RSS_ij.get(i)[j] * RSS_ij.get(i)[j];
-					S2_Row = ElGamalCipher.add(S2_Row, ElGamalCipher.multiply(S2.get(j), RSS_ij.get(i)[j], pk), pk);
+					S2_Row = ElGamalCipher.add(S2_Row, ElGamalCipher.multiply_scalar(S2.get(j), RSS_ij.get(i)[j], pk), pk);
 					S3_Row = ElGamalCipher.add(S3_Row, S3_comp.get(j), pk);
 				}
 			}
-			S1_Row = ElGamalCipher.encrypt(pk, S1_temp);
+			S1_Row = ElGamalCipher.encrypt(S1_temp, pk);
 			d = ElGamalCipher.add(S1_Row, S3_Row, pk);
 			d = ElGamalCipher.add(d, S2_Row, pk);
 			e_distances.add(d);
@@ -195,7 +196,7 @@ public class DistanceElGamal extends Distance
 	
 	// Return Encrypted Coordinates in ElGamal
 	protected BigInteger[] Phase3(alice Niu)
-			throws ClassNotFoundException, IOException, IllegalArgumentException
+			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
 	{	
 		// It is DMA, you need to divide distances by matches!!
 		// Problem is that Alice needs to read the number of matches to do this?
@@ -238,27 +239,27 @@ public class DistanceElGamal extends Distance
 		 */
 		for (int i = 0; i < Distance.k; i++)
 		{
-			weights.set(i, ElGamalCipher.multiply(k_min.get(i), Distance.FACTOR, pk));
+			weights.set(i, ElGamalCipher.multiply_scalar(k_min.get(i), Distance.FACTOR, pk));
 			weights.set(i, Niu.division(weights.get(i), d.longValue() * (k - 1)));
-			weights.set(i, ElGamalCipher.subtract(ElGamalCipher.encrypt(pk, FACTOR/(k - 1)), weights.get(i), pk));
+			weights.set(i, ElGamalCipher.subtract(ElGamalCipher.encrypt(FACTOR/(k - 1), pk), weights.get(i), pk));
 		}
 		
-		e_xy[0] = ElGamalCipher.encrypt(pk, 0);
-		e_xy[1] = ElGamalCipher.encrypt(pk, 0);
+		e_xy[0] = ElGamalCipher.encrypt(0, pk);
+		e_xy[1] = ElGamalCipher.encrypt(0, pk);
 		
 		// Now I multiply it with all scalars. (x, y)
 		for (int i = 0; i < Distance.k; i++)
 		{
 			index = elgamal_distance_index(k_min.get(i));
-			e_xy[0] = ElGamalCipher.add(e_xy[0], ElGamalCipher.multiply(weights.get(i), resultList.get(index).getX().longValue(), pk), pk);
-			e_xy[1] = ElGamalCipher.add(e_xy[1], ElGamalCipher.multiply(weights.get(i), resultList.get(index).getY().longValue(), pk), pk);
+			e_xy[0] = ElGamalCipher.add(e_xy[0], ElGamalCipher.multiply_scalar(weights.get(i), resultList.get(index).getX().longValue(), pk), pk);
+			e_xy[1] = ElGamalCipher.add(e_xy[1], ElGamalCipher.multiply_scalar(weights.get(i), resultList.get(index).getY().longValue(), pk), pk);
 		}
 		return encryptedLocation;
 	}
 
 	// DMA NORMALIZATION
 	protected void DMA_Normalization(alice Niu) 
-			throws IOException, ClassNotFoundException, IllegalArgumentException
+			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException
 	{
 		Niu.writeObject(resultList);
 		for (int i = 0; i < resultList.size(); i++)

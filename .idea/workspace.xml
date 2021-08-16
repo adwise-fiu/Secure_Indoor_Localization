@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="b08255c0-7d43-427d-9805-01c57fdbd704" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.travis.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/REU2017/.idea/caches/build_file_checksums.ser" beforeDir="false" afterPath="$PROJECT_DIR$/REU2017/.idea/caches/build_file_checksums.ser" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/REU2017/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/REU2017/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/REU2017/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/REU2017/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/REU2017/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/REU2017/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/REU2017/.idea/runConfigurations.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/REU2017/app/src/main/java/ui/MainActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/REU2017/app/src/main/java/ui/MainActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/REU2017/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/REU2017/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/REU2017/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/REU2017/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/REUServer/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/REUServer/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/REUServer/lib/crypto.jar" beforeDir="false" afterPath="$PROJECT_DIR$/REUServer/lib/crypto.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/REUServer/src/Localization/Distance.java" beforeDir="false" afterPath="$PROJECT_DIR$/REUServer/src/Localization/Distance.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/REUServer/src/Localization/DistanceDGK.java" beforeDir="false" afterPath="$PROJECT_DIR$/REUServer/src/Localization/DistanceDGK.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/REUServer/src/Localization/DistanceElGamal.java" beforeDir="false" afterPath="$PROJECT_DIR$/REUServer/src/Localization/DistanceElGamal.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/REUServer/src/Localization/DistancePaillier.java" beforeDir="false" afterPath="$PROJECT_DIR$/REUServer/src/Localization/DistancePaillier.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/REUServer/src/Localization/LocalizationThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/REUServer/src/Localization/LocalizationThread.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/REUServer/src/Localization/structs/LocalizationResult.java" beforeDir="false" afterPath="$PROJECT_DIR$/REUServer/src/Localization/structs/LocalizationResult.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1wmnRucIbeD2uBgiL5nk04ybff2" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="b08255c0-7d43-427d-9805-01c57fdbd704" name="Changes" comment="" />
+      <created>1629072626760</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1629072626760</updated>
+    </task>
+    <servers />
+  </component>
+</project>

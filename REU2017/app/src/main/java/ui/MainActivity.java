@@ -29,7 +29,7 @@ import static edu.fiu.reu2017.R.*;
 
 public class MainActivity extends AppCompatActivity
 {
-    public final static String SQLDatabase = "192.168.1.208";
+    public final static String SQLDatabase = "160.39.57.71";
     public final static int portNumber = 9254;
     public final static int TIMEOUT = 2 * 1000;
     public final static boolean multi_phone = false;
@@ -379,14 +379,7 @@ public class MainActivity extends AppCompatActivity
 
                 if (fromServer.readBoolean())
                 {
-                    runOnUiThread(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            Toast.makeText(getApplicationContext(),"UNDO COMPLETE!", Toast.LENGTH_LONG).show();
-                        }
-                    });
+                    runOnUiThread(() -> Toast.makeText(getApplicationContext(),"UNDO COMPLETE!", Toast.LENGTH_LONG).show());
                 }
                 else
                 {

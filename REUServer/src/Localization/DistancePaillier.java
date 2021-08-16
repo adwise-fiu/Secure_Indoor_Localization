@@ -7,6 +7,7 @@ import java.util.Collections;
 
 import Localization.structs.LocalizationResult;
 import Localization.structs.SendLocalizationData;
+import security.misc.HomomorphicException;
 import security.paillier.PaillierCipher;
 //import security.paillier.PaillierPrivateKey;
 import security.paillier.PaillierPublicKey;
@@ -53,7 +54,7 @@ public class DistancePaillier extends Distance
 	}
 
 	protected ArrayList<LocalizationResult> MinimumDistance(alice Niu)
-			throws ClassNotFoundException, IOException, IllegalArgumentException
+			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
 	{
 		resultList = this.MissConstantAlgorithm();
 		// REU 2015, let the phone do the work!
@@ -86,7 +87,7 @@ public class DistancePaillier extends Distance
 	}
 
 	protected ArrayList<LocalizationResult> MissConstantAlgorithm()
-			throws ClassNotFoundException, IOException, IllegalArgumentException
+			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
 	{
 		long count = 0;
 		BigInteger d = null;
@@ -137,7 +138,7 @@ public class DistancePaillier extends Distance
 	}
 
 	protected ArrayList<LocalizationResult> DynamicMatchingAlgorithm()
-			throws ClassNotFoundException, IOException, IllegalArgumentException
+			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
 	{
 		long count = 0;
 		BigInteger d = null;
@@ -186,7 +187,7 @@ public class DistancePaillier extends Distance
 	}
 	
 	protected BigInteger[] Phase3(alice Niu)
-			throws ClassNotFoundException, IOException, IllegalArgumentException
+			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
 	{
 		// Get the K-minimum distances!
 		BigInteger [] k_min = Niu.getKMin(encryptedDistance, k);

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 import Localization.structs.LocalizationResult;
 import security.elgamal.ElGamal_Ciphertext;
+import security.misc.HomomorphicException;
 import security.socialistmillionaire.alice;
 
 public abstract class Distance 
@@ -38,23 +39,24 @@ public abstract class Distance
 	
 	// Select smallest distance. This uses MCA!
 	protected abstract ArrayList<LocalizationResult> MinimumDistance(alice Niu) 
-			throws ClassNotFoundException, IOException, IllegalArgumentException;
+			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException, 
+			IllegalArgumentException, HomomorphicException;
 	
 	// MCA, if miss RSS -120
 	protected abstract ArrayList<LocalizationResult> MissConstantAlgorithm()
-			throws ClassNotFoundException, IOException, IllegalArgumentException;
+			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException;
 	
 	// DMA, if AP is not on RSS scan, skip it!
 	protected abstract ArrayList<LocalizationResult> DynamicMatchingAlgorithm() 
-			throws ClassNotFoundException, IOException, IllegalArgumentException;
+			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException;
 	
 	// Phase 3, for DGK and Paillier
 	protected abstract BigInteger[] Phase3(alice Niu)
-			throws ClassNotFoundException, IOException, IllegalArgumentException;
+			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException;
 	
 	// DMA NORMALIZATION
 	protected void DMA_Normalization(alice Niu) 
-			throws IOException, ClassNotFoundException, IllegalArgumentException
+			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException
 	{
 		Niu.writeObject(resultList);
 		for (int i = 0; i < resultList.size(); i++)

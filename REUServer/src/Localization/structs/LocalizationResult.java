@@ -13,6 +13,7 @@ import security.elgamal.ElGamalCipher;
 import security.elgamal.ElGamalPrivateKey;
 import security.elgamal.ElGamalPublicKey;
 import security.elgamal.ElGamal_Ciphertext;
+import security.misc.HomomorphicException;
 import security.paillier.PaillierCipher;
 import security.paillier.PaillierPrivateKey;
 import security.paillier.PaillierPublicKey;
@@ -66,7 +67,7 @@ public class LocalizationResult implements Serializable, Comparable<Localization
         this.plainDistance = null;
     }
     
-    public void add_secret_coordinates(PaillierPublicKey pk)
+    public void add_secret_coordinates(PaillierPublicKey pk) throws HomomorphicException
     {
     	// Encrypt Coordinates
     	encryptedCoordinates[0] = PaillierCipher.encrypt(coordinates[0].longValue(), pk);
@@ -91,8 +92,8 @@ public class LocalizationResult implements Serializable, Comparable<Localization
 	public void add_secret_coordinates(ElGamalPublicKey pk)
 	{
     	// Encrypt Coordinates
-		this.e_xy[0] = ElGamalCipher.encrypt(pk, this.coordinates[0].longValue());
-		this.e_xy[1] = ElGamalCipher.encrypt(pk, this.coordinates[1].longValue());
+		this.e_xy[0] = ElGamalCipher.encrypt(this.coordinates[0].longValue(), pk);
+		this.e_xy[1] = ElGamalCipher.encrypt(this.coordinates[1].longValue(), pk);
     	
     	// The coordinate stored in plain text get nullified
 		this.coordinates[0] = null;
@@ -127,7 +128,7 @@ public class LocalizationResult implements Serializable, Comparable<Localization
 	}
 	
 	// Used to decrypt, if DMA, just divide by distance as well!
-	public void decrypt_all(PaillierPrivateKey sk)
+	public void decrypt_all(PaillierPrivateKey sk) throws HomomorphicException
 	{
 		this.plainDistance = PaillierCipher.decrypt(encryptedDistance, sk).longValue();
 		if(matches != null)
@@ -139,7 +140,7 @@ public class LocalizationResult implements Serializable, Comparable<Localization
 	// Used to decrypt, if DMA, just divide by distance as well!
 	public void decrypt_all(DGKPrivateKey sk)
 	{
-		this.plainDistance = DGKOperations.decrypt(sk, this.encryptedDistance);
+		this.plainDistance = DGKOperations.decrypt(this.encryptedDistance, sk);
 		if(this.matches != null)
 		{
 			this.plainDistance = plainDistance/matches;
@@ -151,7 +152,7 @@ public class LocalizationResult implements Serializable, Comparable<Localization
 	{
 		try
 		{
-			plainDistance = ElGamalCipher.decrypt(sk, e_d).longValue();
+			plainDistance = ElGamalCipher.decrypt(e_d, sk).longValue();
 		}
 		catch(IllegalArgumentException e)
 		{

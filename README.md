@@ -1,38 +1,41 @@
 # Security of Smart Things REU 2017  
+[![Build Status](https://travis-ci.com/AndrewQuijano/SSTREU2017.svg?branch=master)](https://travis-ci.com/AndrewQuijano/SSTREU2017)  
+
 This repository contains all the code used to complete the Security of Smart Things REU project of privacy preserving indoor localization.
 
-1- REUServer directory contains all the Java code running on the Fingerprint Server
-2- REU2017 contains the Android Client Side Code
+* REUServer directory contains all the Java code running on the Fingerprint Server  
+* REU2017 contains the Android Client Side Code
 
-This program requires the MySQL Driver to communicate with FingerPrint server, found here:  
-https://dev.mysql.com/downloads/connector/j/
+This program requires the MySQL Driver to communicate with FingerPrint server, 
+found [here](https://dev.mysql.com/downloads/connector/j/)
 
-The JAR file containing all the homomorphic encryption schemes can be located at the following repository and with its documentation:  
-https://github.com/AndrewQuijano/Homomorphic_Encryption.git  
+The JAR file containing all the homomorphic encryption schemes can be located at the following repository 
+and with its [documentation](https://github.com/AndrewQuijano/Homomorphic_Encryption.git)
 
-## Installation
+# Installation
 
-** Server Installation
+## Server Installation
 The Java code was written using an Eclipse project. Upon downloading the repository import the project located in REUServer folder.
 
 You can either create a Runnable Jar file to run the server or run it from Eclipse.
 If you are in a Linux environment you can run the **compile.sh**
 
-** Android Installation
+## Android Installation
 Please note the Android installation has only been tested on Samsung Galaxy 3. But it should work with all other Android devices.
 
-Upon downloading the repository, open the REU2017 folder using Android Studio. Follow the instructions here on how to load an application onto your phone:
-https://developer.android.com/training/basics/firstapp/running-app
+Upon downloading the repository, open the REU2017 folder using Android Studio. 
+Follow the instructions here on how to load an application 
+onto your [phone](https://developer.android.com/training/basics/firstapp/running-app).
 
-## Usage
+# Usage
 
-**Server set up**  
-Please place your MySQL server login crendetials on the empty login.properties file
+## Server set-up
+Please place your MySQL server login credentials on the empty login.properties file
 ./REUServer/src/Localization/login.properties
 
 Please note you should format it as follows:  
-username=<username>  
-password=<password>  
+username=|username|  
+password=|password|  
 
 Note: Upon initialization, it will expect MySQL to be running! If it isn't the server will not turn on. 
 
@@ -60,8 +63,8 @@ Upon each iteration of the shell, it will update you on:
 - Number of fingerprints of each floor map
 - Current value of K, for MCA/DMA (default set to 2). Currently, this is hard set as I fail to see the benefit in changing this value.
 
-**Phone setup**  
-This is the ![Main Menu](images/main-menu.png?raw=true)
+##Phone setup 
+This is the ![Main Menu](https://github.com/AndrewQuijano/SSTREU2017/blob/master/images/main_menu.png)
 
 - Reset: Delete the Lookup table on the server
 - Undo: Delete the last scan of Access Points/Wi-Fi signals
@@ -69,21 +72,27 @@ This is the ![Main Menu](images/main-menu.png?raw=true)
 - Process DB: Create lookup tables based on the training data
 - Scan: TO BE UPDATED. Update server of new maps
 - Localize: Open up new menu, and select which floor map you want to find your location in.
-- Localization Scheme: On the bottom right, you can select a combination of server/client side, homormorphic encryption scheme, and localization algorithm.
+- Localization Scheme: On the bottom right, you can select a combination of server/client side, homomorphic encryption scheme, and localization algorithm.
 
-**Training Workflow**
+## Training Workflow
 
-**Localization Workflow**
+## Localization Workflow
 
 ## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Pull requests are welcome. 
+For major changes, please open an issue first to discuss what you would like to change.
 
 ## Authors and acknowledgment
 Code Author: Andrew Quijano
 
-A. Quijano and K. Akkaya, "Server-Side Fingerprint-Based Indoor Localization Using Encrypted Sorting," 2019 IEEE 16th International Conference on Mobile Ad Hoc and Sensor Systems Workshops (MASSW), Monterey, CA, USA, 2019, pp. 53-57, doi: 10.1109/MASSW.2019.00017.https://arxiv.org/abs/2008.11612
+A. Quijano and K. Akkaya, ["Server-Side Fingerprint-Based Indoor Localization Using Encrypted Sorting,"](https://arxiv.org/abs/2008.11612) 
+2019 IEEE 16th International Conference on Mobile Ad Hoc and Sensor Systems Workshops (MASSW), Monterey, CA, USA, 2019, 
+pp. 53-57, doi: 10.1109/MASSW.2019.00017
 
-P. Armengol, R. Tobkes, K. Akkaya, B. S. Çiftler and I. Güvenç, "Efficient Privacy-Preserving Fingerprint-Based Indoor Localization Using Crowdsourcing," 2015 IEEE 12th International Conference on Mobile Ad Hoc and Sensor Systems, Dallas, TX, 2015, pp. 549-554, doi: 10.1109/MASS.2015.76.
+P. Armengol, R. Tobkes, K. Akkaya, B. S. ï¿½iftler and I. Gï¿½venï¿½, 
+"Efficient Privacy-Preserving Fingerprint-Based Indoor Localization Using Crowdsourcing," 
+2015 IEEE 12th International Conference on Mobile Ad Hoc and Sensor Systems, Dallas, TX, 2015, pp. 549-554, 
+doi: 10.1109/MASS.2015.76.
 
 The work to create this repository was initially funded by the US NSF REU Site at FIU under the grant number REU CNS-1461119.
 
@@ -91,9 +100,12 @@ The work to create this repository was initially funded by the US NSF REU Site a
 [MIT](https://choosealicense.com/licenses/mit/)
 
 ## Project status
-The project is functional at its current state. However some optimizations do need to made for ease of use. This would only work best if I can reobtain access to Broadway to test on multiple floors/add new floors as needed.
+The project is functional at its current state. However, some optimizations 
+do need to made for ease of use. 
+This would only work best if I can re-obtain access to Broadway to 
+test on multiple floors/add new floors as needed.
 
 Also, there are a few things I want to upgrade:
-- Steamline the process of the client uploading/receiving floor maps.
+- Streamline the process of the client uploading/receiving floor maps.
 - See how to allow the client to set the value **k** for localizations.
 - I will provide screenshots on the Localization/Training Phase later this week.
