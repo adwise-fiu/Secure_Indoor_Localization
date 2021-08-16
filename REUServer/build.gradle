@@ -28,6 +28,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     
     // Add JAR Files
-    implementation files('src/main/java/lib/crypto.jar')
-    implementation files('src/main/java/lib/mysql-connector.jar')
+    implementation files('lib/crypto.jar')
+    implementation files('lib/mysql-connector.jar')
 }
