@@ -1,6 +1,6 @@
 # Security of Smart Things REU 2017  
 [![Build Status](https://travis-ci.com/AndrewQuijano/SSTREU2017.svg?branch=master)](https://travis-ci.com/AndrewQuijano/SSTREU2017)  
-
+[![codecov](https://codecov.io/gh/AndrewQuijano/SSTREU2017/branch/master/graph/badge.svg?token=E7ZKFWTE3D)](https://codecov.io/gh/AndrewQuijano/SSTREU2017)  
 This repository contains all the code used to complete the Security of Smart Things REU project of privacy preserving indoor localization.
 
 * REUServer directory contains all the Java code running on the Fingerprint Server  
