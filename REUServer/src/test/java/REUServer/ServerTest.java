@@ -1,4 +1,4 @@
-package REU_Server;
+package REUServer;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
