@@ -9,7 +9,6 @@ import java.util.Collections;
 import Localization.structs.LocalizationResult;
 import Localization.structs.SendLocalizationData;
 import security.DGK.DGKOperations;
-//import security.DGK.DGKPrivateKey;
 import security.DGK.DGKPublicKey;
 import security.misc.HomomorphicException;
 import security.socialistmillionaire.alice;
