@@ -8,15 +8,6 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-/*
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-*/
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -25,8 +16,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Scanner;
-
-import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
 
 /*
 Code for implementing Multi-Thread Server is from:
@@ -144,11 +133,6 @@ public class server implements Runnable
 					System.exit(1);					
 				}
 			}
-		}
-		catch(CommunicationsException e)
-		{
-			System.out.println("You don't have MySQL Running...Do you?");
-			System.exit(1);
 		}
 		catch (ClassNotFoundException | SQLException e)
 		{
