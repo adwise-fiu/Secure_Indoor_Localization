@@ -1,9 +1,9 @@
 #!/bin/bash
 clear
 # Only run from Root!
-javac -cp ".:./lib/crypto.jar:./lib/mysql-connector.jar" -sourcepath "./src" ./src/Localization/server.java 
+javac -cp "./src/main/java/:./lib/crypto.jar:./lib/mysql-connector.jar" -sourcepath "./src/main/java/" ./src/main/java/Localization/server.java
 
 echo "Java compilation complete!"
 
 # Run the program
-java -cp ".:./lib/crypto.jar:./lib/mysql-connector.jar:./bin" Localization.server
+java -cp "./src/main/java/:./lib/crypto.jar:./lib/mysql-connector.jar" Localization.server

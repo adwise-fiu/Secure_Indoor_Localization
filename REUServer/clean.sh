@@ -1,4 +1,4 @@
 #!/bin/bash
 
-rm -rf ./src/Localization/*.class
-rm -rf ./src/Localization/structs/*.class
+rm -rf ./src/main/java/Localization/*.class
+rm -rf ./src/main/java/Localization/structs/*.class
