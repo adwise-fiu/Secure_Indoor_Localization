@@ -1,0 +1,78 @@
+name: Publish JAR file to release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  create_release:
+    runs-on: ubuntu-latest
+    outputs:
+      v-version: ${{ steps.version.outputs.v-version }}
+    steps:
+      # Can be major, minor, or patch, Update environment variable INCREMENT_TYPE in GitHub Actions Settings
+      - name: Set increment type from environment variable
+        run: |
+          if [ -z "${{ secrets.INCREMENT_TYPE }}" ]; then
+            echo "increment=patch" >> $GITHUB_ENV
+          else
+            echo "increment=${{ secrets.INCREMENT_TYPE }}" >> $GITHUB_ENV
+          fi
+      - name: Get next version
+        uses: reecetech/version-increment@2023.10.2
+        id: version
+        with:
+          release_branch: main
+          use_api: true
+          increment: ${{ env.increment }}
+
+  upload_release:
+    needs: [ create_release ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project sources
+        uses: actions/checkout@v4
+
+      - name: Create JAR file
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'oracle'
+          java-version: '17'
+          cache: 'gradle'
+      # Remove the leading v from the version string and set it as an environment variable
+      - run: |
+          VERSION=${{ needs.create_release.outputs.v-version }}
+          VERSION=${VERSION#v}
+          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
+
+      # https://central.sonatype.org/publish/publish-portal-api/
+      # https://central.sonatype.com/api-doc
+      - name: Create Bundle.zip file and use Publisher API
+        run: |
+          ./gradlew publishToMavenLocal
+          bash create_bundle.sh $VERSION
+          curl --request POST \
+            --verbose \
+            --header "Authorization: Bearer ${BEARER_TOKEN}" \
+            --form bundle=@bundle.zip \
+            --form publishingType=AUTOMATIC \
+            https://central.sonatype.com/api/v1/publisher/upload \
+            --fail --write-out "%{http_code}" --output /dev/null
+          if [ $? -ne 0 ]; then
+            echo "Error: curl did not return 201. Failing the step."
+            exit 1
+          fi
+        env:
+          BEARER_TOKEN: ${{ secrets.BEARER_TOKEN }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          VERSION: ${{ env.RELEASE_VERSION }}
+
+      # You want to use the 'ciphercraft-<version>.jar' for your uses
+      - name: Release the JAR file
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.create_release.outputs.v-version }}
+          files: build/libs/ciphercraft*.jar
+          token: ${{ secrets.GITHUB_TOKEN }}
