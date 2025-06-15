@@ -9,6 +9,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -27,14 +28,12 @@ import Localization.structs.SendTrainingData;
 import static android.graphics.Color.BLUE;
 import static ui.MainActivity.getDeviceName;
 
-public class TrainActivity extends AppCompatActivity implements Runnable
-{
+public class TrainActivity extends AppCompatActivity implements Runnable {
     private Bitmap mutableBitmap;
     private Canvas drawFlags;
     protected WifiReceiver wifi_wrapper;
     protected ImageView imageView;
     protected PhotoViewAttacher my_attach;
-
     //"final" variables
     private int BitMap_Height;
     private int BitMap_Width;
@@ -55,8 +54,7 @@ public class TrainActivity extends AppCompatActivity implements Runnable
 
     private boolean scan_complete = false;
 
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.train_activity);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
@@ -73,14 +71,8 @@ public class TrainActivity extends AppCompatActivity implements Runnable
         my_attach = new PhotoViewAttacher(imageView);
         my_attach.setMaximumScale((float)7.0);
 
-        imageView.post(new Runnable()
-        {
-            public void run()
-            {
-                imageView.setImageBitmap(Bitmap.createScaledBitmap(KeyMaster.map, imageView.getWidth(),
-                        imageView.getHeight(), false));
-            }
-        });
+        imageView.post(() -> imageView.setImageBitmap(Bitmap.createScaledBitmap(KeyMaster.map, imageView.getWidth(),
+                imageView.getHeight(), false)));
         BitmapDrawable draw_TrainingPt = (BitmapDrawable) imageView.getDrawable();
         mutableBitmap = draw_TrainingPt.getBitmap().copy(Bitmap.Config.ARGB_8888, true);
         drawFlags = new Canvas(mutableBitmap);
@@ -93,7 +85,7 @@ public class TrainActivity extends AppCompatActivity implements Runnable
         BitMap_Height = mutableBitmap.getHeight();
         OS = System.getProperty("os.version");       // OS version
         DEVICE = android.os.Build.DEVICE;            // Device
-        MODEL = getDeviceName();                     // Manufactuer/Model
+        MODEL = getDeviceName();                     // Manufacturer/Model
         PRODUCT = android.os.Build.PRODUCT;          // Product
 
         // Listen for new training points...
@@ -105,25 +97,19 @@ public class TrainActivity extends AppCompatActivity implements Runnable
     }
 
     // Show Progress bar, displaying process to finish Training
-    private class scan implements View.OnClickListener
-    {
-        public void onClick(View v)
-        {
+    private class scan implements View.OnClickListener {
+        public void onClick(View v) {
             loading.setVisibility(View.VISIBLE);
-            if(wifi_wrapper.startScan())
-            {
+            if(wifi_wrapper.startScan()) {
                 scan_complete = true;
                 Toast.makeText(getApplicationContext(), "Got reading from Wifi Manager", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    private class train implements OnPhotoTapListener
-    {
-        public void onPhotoTap(ImageView view, float x, float y)
-        {
-            if(!scan_complete)
-            {
+    private class train implements OnPhotoTapListener {
+        public void onPhotoTap(ImageView view, float x, float y) {
+            if(!scan_complete) {
                 Toast.makeText(getApplicationContext(), "Please Scan First!", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -144,26 +130,18 @@ public class TrainActivity extends AppCompatActivity implements Runnable
             // FORCE A WAIT UNTIL SERVER GOT THE DATA!
             (t = new Thread(new ClientThread(new SendTrainingData(KeyMaster.map_name, (double) drawX, (double) drawY,
                     wifi_wrapper.WifiAP, wifi_wrapper.WifiRSS, OS, DEVICE, MODEL, PRODUCT)))).start();
-            try
-            {
+            try {
                 t.join();
             }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
+            catch (InterruptedException e) {
+                Log.e(this.getClass().getName(), "Thread Interrupted", e);
             }
 
             // Draw the Training Flag on completion!
             drawFlags.drawBitmap(trained_flag, drawX - (float)(flag_Width/2), drawY - (float)(flag_Height/2), new Paint(BLUE));
 
             // Update map
-            imageView.post(new Runnable()
-            {
-                public void run()
-                {
-                    imageView.setImageBitmap(mutableBitmap);
-                }
-            });
+            imageView.post(() -> imageView.setImageBitmap(mutableBitmap));
             my_attach.update();
             Toast.makeText(getApplicationContext(), "Carry on Training!", Toast.LENGTH_SHORT).show();
             scan_complete = false;
@@ -180,51 +158,33 @@ public class TrainActivity extends AppCompatActivity implements Runnable
         flag_Width = trained_flag.getWidth();
         flag_Height = trained_flag.getHeight();
 
-        try
-        {
+        try {
             get_flags.join();
-            for (int i = 0; i < existingX.length; i++)
-            {
+            for (int i = 0; i < existingX.length; i++) {
                 float drawX = existingX[i].floatValue();
                 float drawY = existingY[i].floatValue();
 
                 //Draw the Training Flag, the image is centered on where it is pressed
                 drawFlags.drawBitmap(trained_flag, drawX - (float)(flag_Width/2), drawY - (float)(flag_Height/2), new Paint(BLUE));
             }
-            imageView.post(new Runnable()
-            {
-                public void run()
-                {
-                    imageView.setImageBitmap(mutableBitmap);
-                }
-            });
+            imageView.post(() -> imageView.setImageBitmap(mutableBitmap));
             my_attach.update();
         }
-        catch (NullPointerException e)
-        {
-            e.printStackTrace();
-            runOnUiThread(new Runnable()
-            {
-                public void run()
-                {
-                    Toast.makeText(getApplicationContext(), "Error Loading Training Points?", Toast.LENGTH_SHORT).show();
-                }
-            });
+        catch (NullPointerException e) {
+            Log.e(this.getClass().getName(), "NullPointer", e);
+            runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Error Loading Training Points?", Toast.LENGTH_SHORT).show());
         }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
+        catch (InterruptedException e) {
+            Log.e(this.getClass().getName(), "Thread Interrupted", e);
         }
     }
 
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         wifi_wrapper.registerReceiver(this);
     }
 
-    protected void onPause()
-    {
+    protected void onPause() {
         super.onPause();
         wifi_wrapper.unregisterReceiver(this);
     }

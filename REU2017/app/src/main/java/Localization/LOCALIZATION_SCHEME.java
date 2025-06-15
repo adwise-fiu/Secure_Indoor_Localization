@@ -1,6 +1,5 @@
 package Localization;
-public enum LOCALIZATION_SCHEME
-{
+public enum LOCALIZATION_SCHEME {
 	UNDO(-5),
 	RESET(-4),
 	GETXY(-3),
@@ -27,47 +26,27 @@ public enum LOCALIZATION_SCHEME
 		this.value = value;
 	}
 	
-	public static LOCALIZATION_SCHEME from_int(Integer x)
-	{
-		switch(x)
-		{
-			case -5:
-				return UNDO;
-			case -4:
-				return RESET;
-			case -3:
-				return GETXY;
-			case -2:
-				return PROCESS;
-			case -1:
-				return GET_COLUMN;
-			case 0:
-				return TRAIN;
-			case 1:
-				return PLAIN_MIN;
-			case 2:
-				return DGK_MIN;
-			case 3:
-				return PAILLIER_MIN;
-			case 4:
-				return PLAIN_MCA;
-			case 5:
-				return DGK_MCA;
-			case 6:
-				return PAILLIER_MCA;
-			case 7:
-				return PLAIN_DMA;
-			case 8:
-				return DGK_DMA;
-			case 9:
-				return PAILLIER_DMA;
-			case 10:
-				return EL_GAMAL_MIN;
-			case 11:
-				return EL_GAMAL_MCA;
-			case 12:
-				return EL_GAMAL_DMA;
-		}
-		return null;
-	}
+	public static LOCALIZATION_SCHEME from_int(Integer x) {
+        return switch (x) {
+            case -5 -> UNDO;
+            case -4 -> RESET;
+            case -3 -> GETXY;
+            case -2 -> PROCESS;
+            case -1 -> GET_COLUMN;
+            case 0 -> TRAIN;
+            case 1 -> PLAIN_MIN;
+            case 2 -> DGK_MIN;
+            case 3 -> PAILLIER_MIN;
+            case 4 -> PLAIN_MCA;
+            case 5 -> DGK_MCA;
+            case 6 -> PAILLIER_MCA;
+            case 7 -> PLAIN_DMA;
+            case 8 -> DGK_DMA;
+            case 9 -> PAILLIER_DMA;
+            case 10 -> EL_GAMAL_MIN;
+            case 11 -> EL_GAMAL_MCA;
+            case 12 -> EL_GAMAL_DMA;
+            default -> null;
+        };
+    }
 }

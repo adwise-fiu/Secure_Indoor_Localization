@@ -13,23 +13,21 @@ import java.util.ArrayList;
 import Localization.structs.SendLocalizationData;
 import Localization.structs.LocalizationResult;
 import Localization.structs.SendTrainingData;
-import security.elgamal.ElGamalCipher;
-import security.elgamal.ElGamal_Ciphertext;
+import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
 import ui.MainActivity;
 import ui.TrainActivity;
 
-import static Localization.KeyMaster.e_sk;
-import static Localization.KeyMaster.e_pk;
+
 import static ui.MainActivity.SQLDatabase;
 import static ui.MainActivity.portNumber;
 
-import security.DGK.DGKOperations;
-import security.DGK.DGKPrivateKey;
-import security.DGK.DGKPublicKey;
-import security.paillier.PaillierCipher;
-import security.paillier.PaillierPrivateKey;
-import security.paillier.PaillierPublicKey;
-import security.socialistmillionaire.bob;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKOperations;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPrivateKey;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierCipher;
+import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPrivateKey;
+import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.bob;
 
 public class ClientThread implements Runnable
 {
@@ -48,17 +46,16 @@ public class ClientThread implements Runnable
     private SendLocalizationData transmission;  //For Encrypted Paillier/DGK Transmission
 
     // Have all Keys in case comparison is needed!!
-    private DGKPublicKey pubKey = KeyMaster.DGKpk;
-    private DGKPrivateKey privKey = KeyMaster.DGKsk;
-    private PaillierPublicKey pk = KeyMaster.pk;
-    private PaillierPrivateKey sk = KeyMaster.sk;
+    private final DGKPublicKey pubKey = KeyMaster.DGKpk;
+    private final DGKPrivateKey privKey = KeyMaster.DGKsk;
+    private final PaillierPublicKey pk = KeyMaster.pk;
+    private final PaillierPrivateKey sk = KeyMaster.sk;
 
-    private LOCALIZATION_SCHEME LOCALIZATIONSCHEME;
+    private final LOCALIZATION_SCHEME LOCALIZATIONSCHEME;
     private Socket clientSocket;
 
     // Get all currently trained points
-    public ClientThread(TrainActivity trainActivity)
-    {
+    public ClientThread(TrainActivity trainActivity) {
         this.LOCALIZATIONSCHEME = LOCALIZATION_SCHEME.from_int(-3);
         this.trainMe = trainActivity;
     }
@@ -73,22 +70,19 @@ public class ClientThread implements Runnable
         this.LOCALIZATIONSCHEME = LOCALIZATION_SCHEME.from_int(-2);
     }
 
-    ClientThread(background needMACs)
-    {
+    ClientThread(background needMACs) {
         this.LOCALIZATIONSCHEME = LOCALIZATION_SCHEME.from_int(-1);
         this.getColumns = needMACs;
     }
 
     // Send Training Data
-    public ClientThread (SendTrainingData in)
-    {
+    public ClientThread (SendTrainingData in) {
         this.LOCALIZATIONSCHEME = LOCALIZATION_SCHEME.from_int(0);
         this.sendTraining = in;
     }
 
     // For Localization
-    ClientThread (SendLocalizationData input, background search, int local)
-    {
+    ClientThread (SendLocalizationData input, background search, int local) {
         this.findMe = search;
         this.transmission = input;
         this.LOCALIZATIONSCHEME = LOCALIZATION_SCHEME.from_int(local);
@@ -96,8 +90,7 @@ public class ClientThread implements Runnable
 
     //===============================SOCKET METHODS/RUN THREAD============================================
 
-    public void run ()
-    {
+    public void run () {
         Object in;
         try
         {
@@ -107,8 +100,7 @@ public class ClientThread implements Runnable
             this.fromServer = new ObjectInputStream(clientSocket.getInputStream());
             Log.d(TAG, "I/O Streams set!");
 
-            switch(LOCALIZATIONSCHEME)
-            {
+            switch(LOCALIZATIONSCHEME) {
                 case GETXY:
                     toServer.writeObject("Acquire all current training points");
                     toServer.flush();
@@ -118,11 +110,9 @@ public class ClientThread implements Runnable
                     toServer.flush();
 
                     // Following this patch the server needs to know the Phone as well
-                    if(MainActivity.multi_phone)
-                    {
+                    if(MainActivity.multi_phone) {
                         String [] phone_data = MainActivity.getPhoneData();
-                        for (String s: phone_data)
-                        {
+                        for (String s: phone_data) {
                             Log.d(TAG, s);
                         }
                         toServer.writeObject(phone_data);
@@ -130,22 +120,18 @@ public class ClientThread implements Runnable
                     }
 
                     in = fromServer.readObject();
-                    if(in instanceof Double [])
-                    {
+                    if(in instanceof Double []) {
                         trainMe.existingX = (Double []) in;
                     }
-                    else
-                    {
+                    else {
                         Log.d(TAG, "Data Type: -3, DIDN'T GET DOUBLE X []");
                     }
 
                     in = fromServer.readObject();
-                    if(in instanceof Double[])
-                    {
+                    if(in instanceof Double[]) {
                         trainMe.existingY = (Double []) in;
                     }
-                    else
-                    {
+                    else {
                         Log.d(TAG, "Data Type: -3, DIDN'T GET DOUBLE Y []");
                     }
                     break;
@@ -157,13 +143,11 @@ public class ClientThread implements Runnable
                 case PROCESS:
                     toServer.writeObject("Process LUT");
                     toServer.flush();
-                    if (fromServer.readBoolean())
-                    {
+                    if (fromServer.readBoolean()) {
                         Log.d(TAG, "Successfully Processed Lookup Table!");
                         MainActivity.process_good.show();
                     }
-                    else
-                    {
+                    else {
                         Log.d(TAG, "Error Processing Lookup Tables!");
                         MainActivity.process_bad.show();
                     }
@@ -176,12 +160,10 @@ public class ClientThread implements Runnable
                     toServer.flush();
 
                     in = fromServer.readObject();
-                    if (in instanceof String [])
-                    {
+                    if (in instanceof String []) {
                         getColumns.CommonMAC = (String[]) in;
                     }
-                    else
-                    {
+                    else {
                         Log.d(TAG, "INVALID COLUMN RECEIVED! " + in.getClass());
                     }
                     break;
@@ -189,12 +171,10 @@ public class ClientThread implements Runnable
                     toServer.writeObject(sendTraining);
                     toServer.flush();
                     //Wait to get confirmation that the data successfully inserted...
-                    if (fromServer.readBoolean())
-                    {
+                    if (fromServer.readBoolean()) {
                         MainActivity.good_train.show();
                     }
-                    else
-                    {
+                    else {
                         MainActivity.bad_train.show();
                     }
                     break;
@@ -218,26 +198,20 @@ public class ClientThread implements Runnable
                     break;
             }
         }
-        catch (ClassCastException cce)
-        {
-            cce.printStackTrace();
+        catch (ClassCastException | ClassNotFoundException cce) {
+            Log.e(TAG, "Full exception details: ", cce);
         }
-        catch (ClassNotFoundException cnf)
-        {
-            cnf.printStackTrace();
-        }
-        catch (IOException ioe)
-        {
+        catch (IOException ioe) {
             Log.d(TAG,"CHECK IF YOU ARE CONNECTED TO WI-FI (Most Common Issue)");
             Log.d(TAG, "MAKE SURE YOU HAVE RIGHT IP ADDRESS!!!");
             Log.d(TAG, "IF YOU ARE STILL TIMING OUT, IT IS YOUR FIREWALL!");
-            ioe.printStackTrace();
-            //This can be caused if the phone is too far from 3rd floor of EC.
+            Log.e(TAG, "Full exception details: ", ioe);
+        } catch (HomomorphicException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private void localize() throws IOException, ClassNotFoundException
-    {
+    private void localize() throws IOException, ClassNotFoundException, HomomorphicException {
         bob andrew;
         BigInteger [] location;
         BigInteger divisor;
@@ -247,46 +221,29 @@ public class ClientThread implements Runnable
         toServer.flush();
 
         // Server will want to have an Alice/Bob instance ready just in case
-        if(e_pk == null || e_sk == null)
-        {
-            andrew = new bob(clientSocket, new KeyPair(pk, sk), new KeyPair(pubKey, privKey));
-        }
-        else
-        {
-            andrew = new bob(clientSocket, new KeyPair(pk, sk), new KeyPair(pubKey, privKey),
-                    new KeyPair(e_pk, e_sk));
-        }
-        switch(LOCALIZATIONSCHEME)
-        {
+        andrew = new bob(new KeyPair(pk, sk), new KeyPair(pubKey, privKey));
+        andrew.set_socket(clientSocket);
+
+        switch(LOCALIZATIONSCHEME) {
             case PLAIN_MIN:
             case PLAIN_MCA:
             case PLAIN_DMA:
                 in = fromServer.readObject();
-                if(transmission.isREU2017)
-                {
-                    if (in instanceof Double[])
-                    {
+                if(transmission.isREU2017) {
+                    if (in instanceof Double[]) {
                         findMe.coordinates = (Double[]) in;
-                    }
-                    else
-                    {
+                    } else {
                         Log.d(TAG, "INVALID OBJECT: " + in.getClass());
                     }
-                }
-                else
-                {
-                    if (in instanceof ArrayList<?>)
-                    {
-                        for (Object o: (ArrayList<?>) in)
-                        {
-                            if(o instanceof LocalizationResult)
-                            {
+                } else {
+                    if (in instanceof ArrayList<?>) {
+                        for (Object o: (ArrayList<?>) in) {
+                            if(o instanceof LocalizationResult) {
                                 findMe.fromServer.add((LocalizationResult) o);
                             }
                         }
                     }
-                    else
-                    {
+                    else {
                         Log.d(TAG, "ERROR WRONG OBJECT IN PLAINTEXT 2015/2017! " + in.getClass());
                     }
                 }
@@ -295,71 +252,56 @@ public class ClientThread implements Runnable
             case DGK_MIN:
             case DGK_MCA:
             case DGK_DMA:
-
-                if(transmission.isREU2017)
-                {
+                if(transmission.isREU2017) {
                     // bob is spawned
                     andrew.setDGKMode(true);
                     // Sort to get the Minimum value OR K-Minimum
-                    andrew.run();
+                    andrew.sort();
                     in = fromServer.readObject();
-                    if (LOCALIZATIONSCHEME == LOCALIZATION_SCHEME.DGK_MIN)
-                    {
-                        if (in instanceof BigInteger[])
-                        {
+                    if (LOCALIZATIONSCHEME == LOCALIZATION_SCHEME.DGK_MIN) {
+                        if (in instanceof BigInteger[]) {
                             location = (BigInteger []) in;
-                            findMe.coordinates[0] = (double) DGKOperations.decrypt(privKey, location[0]);
-                            findMe.coordinates[1] = (double) DGKOperations.decrypt(privKey, location[1]);
+                            findMe.coordinates[0] = (double) DGKOperations.decrypt(location[0], privKey);
+                            findMe.coordinates[1] = (double) DGKOperations.decrypt(location[1], privKey);
                         }
-                        else
-                        {
+                        else {
                             Log.d(TAG, "INVALID OBJECT IN DGK_MIN: " + in.getClass());
                         }
                     }
-                    else
-                    {
+                    else {
                         // If DMA, divide all matches
-                        divisor = DGKOperations.decrypt((BigInteger) in, privKey);
+                        divisor = BigInteger.valueOf(DGKOperations.decrypt((BigInteger) in, privKey));
                         toServer.writeObject(divisor);
                         toServer.flush();
 
                         // Bob must stay alive to divide...
-                        for (int i = 0; i < MainActivity.k; i++)
-                        {
+                        for (int i = 0; i < MainActivity.k; i++) {
                             andrew.division(divisor.longValue() * (MainActivity.k - 1));
                         }
 
                         // Now you can get your location
                         in = fromServer.readObject();
-                        if (in instanceof BigInteger[])
-                        {
+                        if (in instanceof BigInteger[]) {
                             location = (BigInteger[]) in;
                             // Divide by the factor of both server/phone
-                            findMe.coordinates[0] = (double) DGKOperations.decrypt(privKey, location[0]);
-                            findMe.coordinates[1] = (double) DGKOperations.decrypt(privKey, location[1]);
+                            findMe.coordinates[0] = (double) DGKOperations.decrypt(location[0], privKey);
+                            findMe.coordinates[1] = (double) DGKOperations.decrypt(location[1], privKey);
                             findMe.coordinates[0] = findMe.coordinates[0]/MainActivity.FACTOR;
                             findMe.coordinates[1] = findMe.coordinates[0]/MainActivity.FACTOR;
                         }
                     }
-                }
-                else
-                {
+                } else {
                     // REU 2015 DGK Code
                     in = fromServer.readObject();
                     Log.d(TAG, "DGK REU 2015");
-                    if (in instanceof ArrayList<?>)
-                    {
-                        for (Object o: (ArrayList<?>) in)
-                        {
+                    if (in instanceof ArrayList<?>) {
+                        for (Object o: (ArrayList<?>) in) {
                             Log.d(TAG, "OBJECT FOUND");
-                            if(o instanceof LocalizationResult)
-                            {
+                            if(o instanceof LocalizationResult) {
                                 findMe.fromServer.add((LocalizationResult) o);
                             }
                         }
-                    }
-                    else
-                    {
+                    } else {
                         Log.d(TAG, "Output Loop: INVALID OBJECT SENT: " + in.getClass());
                     }
                 }
@@ -367,41 +309,32 @@ public class ClientThread implements Runnable
             case PAILLIER_MIN:
             case PAILLIER_MCA:
             case PAILLIER_DMA:
-
-                if(transmission.isREU2017)
-                {
+                if(transmission.isREU2017) {
                     andrew.setDGKMode(false);
-                    andrew.run();
+                    andrew.sort();
                     in = fromServer.readObject();
-                    if(LOCALIZATIONSCHEME == LOCALIZATION_SCHEME.PAILLIER_MIN)
-                    {
-                        if (in instanceof BigInteger [])
-                        {
+                    if(LOCALIZATIONSCHEME == LOCALIZATION_SCHEME.PAILLIER_MIN) {
+                        if (in instanceof BigInteger []) {
                             // Will always be DGK encrypted!
                             location = (BigInteger[]) in;
                             findMe.coordinates[0] = PaillierCipher.decrypt(location[0], sk).doubleValue();
                             findMe.coordinates[1] = PaillierCipher.decrypt(location[1], sk).doubleValue();
-                        }
-                        else
-                        {
+                        } else {
                             Log.d(TAG, "ERROR, INVALID OBJECT " + in.getClass());
                         }
                     }
-                    else
-                    {
+                    else {
                         divisor = PaillierCipher.decrypt((BigInteger) in, sk);
                         toServer.writeObject(divisor);
                         toServer.flush();
 
-                        for (int i = 0; i < MainActivity.k; i++)
-                        {
+                        for (int i = 0; i < MainActivity.k; i++) {
                             andrew.division(divisor.longValue() * (MainActivity.k - 1));
                         }
 
                         // Now you can get your location
                         in = fromServer.readObject();
-                        if (in instanceof BigInteger[])
-                        {
+                        if (in instanceof BigInteger[]) {
                             location = (BigInteger[]) in;
                             // Decrypt and Divide by the factor of both server/phone
                             findMe.coordinates[0] = PaillierCipher.decrypt(location[0], sk).doubleValue()/MainActivity.FACTOR;
@@ -409,94 +342,18 @@ public class ClientThread implements Runnable
                         }
                     }
                 }
-                else
-                {
+                else {
                     // REU 2015
                     in = fromServer.readObject();
-                    if(in instanceof ArrayList<?>)
-                    {
-                        for (Object o: (ArrayList<?>) in)
-                        {
-                            if(o instanceof LocalizationResult)
-                            {
+                    if(in instanceof ArrayList<?>) {
+                        for (Object o: (ArrayList<?>) in) {
+                            if(o instanceof LocalizationResult) {
                                 findMe.fromServer .add((LocalizationResult) o);
-                            }
-                            else
-                            {
+                            } else {
                                 throw new IllegalArgumentException("EXPECTED LOCALIZATION RESULT");
                             }
                         }
-                    }
-                    else
-                    {
-                        throw new IllegalArgumentException("INVALID OBJECT! " + in.getClass());
-                    }
-                }
-            case EL_GAMAL_MIN:
-            case EL_GAMAL_MCA:
-            case EL_GAMAL_DMA:
-
-                if(transmission.isREU2017)
-                {
-                    // TODO: IF NUMBER IS BIGGER THAN U?
-                    andrew.repeat_ElGamal_Protocol4();
-
-                    in = fromServer.readObject();
-                    if(LOCALIZATIONSCHEME == LOCALIZATION_SCHEME.EL_GAMAL_MIN)
-                    {
-                        if (in instanceof ElGamal_Ciphertext[])
-                        {
-                            ElGamal_Ciphertext [] e_location = (ElGamal_Ciphertext[]) in;
-                            findMe.coordinates[0] = ElGamalCipher.decrypt(e_sk, e_location[0]).doubleValue();
-                            findMe.coordinates[1] = ElGamalCipher.decrypt(e_sk, e_location[1]).doubleValue();
-                        }
-                        else
-                        {
-                            Log.d(TAG, "ERROR, INVALID OBJECT " + in.getClass());
-                        }
-                    }
-                    else
-                    {
-                        divisor = ElGamalCipher.decrypt(e_sk, (ElGamal_Ciphertext) in);
-                        toServer.writeObject(divisor);
-                        toServer.flush();
-
-                        for (int i = 0; i < MainActivity.k; i++)
-                        {
-                            andrew.ElGamal_division(divisor.longValue() * (MainActivity.k - 1));
-                        }
-
-                        // Now you can get your location
-                        in = fromServer.readObject();
-                        if (in instanceof ElGamal_Ciphertext[])
-                        {
-                            ElGamal_Ciphertext [] e_location = (ElGamal_Ciphertext[]) in;
-                            // Decrypt and divide by the factor of both server/phone
-                            findMe.coordinates[0] = ElGamalCipher.decrypt(e_sk, e_location[0]).doubleValue()/MainActivity.FACTOR;
-                            findMe.coordinates[1] = ElGamalCipher.decrypt(e_sk, e_location[1]).doubleValue()/MainActivity.FACTOR;
-                        }
-                    }
-                }
-                else
-                {
-                    // REU 2015
-                    in = fromServer.readObject();
-                    if(in instanceof ArrayList<?>)
-                    {
-                        for (Object o: (ArrayList<?>) in)
-                        {
-                            if(o instanceof LocalizationResult)
-                            {
-                                findMe.fromServer .add((LocalizationResult) o);
-                            }
-                            else
-                            {
-                                throw new IllegalArgumentException("EXPECTED LOCALIZATION RESULT");
-                            }
-                        }
-                    }
-                    else
-                    {
+                    } else {
                         throw new IllegalArgumentException("INVALID OBJECT! " + in.getClass());
                     }
                 }

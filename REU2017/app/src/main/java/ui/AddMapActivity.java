@@ -14,6 +14,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -70,142 +71,90 @@ public class AddMapActivity extends Activity
         public void run()
         {
             byte [] encoded_image;
-            try
-            {
-                Socket ClientSocket = new Socket();
-                ClientSocket.connect(new InetSocketAddress(SQLDatabase, portNumber), TIMEOUT);
+            try {
+                try (Socket ClientSocket = new Socket();) {
+                    ClientSocket.connect(new InetSocketAddress(SQLDatabase, portNumber), TIMEOUT);
 
-                //Prepare I/O Stream
-                ObjectOutputStream toServer = new ObjectOutputStream(ClientSocket.getOutputStream());
-                ObjectInputStream fromServer = new ObjectInputStream(ClientSocket.getInputStream());
-                final String map_name = textTargetUri.getText().toString();
+                    // Prepare I/O Stream
+                    ObjectOutputStream toServer = new ObjectOutputStream(ClientSocket.getOutputStream());
+                    ObjectInputStream fromServer = new ObjectInputStream(ClientSocket.getInputStream());
+                    final String map_name = textTargetUri.getText().toString();
 
-                runOnUiThread(new Runnable()
-                {
-                    public void run()
-                    {
-                        Toast.makeText(getApplicationContext(), "Connected!", Toast.LENGTH_LONG).show();
-                    }
-                });
+                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Connected!", Toast.LENGTH_LONG).show());
 
-                if(map_name.length() == 0)
-                {
-                    toServer.writeObject("Invalid Map Name received, ending now!");
-                    toServer.flush();
-                    runOnUiThread(new Runnable()
-                    {
-                        public void run()
-                        {
-                            Toast.makeText(getApplicationContext(), "Blank Map Name Try Again!", Toast.LENGTH_LONG).show();
-                        }
-                    });
-                    return;
-                }
-
-                if(mode.isChecked())
-                {
-                    if(bitmap != null)
-                    {
-                        encoded_image = encode(bitmap);
-                    }
-                    else
-                    {
-                        toServer.writeObject("Invalid Map received, ending now!");
+                    if(map_name.isEmpty()) {
+                        toServer.writeObject("Invalid Map Name received, ending now!");
                         toServer.flush();
-                        runOnUiThread(new Runnable()
-                        {
-                            public void run()
-                            {
-                                Toast.makeText(getApplicationContext(), "Blank Map! Try Again!", Toast.LENGTH_LONG).show();
-                            }
-                        });
+                        runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Blank Map Name Try Again!", Toast.LENGTH_LONG).show());
                         return;
                     }
 
-                    // SET
-                    toServer.writeObject("SET");
-                    toServer.flush();
+                    if(mode.isChecked()) {
+                        if(bitmap != null) {
+                            encoded_image = encode(bitmap);
+                        }
+                        else {
+                            toServer.writeObject("Invalid Map received, ending now!");
+                            toServer.flush();
+                            runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Blank Map! Try Again!", Toast.LENGTH_LONG).show());
+                            return;
+                        }
 
-                    // Send Image Name
-                    toServer.writeObject(map_name + ".bmp");
-                    toServer.flush();
+                        // SET
+                        toServer.writeObject("SET");
+                        toServer.flush();
 
-                    toServer.writeInt(encoded_image.length);
-                    toServer.flush();
+                        // Send Image Name
+                        toServer.writeObject(map_name + ".bmp");
+                        toServer.flush();
 
-                    // Send Image itself
-                    toServer.write(encoded_image);
-                    toServer.flush();
+                        toServer.writeInt(encoded_image.length);
+                        toServer.flush();
 
-                    // Get confirmation!
-                    if (fromServer.readBoolean())
-                    {
-                        KeyMaster.map = bitmap;
-                        KeyMaster.map_name = map_name;
-                        runOnUiThread(new Runnable()
-                        {
-                            public void run()
-                            {
-                                Toast.makeText(getApplicationContext(), "UPLOAD COMPLETE!", Toast.LENGTH_LONG).show();
-                            }
-                        });
+                        // Send Image itself
+                        toServer.write(encoded_image);
+                        toServer.flush();
+
+                        // Get confirmation!
+                        if (fromServer.readBoolean()) {
+                            KeyMaster.map = bitmap;
+                            KeyMaster.map_name = map_name;
+                            runOnUiThread(() -> Toast.makeText(getApplicationContext(), "UPLOAD COMPLETE!", Toast.LENGTH_LONG).show());
+                        }
+                        else {
+                            runOnUiThread(() -> Toast.makeText(getApplicationContext(), "UPLOAD FAILED!", Toast.LENGTH_LONG).show());
+                        }
                     }
-                    else
-                    {
-                        runOnUiThread(new Runnable()
-                        {
-                            public void run()
-                            {
-                                Toast.makeText(getApplicationContext(), "UPLOAD FAILED!", Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    }
-                }
-                else
-                {
-                    // GET
-                    toServer.writeObject("GET");
-                    toServer.flush();
+                    else {
+                        // GET
+                        toServer.writeObject("GET");
+                        toServer.flush();
 
-                    // Send Image Name
-                    toServer.writeObject(map_name + ".bmp");
-                    toServer.flush();
+                        // Send Image Name
+                        toServer.writeObject(map_name + ".bmp");
+                        toServer.flush();
 
-                    // Get Size
-                    int size = fromServer.readInt();
+                        // Get Size
+                        int size = fromServer.readInt();
 
-                    if (size != 0)
-                    {
-                        // Get image
-                        encoded_image = new byte[size];
-                        fromServer.readFully(encoded_image);
-                        bitmap = decode(encoded_image);
-                        // Save it to Key Master
-                        KeyMaster.map = bitmap;
-                        KeyMaster.map_name = map_name;
-                    }
-                    else
-                    {
-                        // Inform user and close out!
-                        runOnUiThread(new Runnable()
-                        {
-                            public void run()
-                            {
-                                Toast.makeText(getApplicationContext(), "File " + map_name + ".bmp not found on Server!", Toast.LENGTH_LONG).show();
-                            }
-                        });
+                        if (size != 0) {
+                            // Get image
+                            encoded_image = new byte[size];
+                            fromServer.readFully(encoded_image);
+                            bitmap = decode(encoded_image);
+                            // Save it to Key Master
+                            KeyMaster.map = bitmap;
+                            KeyMaster.map_name = map_name;
+                        }
+                        else {
+                            // Inform user and close out!
+                            runOnUiThread(() -> Toast.makeText(getApplicationContext(), "File " + map_name + ".bmp not found on Server!", Toast.LENGTH_LONG).show());
+                        }
                     }
                 }
             }
-            catch (IOException e)
-            {
-                runOnUiThread(new Runnable()
-                {
-                    public void run()
-                    {
-                        Toast.makeText(getApplicationContext(), "Failed to connect to Server! Or Invalid Map Name!", Toast.LENGTH_LONG).show();
-                    }
-                });
+            catch (IOException e) {
+                runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Failed to connect to Server! Or Invalid Map Name!", Toast.LENGTH_LONG).show());
             }
         }
 
@@ -215,50 +164,36 @@ public class AddMapActivity extends Activity
     {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == RESULT_OK)
-        {
+        if (resultCode == RESULT_OK) {
             Uri targetUri = data.getData();
-            try
-            {
+            try {
                 String out = null;
-                if (targetUri != null)
-                {
+                if (targetUri != null) {
                     out = targetUri.toString();
                 }
                 textTargetUri.setText(out);
-                if (targetUri != null)
-                {
+                if (targetUri != null) {
                     bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(targetUri));
                 }
                 targetImage.setImageBitmap(bitmap);
             }
-            catch (FileNotFoundException e)
-            {
-                e.printStackTrace();
+            catch (FileNotFoundException e) {
+                Log.e(this.getClass().getName(), "File not found", e);
             }
         }
     }
 
     // https://stackoverflow.com/questions/13854742/byte-array-of-image-into-imageview
-    protected byte [] encode(Bitmap bmp)
-    {
+    protected byte [] encode(Bitmap bmp) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
         return stream.toByteArray();
     }
 
-    protected Bitmap decode(byte [] byteArray)
-    {
+    protected Bitmap decode(byte [] byteArray) {
         bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-        runOnUiThread(new Runnable()
-        {
-            public void run()
-            {
-                targetImage.setImageBitmap(Bitmap.createScaledBitmap(bitmap, targetImage.getWidth(),
-                        targetImage.getHeight(), false));
-            }
-        });
+        runOnUiThread(() -> targetImage.setImageBitmap(Bitmap.createScaledBitmap(bitmap, targetImage.getWidth(),
+                targetImage.getHeight(), false)));
         return bitmap;
     }
-
 }

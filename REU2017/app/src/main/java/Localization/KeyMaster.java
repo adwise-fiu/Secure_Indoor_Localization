@@ -5,32 +5,23 @@ import android.graphics.Bitmap;
 import java.security.KeyPair;
 import java.security.SecureRandom;
 
-import security.DGK.DGKKeyPairGenerator;
-import security.DGK.DGKPrivateKey;
-import security.DGK.DGKPublicKey;
-import security.elgamal.ElGamalKeyPairGenerator;
-import security.elgamal.ElGamalPrivateKey;
-import security.elgamal.ElGamalPublicKey;
-import security.paillier.PaillierKeyPairGenerator;
-import security.paillier.PaillierPrivateKey;
-import security.paillier.PaillierPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKKeyPairGenerator;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPrivateKey;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
+import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierKeyPairGenerator;
+import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPrivateKey;
+import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
 
-public final class KeyMaster implements Runnable
-{
-    private final static int KEY_SIZE = 1024;
-
+public final class KeyMaster implements Runnable {
+    private final static int KEY_SIZE = 2048;
     // Key Master
     static DGKPrivateKey DGKsk;
     static DGKPublicKey DGKpk;
     static PaillierPublicKey pk;
     static PaillierPrivateKey sk;
-    static ElGamalPublicKey e_pk;
-    static ElGamalPrivateKey e_sk;
-
     public static long duration;
     public static boolean finished = false;
-    public static boolean ElGamal = false;
-
     // Hold onto Map Data
     public static Bitmap map = null;
     public static String map_name = "";
@@ -39,8 +30,7 @@ public final class KeyMaster implements Runnable
     public static Double [] last_coordinates = new Double[2];
     public static String last_device;
 
-    public static void init()
-    {
+    public static void init() throws HomomorphicException {
         long startTime = System.nanoTime();
 
         // Build DGK Keys
@@ -62,15 +52,10 @@ public final class KeyMaster implements Runnable
 
     public void run()
     {
-        init();
-        if(ElGamal)
-        {
-            // Can run ElGamal on Thread
-            ElGamalKeyPairGenerator pg = new ElGamalKeyPairGenerator();
-            pg.initialize(KEY_SIZE, new SecureRandom());
-            KeyPair el_gamal = pg.generateKeyPair();
-            e_pk = (ElGamalPublicKey) el_gamal.getPublic();
-            e_sk = (ElGamalPrivateKey) el_gamal.getPrivate();
+        try {
+            init();
+        } catch (HomomorphicException e) {
+            throw new RuntimeException(e);
         }
     }
 }

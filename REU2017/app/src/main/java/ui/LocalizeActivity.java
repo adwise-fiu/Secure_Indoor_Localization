@@ -25,13 +25,10 @@ import edu.fiu.reu2017.R;
 import Localization.background;
 import sensors.WifiReceiver;
 
-public class LocalizeActivity extends AppCompatActivity
-{
+public class LocalizeActivity extends AppCompatActivity {
     protected WifiReceiver wifi_wrapper;
-
     private int SCHEME = -1;
     private Bitmap location;
-
     // GUI
     public Button scan;
     private TextView output;
@@ -39,12 +36,10 @@ public class LocalizeActivity extends AppCompatActivity
     private PhotoViewAttacher my_Attach;
     private ImageView imageView;
     private Switch REU2017Mode;
-
     private boolean scan_complete;
 
     public static Toast off_map;
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.localize_activity);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
@@ -62,23 +57,14 @@ public class LocalizeActivity extends AppCompatActivity
 
         location = BitmapFactory.decodeResource(getResources(), R.drawable.o);
         wifi_wrapper = new WifiReceiver(this, loading);
-        imageView.post(new Runnable()
-        {
-            public void run()
-            {
-                imageView.setImageBitmap(Bitmap.createScaledBitmap(KeyMaster.map, imageView.getWidth(),
-                        imageView.getHeight(), false));
-            }
-        });
+        imageView.post(() -> imageView.setImageBitmap(Bitmap.createScaledBitmap(KeyMaster.map, imageView.getWidth(),
+                imageView.getHeight(), false)));
         my_Attach = new PhotoViewAttacher(imageView);
         my_Attach.setMaximumScale((float) 7.0);
 
-        if (SCHEME >= 1 && SCHEME <= 12)
-        {
+        if (SCHEME >= 1 && SCHEME <= 12) {
             Toast.makeText(getApplicationContext(), "LOCALIZATION SCHEME: " + LOCALIZATION_SCHEME.from_int(SCHEME), Toast.LENGTH_LONG).show();
-        }
-        else
-        {
+        } else {
             Toast.makeText(getApplicationContext(), "LOCALIZATION SCHEME: INVALID!", Toast.LENGTH_LONG).show();
         }
         scan.setOnClickListener(new scan());
@@ -88,13 +74,10 @@ public class LocalizeActivity extends AppCompatActivity
     // Need a GET Map()
     // Also, each time you train, you need to send MAP data too now
 
-    private class scan implements View.OnClickListener
-    {
-        public void onClick(View v)
-        {
+    private class scan implements View.OnClickListener {
+        public void onClick(View v) {
             loading.setVisibility(View.VISIBLE);
-            if(wifi_wrapper.startScan())
-            {
+            if(wifi_wrapper.startScan()) {
                 scan_complete = true;
                 Toast.makeText(getApplicationContext(), "Got reading from Wifi Manager", Toast.LENGTH_SHORT).show();
             }
@@ -103,53 +86,42 @@ public class LocalizeActivity extends AppCompatActivity
 
     private class attach implements OnPhotoTapListener
     {
-        public void onPhotoTap (ImageView view, float x, float y)
-        {
+        public void onPhotoTap (ImageView view, float x, float y) {
             // CLEAR RED DOT, RE-LOAD
-            imageView.post(new Runnable()
-            {
-                public void run()
-                {
+            imageView.post(new Runnable() {
+                public void run() {
                     imageView.setImageBitmap(Bitmap.createScaledBitmap(KeyMaster.map, imageView.getWidth(),
                             imageView.getHeight(), false));
                 }
             });
             my_Attach.update();
 
-            if(scan_complete)
-            {
+            if(scan_complete) {
                 Toast.makeText(getApplicationContext(), "Starting Localization!", Toast.LENGTH_LONG).show();
                 loading.setVisibility(View.VISIBLE);
                 loading.setProgress(0);
                 scan_complete = false;
 
                 // ERROR: NEED TO ORGANIZE MY SCAN ACCORDING TO COLUMNS IN MYSQL TABLE
-                if(wifi_wrapper.WifiAP == null || wifi_wrapper.WifiRSS == null)
-                {
+                if(wifi_wrapper.WifiAP == null || wifi_wrapper.WifiRSS == null) {
                     Toast.makeText(getApplicationContext(), "Scan again please!", Toast.LENGTH_SHORT).show();
-                }
-                else
-                {
+                } else {
                     output.setText(R.string.localizing);
                     new background(SCHEME, REU2017Mode.isChecked(), wifi_wrapper.WifiAP,
                                 wifi_wrapper.WifiRSS, output, loading, location, imageView, my_Attach).execute();
                 }
-            }
-            else
-            {
+            } else {
                 Toast.makeText(getApplicationContext(), "Scan first!", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         wifi_wrapper.registerReceiver(this);
     }
 
-    protected void onPause()
-    {
+    protected void onPause() {
         super.onPause();
         wifi_wrapper.unregisterReceiver(this);
     }
