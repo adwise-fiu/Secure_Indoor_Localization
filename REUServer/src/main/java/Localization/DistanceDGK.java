@@ -8,10 +8,10 @@ import java.util.Collections;
 
 import Localization.structs.LocalizationResult;
 import Localization.structs.SendLocalizationData;
-import security.DGK.DGKOperations;
-import security.DGK.DGKPublicKey;
-import security.misc.HomomorphicException;
-import security.socialistmillionaire.alice;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKOperations;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
+import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
 
 public class DistanceDGK extends Distance
 {
@@ -69,7 +69,7 @@ public class DistanceDGK extends Distance
 		Collections.shuffle(resultList);
 				
 		// 3- Get Min and return ([[x]], [[y]])
-		BigInteger min = Niu.getKMin(encryptedDistance, 1)[0];
+		BigInteger min = Niu.getKValues(encryptedDistance, 1, true)[0];
 		for(LocalizationResult l: resultList)
 		{
 			if(l.encryptedDistance.equals(min))
@@ -186,7 +186,7 @@ public class DistanceDGK extends Distance
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
 	{	
 		// Get the K-minimum distances!
-		BigInteger [] k_min = Niu.getKMin(encryptedDistance, k);
+		BigInteger [] k_min = Niu.getKValues(encryptedDistance, k, true);
 		
 		// Continue with Phase 3 of centriod finding
 		Object x;

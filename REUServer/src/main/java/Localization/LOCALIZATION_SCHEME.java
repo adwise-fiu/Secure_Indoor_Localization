@@ -15,10 +15,7 @@ public enum LOCALIZATION_SCHEME
 	PAILLIER_MCA(6),
 	PLAIN_DMA(7),
 	DGK_DMA(8),
-	PAILLIER_DMA(9),
-	EL_GAMAL_MIN(10),
-	EL_GAMAL_MCA(11),
-	EL_GAMAL_DMA(12);
+	PAILLIER_DMA(9);
 	
 	public final int value;
 
@@ -61,12 +58,6 @@ public enum LOCALIZATION_SCHEME
 				return DGK_DMA;
 			case 9:
 				return PAILLIER_DMA;
-			case 10:
-				return EL_GAMAL_MIN;
-			case 11:
-				return EL_GAMAL_MCA;
-			case 12:
-				return EL_GAMAL_DMA;
 		}
 		return null;
 	}
