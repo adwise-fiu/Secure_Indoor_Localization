@@ -6,17 +6,17 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
 
-import security.DGK.DGKOperations;
-import security.DGK.DGKPrivateKey;
-import security.DGK.DGKPublicKey;
-import security.elgamal.ElGamalCipher;
-import security.elgamal.ElGamalPrivateKey;
-import security.elgamal.ElGamalPublicKey;
-import security.elgamal.ElGamal_Ciphertext;
-import security.misc.HomomorphicException;
-import security.paillier.PaillierCipher;
-import security.paillier.PaillierPrivateKey;
-import security.paillier.PaillierPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKOperations;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPrivateKey;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamalCipher;
+import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamalPrivateKey;
+import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamalPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamal_Ciphertext;
+import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
+import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierCipher;
+import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPrivateKey;
+import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
 
 public class LocalizationResult implements Serializable, Comparable<LocalizationResult>
 {
@@ -78,8 +78,7 @@ public class LocalizationResult implements Serializable, Comparable<Localization
     	coordinates[1] = null;
     }
     
-    public void add_secret_coordinates(DGKPublicKey pk)
-    {
+    public void add_secret_coordinates(DGKPublicKey pk) throws HomomorphicException {
     	// Encrypt Coordinates
     	this.encryptedCoordinates[0] = DGKOperations.encrypt(this.coordinates[0].longValue(), pk);
     	this.encryptedCoordinates[1] = DGKOperations.encrypt(this.coordinates[1].longValue(), pk);
@@ -138,8 +137,7 @@ public class LocalizationResult implements Serializable, Comparable<Localization
 	}
 	
 	// Used to decrypt, if DMA, just divide by distance as well!
-	public void decrypt_all(DGKPrivateKey sk)
-	{
+	public void decrypt_all(DGKPrivateKey sk) throws HomomorphicException {
 		this.plainDistance = DGKOperations.decrypt(this.encryptedDistance, sk);
 		if(this.matches != null)
 		{

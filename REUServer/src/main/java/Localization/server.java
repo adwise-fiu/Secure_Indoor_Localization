@@ -1,20 +1,16 @@
 package Localization;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Scanner;
 
 /*
@@ -93,7 +89,7 @@ public class server implements Runnable
 		}
 	}
 	
-	public static void main(String args [])
+	public static void main(String[] args)
 	{
 		Scanner inputReader = new Scanner(System.in);
 		int port = 9254;
@@ -101,52 +97,38 @@ public class server implements Runnable
 		try 
 		{
 			// Finally, load user/password credentials
-			Properties login = new Properties();
-			try (FileReader in = new FileReader("./login.properties")) 
-			{
-			    login.load(in);
-			}
-			LocalizationLUT.username = login.getProperty("username");
-			LocalizationLUT.password = login.getProperty("password");
-			
+			String username = System.getenv("MYSQL_USER");
+			String password = System.getenv("MYSQL_PASSWORD");
+			LocalizationLUT.username = username;
+			LocalizationLUT.password = password;
+
 			// Check if LUT exists
 			server.preprocessed = LocalizationLUT.isProcessed();
 			// If made, update vector size now!
-			if(server.preprocessed)
-			{
+			if(server.preprocessed) {
 				Distance.VECTOR_SIZE = LocalizationLUT.getVectorSize(Distance.FSF);
 				System.out.println("NEW VECTOR SIZE: " + Distance.VECTOR_SIZE);
 			}
 			
 			// Custom Port if needed?
-			if (args.length == 1)
-			{
+			if (args.length == 1) {
 				port = Integer.parseInt(args[0]);
-				if(port <= 1024)
-				{
+				if(port <= 1024) {
 					System.err.println("Invalid Port! " + port + " use value over 1024!");
 					System.exit(1);
 				}
-				else if(port > 65535)
-				{
+				else if(port > 65535) {
 					System.err.println("Invalid Port! " + port + " use value below 65535!");
 					System.exit(1);					
 				}
 			}
 		}
-		catch (ClassNotFoundException | SQLException e)
-		{
+		catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		catch (NumberFormatException nfe)
-		{
+		catch (NumberFormatException nfe) {
 			System.out.println("Please enter a valid custom port number");
-			System.exit(1);
-		}
-		catch (IOException e) 
-		{
-			System.out.println("Missing Login file");
 			System.exit(1);
 		}
 
@@ -154,22 +136,18 @@ public class server implements Runnable
 		new Thread(Localizationserver).start();
 		
 		// Create the Training Table...
-		if(LocalizationLUT.createTrainingTable())
-		{
+		if(LocalizationLUT.createTrainingTable()) {
 			System.out.println("Created Database and Training Table!");
 		}
-		else
-		{
+		else {
 			System.out.println("Failed to create Training Table! It probably already exists!!!");
 		}
 		
 		System.out.println("==================FIU Indoor Localization Server Online=========================");
 		
-		// Get arguments from command line...
-		while(true)
-		{
-			try
-			{
+		// Get arguments from the command line...
+		while(true) {
+			try {
 				String input = inputReader.nextLine();
 				input = input.trim();
 				String [] commands = input.split(" ");
@@ -180,33 +158,26 @@ public class server implements Runnable
 				System.out.println("N_F: " + LocalizationLUT.getX("BWY_FL_03").length);
 				System.out.println("Current value of K is: " + Distance.k);
 				
-				//Clear CLI
-				if (commands[0].equalsIgnoreCase("clr"))
-				{
+				// Clear CLI
+				if (commands[0].equalsIgnoreCase("clr")) {
 					System.out.println("\033[2J\033[;H");
 					System.out.flush();
 				}
-				else if (commands[0].equalsIgnoreCase("print"))
-				{
-					if (server.preprocessed)
-					{
+				else if (commands[0].equalsIgnoreCase("print")) {
+					if (server.preprocessed) {
 						LocalizationLUT.printTrainingData();
-						if(server.multi_phone)
-						{
+						if(server.multi_phone) {
 							MultiphoneLocalization.printLUT();
 						}
-						else
-						{
+						else {
 							LocalizationLUT.printLUT();				
 						}
 					}
-					else
-					{
+					else {
 						System.out.println("Lookup Tables not processed yet!");
 					}
 				}
-				else if (commands[0].equals("frequency"))
-				{
+				else if (commands[0].equals("frequency")) {
 					HashMap<String, Integer> frequency_map = LocalizationLUT.getCommonMac();
 					int idx = 1;
 					// Get sorted
@@ -216,112 +187,88 @@ public class server implements Runnable
 						System.out.println(idx + ", MAC: " + AP + " was detected " + sorted_map.get(AP) + " times");
 						++idx;
 					}
-					tukey_summary(frequency_map.values().toArray(new Integer[frequency_map.size()]));				
+					toukey_summary(frequency_map.values().toArray(new Integer[0]));
 				}
 				// Change k
-				else if(commands[0].equals("k"))
-				{
+				else if(commands[0].equals("k")) {
 					Distance.k = Integer.parseInt(commands[1]);
 					System.out.println("Updated value of K is: " + Distance.k);
 				}
 				// Test FSF
-				else if (commands[0].equalsIgnoreCase("test-FSF"))
-				{
+				else if (commands[0].equalsIgnoreCase("test-FSF")) {
 					double fsf = Double.parseDouble(commands[1]);
-					if (fsf < 0 || fsf > 1)
-					{
+					if (fsf < 0 || fsf > 1) {
 						System.out.println("Invalid FSF value! " +  fsf);
 						continue;
 					}
-					else
-					{
+					else {
 						System.out.println("Given FSF value: " + fsf + " minimum AP match is: " + LocalizationLUT.getVectorSize(fsf));
 					}
 				}
 				// Change FSF
-				else if (commands[0].equalsIgnoreCase("FSF"))
-				{
+				else if (commands[0].equalsIgnoreCase("FSF")) {
 					double fsf = Double.parseDouble(commands[1]);
-					if (fsf < 0 || fsf > 1)
-					{
+					if (fsf < 0 || fsf > 1) {
 						System.out.println("Invalid FSF value! " +  fsf);
 						continue;
 					}
-					else
-					{
+					else {
 						Distance.FSF = fsf;
-						if(server.preprocessed)
-						{
+						if(server.preprocessed) {
 							System.out.println("Please note for number of columns to change, you must re-build new Lookup table!");
 						}
 					}
 				}
-				else if(commands[0].equalsIgnoreCase("process"))
-				{
-					if(server.multi_phone)
-					{
-						if(LocalizationThread.multiprocess())
-						{
+				else if(commands[0].equalsIgnoreCase("process")) {
+					if(server.multi_phone) {
+						if(LocalizationThread.multiprocess()) {
 							System.out.println("Preprocessing all Lookup Tables successful!");
 						}
-						else
-						{
+						else {
 							System.out.println("Preprocessing all Lookup Tables failed!");
 						}
 					}
-					else
-					{
-						if(LocalizationThread.process())
-						{
+					else {
+						if(LocalizationThread.process()) {
 							System.out.println("Preprocessing one Lookup Table successful!");
 						}
-						else
-						{
+						else {
 							System.out.println("Preprocessing all Lookup Tables failed!");
 						}
 					}
 				}
 				else if(commands[0].equalsIgnoreCase("reset"))
 				{
-					if(LocalizationLUT.reset())
-					{
-						System.out.println("RESET SUCESSFUL!");
+					if(LocalizationLUT.reset()) {
+						System.out.println("RESET SUCCESSFUL!");
 						server.preprocessed = false;
 					}
-					else
-					{
+					else {
 						System.out.println("RESET FAILED!");
 					}
 				}
-				else if (commands[0].equalsIgnoreCase("switch"))
-				{
-					if(server.multi_phone)
-					{
+				else if (commands[0].equalsIgnoreCase("switch")) {
+					if(server.multi_phone) {
 						System.out.println("Server is switcthed to 1 LUT");
 						server.multi_phone = false;
 					}
-					else
-					{
+					else {
 						System.out.println("Server is switched to 1 LUT per Phone");
 						server.multi_phone = true;
 					}
 				}
-				else if (commands[0].equalsIgnoreCase("exit"))
-				{
+				else if (commands[0].equalsIgnoreCase("exit")) {
 					break;
 				}
 			}
-			catch (NumberFormatException nfe)
-			{
+			catch (NumberFormatException nfe) {
 				//nfe.printStackTrace();
 				continue;
 			} 
-			catch (ClassNotFoundException e)
-			{
+			catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			}
-			catch (SQLException e)
-			{
+			catch (SQLException e) {
 				e.printStackTrace();
 			}
 		}
@@ -337,39 +284,27 @@ public class server implements Runnable
 	 */
 
 	private static Map<String, Integer> sortByComparator
-	(HashMap<String, Integer> unsortMap, final boolean order)
-	{
+	(HashMap<String, Integer> unsortMap, final boolean order) {
 		List<Entry<String, Integer>> list = 
 				new LinkedList<Entry<String, Integer>>(unsortMap.entrySet());
 		// Sorting the list based on values
-		Collections.sort(list, new Comparator<Entry<String, Integer>>()
-		{
-			public int compare(Entry<String, Integer> o1,
-					Entry<String, Integer> o2)
-			{
-				if (order)
-				{
-					return o1.getValue().compareTo(o2.getValue());
-				}
-				else
-				{
-					return o2.getValue().compareTo(o1.getValue());
-				}
-			}
-		});
+		list.sort((o1, o2) -> {
+            if (order) {
+                return o1.getValue().compareTo(o2.getValue());
+            } else {
+                return o2.getValue().compareTo(o1.getValue());
+            }
+        });
 
 		// Maintaining insertion order with the help of LinkedList
-		Map<String, Integer> sortedMap = new LinkedHashMap<String, Integer>();
-		for (Entry<String, Integer> entry : list)
-		{
+		Map<String, Integer> sortedMap = new LinkedHashMap<>();
+		for (Entry<String, Integer> entry : list) {
 			sortedMap.put(entry.getKey(), entry.getValue());
 		}
 		return sortedMap;
 	}
 
-	
-	private static void tukey_summary(Integer [] arr)
-	{
+	private static void toukey_summary(Integer [] arr) {
 		Arrays.sort(arr);
 		System.out.println("Min:          " + Percentile(arr, 0));
 		System.out.println("25% quartile: " + Percentile(arr, 25));
@@ -378,16 +313,13 @@ public class server implements Runnable
 		System.out.println("Max:          " + Percentile(arr, 100));
 	}
 	
-    private static long Percentile(Integer [] latencies, double Percentile)
-    {
+    private static long Percentile(Integer [] latencies, double Percentile) {
         int Index = (int) Math.ceil((Percentile/100.0) * latencies.length);
         System.out.println("Index for " + Percentile + " is: " + Index);
-        if(Index == 0)
-        {
+        if(Index == 0) {
         	return latencies[0];
         }
-        else
-        {
+        else {
         	return latencies[Index - 1];	
         }
     }

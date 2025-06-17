@@ -7,13 +7,13 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.List;
 
-//import security.DGK.DGKPrivateKey;
-//import security.paillier.PaillierPrivateKey;
+//import edu.fiu.adwise.homomorphic_encryption.DGK.DGKPrivateKey;
+//import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPrivateKey;
 import Localization.LOCALIZATION_SCHEME;
-import security.DGK.DGKPublicKey;
-import security.elgamal.ElGamalPublicKey;
-import security.elgamal.ElGamal_Ciphertext;
-import security.paillier.PaillierPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamalPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamal_Ciphertext;
+import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
 
 public class SendLocalizationData implements Serializable
 {

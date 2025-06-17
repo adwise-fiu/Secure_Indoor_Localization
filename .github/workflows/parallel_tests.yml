@@ -1,0 +1,68 @@
+name: Test Android and Fingerprint Server
+
+on:
+  # Runs every 30 days at midnight, just to make sure the checkmark is always there
+  schedule:
+    - cron: "0 0 30 * *"
+  pull_request:
+    branches:
+      - main
+
+# Automatically cancel any previous workflow on a new push.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  test-server:
+    runs-on: ubuntu-latest
+    env:
+      USERNAME: ${{ github.actor }}
+      PASSWORD: ${{ secrets.REU_SERVER_PASSWORD }}
+    services:
+      mysql:
+        image: mysql:latest
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.REU_SERVER_PASSWORD }}
+          MYSQL_USER: ${{ github.actor }}
+          MYSQL_PASSWORD: ${{ secrets.REU_SERVER_PASSWORD }}
+          MYSQL_DATABASE: fiu 
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h localhost -u${MYSQL_USER} -p${MYSQL_PASSWORD}"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout project sources
+        uses: actions/checkout@v4
+      - name: Setup Gradle
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'oracle'
+          java-version: '17'
+          cache: 'gradle'
+      - name: Run Gradle tests
+        working-directory: REUServer
+        run: |
+          chmod +x gradlew
+          ./gradlew test
+
+  test-android:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'oracle'
+        cache: gradle
+    - name: Set up Android SDK
+      uses: android-actions/setup-android@v3
+    - name: Test with Gradle
+      working-directory: REU2017
+      run: |
+        chmod +x gradlew
+        ./gradlew build

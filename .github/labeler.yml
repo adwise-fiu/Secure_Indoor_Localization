@@ -1,0 +1,15 @@
+Documentation:
+  - '**/*.md'
+
+Github-files:
+  - '.github/**'
+
+Android-project:
+  - 'REU2017/**'
+  - 'REU2017/**/*.xml'
+  - 'REU2017/**/*.kt'
+  - 'REU2017/**/*.java'
+
+Java-server:
+  - 'REUServer/**'
+  - 'REUServer/**/*.java'

@@ -5,9 +5,9 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 
 import Localization.structs.LocalizationResult;
-import security.elgamal.ElGamal_Ciphertext;
-import security.misc.HomomorphicException;
-import security.socialistmillionaire.alice;
+import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamal_Ciphertext;
+import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
+import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
 
 public abstract class Distance 
 {

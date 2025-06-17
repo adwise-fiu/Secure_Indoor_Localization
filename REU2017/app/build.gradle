@@ -1,15 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 29
-    aaptOptions
-            {
-                noCompress 'obj'
-            }
+    compileSdkVersion 35
     defaultConfig {
         applicationId "edu.fiu.reu2017"
-        minSdkVersion 17
-        targetSdkVersion 29
+        minSdkVersion 25
+        targetSdkVersion 35
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -22,27 +18,43 @@ android {
                             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
                         }
             }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    namespace 'edu.fiu.reu2017'
 }
 
 dependencies
         {
-            implementation fileTree(include: ['*.jar'], dir: 'libs')
             androidTestImplementation('androidx.test.espresso:espresso-core:3.2.0', {
                 exclude group: 'com.android.support', module: 'support-annotations'
             })
-            implementation 'androidx.appcompat:appcompat:1.2.0'
-            implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-            //https://github.com/chrisbanes/PhotoView
+            implementation 'androidx.appcompat:appcompat:1.7.1'
+            implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+            // https://mvnrepository.com/artifact/com.github.chrisbanes/PhotoView
             implementation 'com.github.chrisbanes:PhotoView:2.3.0'
-
-            testImplementation 'junit:junit:4.12'
-            implementation files('src/main/java/libs/crypto.jar')
-            //implementation files('src/main/java/libs/bcprov-ext-jdk15on-162.jar')
+            testImplementation 'junit:junit:4.13.2'
+            // https://mvnrepository.com/artifact/io.github.andrewquijano/ciphercraft
+            implementation 'io.github.andrewquijano:ciphercraft:1.0.6'
         }
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
 
 repositories {
     maven {
-        url 'https://maven.google.com/'
-        name 'Google'
+        url = uri('https://maven.google.com/') // Corrected: use '=' and uri()
+        name = 'Google'                        // Corrected: use '='
+    }
+}
+
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile).tap {
+        configureEach {
+            options.compilerArgs << "-Xlint:deprecation,unchecked"
+        }
     }
 }

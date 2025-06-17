@@ -17,11 +17,11 @@ import javax.imageio.ImageIO;
 import Localization.structs.LocalizationResult;
 import Localization.structs.SendLocalizationData;
 import Localization.structs.SendTrainingData;
-import security.DGK.DGKPublicKey;
-import security.elgamal.ElGamalPublicKey;
-import security.misc.HomomorphicException;
-import security.paillier.PaillierPublicKey;
-import security.socialistmillionaire.alice;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamalPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
+import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
 
 /*
  * Uses Multi-thread code from:
@@ -56,8 +56,7 @@ public class LocalizationThread implements Runnable
 	private DistancePlain PlaintextLocalization = null;
 	private DistanceDGK DGKLocalization = null;
 	private DistancePaillier PaillierLocalization = null;
-	private DistanceElGamal ElGamalLocalization = null;
-	
+
 	// For File safety
 	private String BASEDIR;
 	
@@ -433,47 +432,6 @@ public class LocalizationThread implements Runnable
 					else
 					{	
 						toClient.writeObject(replyToClient);	
-					}
-					toClient.flush();
-					break;
-				case EL_GAMAL_MIN:
-					ElGamalLocalization = new DistanceElGamal(transmission);
-					replyToClient = ElGamalLocalization.MinimumDistance(Niu);
-					if (isREU2017)
-					{
-						toClient.writeObject(ElGamalLocalization.e_xy);
-					}
-					else
-					{	
-						toClient.writeObject(replyToClient);	
-					}
-					toClient.flush();
-					break;
-				case EL_GAMAL_MCA:
-					ElGamalLocalization = new DistanceElGamal(transmission);
-					replyToClient = ElGamalLocalization.MissConstantAlgorithm();
-					if (isREU2017)
-					{
-						ElGamalLocalization.Phase3(Niu);
-						toClient.writeObject(ElGamalLocalization.e_xy);
-					}
-					else
-					{	
-						toClient.writeObject(replyToClient);	
-					}
-					toClient.flush();
-					break;
-				case EL_GAMAL_DMA:
-					ElGamalLocalization = new DistanceElGamal(transmission);
-					replyToClient = ElGamalLocalization.DynamicMatchingAlgorithm();
-					if (isREU2017)
-					{
-						ElGamalLocalization.Phase3(Niu);
-						toClient.writeObject(ElGamalLocalization.e_xy);
-					}
-					else
-					{
-						toClient.writeObject(replyToClient);
 					}
 					toClient.flush();
 					break;

@@ -8,7 +8,7 @@ import java.util.Collections;
 
 import Localization.structs.LocalizationResult;
 import Localization.structs.SendLocalizationData;
-import security.socialistmillionaire.alice;
+import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
 
 public class DistancePlain extends Distance
 {

@@ -35,7 +35,7 @@ public class LocalizationLUT
 	public static String username = "hello";
 	public static String password = "world";
 		
-	public final static String myDriver = "org.gjt.mm.mysql.Driver";
+	public final static String myDriver = "com.mysql.cj.jdbc.Driver";
 	public final static String DB = "fiu";
 	public final static String URL = "jdbc:mysql://localhost:3306/?&useSSL=false";
 	

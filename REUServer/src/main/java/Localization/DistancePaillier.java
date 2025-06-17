@@ -8,11 +8,11 @@ import java.util.Collections;
 
 import Localization.structs.LocalizationResult;
 import Localization.structs.SendLocalizationData;
-import security.misc.HomomorphicException;
-import security.paillier.PaillierCipher;
-//import security.paillier.PaillierPrivateKey;
-import security.paillier.PaillierPublicKey;
-import security.socialistmillionaire.alice;
+import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
+import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierCipher;
+//import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPrivateKey;
+import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
 
 
 public class DistancePaillier extends Distance
@@ -74,7 +74,7 @@ public class DistancePaillier extends Distance
 		Collections.shuffle(resultList);
 		
 		// 3- Get Min and return ([[x]], [[y]])
-		BigInteger min = Niu.getKMin(encryptedDistance, 1)[0];
+		BigInteger min = Niu.getKValues(encryptedDistance, 1, true)[0];
 		for(LocalizationResult l: resultList)
 		{
 			if(l.encryptedDistance.equals(min))
@@ -121,12 +121,12 @@ public class DistancePaillier extends Distance
 			{
 				if(scanAPs[j].equals(column[j]))
 				{
-					S1_Row = PaillierCipher.add_plaintext(S1_Row, RSS_ij.get(i)[j] * RSS_ij.get(i)[j], pk);
+					S1_Row = PaillierCipher.add_plaintext(S1_Row, BigInteger.valueOf(RSS_ij.get(i)[j] * RSS_ij.get(i)[j]), pk);
 					S2_Row = PaillierCipher.add(S2_Row, PaillierCipher.multiply(S2[j], RSS_ij.get(i)[j], pk), pk);
 				}
 				else
 				{
-					S1_Row = PaillierCipher.add_plaintext(S1_Row, v_c * v_c, pk);
+					S1_Row = PaillierCipher.add_plaintext(S1_Row, BigInteger.valueOf((long) v_c * v_c), pk);
 					S2_Row = PaillierCipher.add(S2_Row, PaillierCipher.multiply(S2[j], v_c, pk), pk);
 				}
 			}
@@ -174,7 +174,7 @@ public class DistancePaillier extends Distance
 			{
 				if(scanAPs[j].equals(column[j]))
 				{
-					S1_Row = PaillierCipher.add_plaintext(S1_Row, RSS_ij.get(i)[j] * RSS_ij.get(i)[j], pk);
+					S1_Row = PaillierCipher.add_plaintext(S1_Row, BigInteger.valueOf(RSS_ij.get(i)[j] * RSS_ij.get(i)[j]), pk);
 					S2_Row = PaillierCipher.add(S2_Row, PaillierCipher.multiply(S2[j], RSS_ij.get(i)[j], pk), pk);
 					S3_Row = PaillierCipher.add(S3_Row, S3_comp[j], pk);
 				}
@@ -191,7 +191,7 @@ public class DistancePaillier extends Distance
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
 	{
 		// Get the K-minimum distances!
-		BigInteger [] k_min = Niu.getKMin(encryptedDistance, k);
+		BigInteger [] k_min = Niu.getKValues(encryptedDistance, k, true);
 		// TODO: If it is DMA, you need to divide distances first right??
 		int index = -1;
 		Object x = null;

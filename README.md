@@ -15,10 +15,11 @@ and with its [documentation](https://github.com/AndrewQuijano/Homomorphic_Encryp
 # Installation
 
 ## Server Installation
-The Java code was written using an Eclipse project. Upon downloading the repository import the project located in REUServer folder.
+You can run the server using Gradle as followsing
 
-You can either create a Runnable Jar file to run the server or run it from Eclipse.
-If you are in a Linux environment you can run the **compile.sh**
+```bash
+./gradlew run -PchooseRole=Localization.server
+```
 
 ## Android Installation
 Please note the Android installation has only been tested on Samsung Galaxy 3. But it should work with all other Android devices.
@@ -30,17 +31,11 @@ onto your [phone](https://developer.android.com/training/basics/firstapp/running
 # Usage
 
 ## Server set-up
-Please place your MySQL server login credentials on the empty login.properties file
-./REUServer/src/Localization/login.properties
-
-Please note you should format it as follows:  
-username=|username|  
-password=|password|  
+To run the server, you need to populate the environment variables `MYSQL_USER` and `MYSQL_PASSWORD` to access the Fingerprint database.
 
 Note: Upon initialization, it will expect MySQL to be running! If it isn't the server will not turn on. 
 
 Upon initializing the server will  
-- Read login.properties for MySQL credentials
 - If there is preprocessed data, determine the number of APs used for each column
 - Assuming a port number was provided, check if it is a valid port number and open the server socket. Default is port 9254
 - Create the database called "FIU" and a Table called "trainingpoints" to store the raw Wi-Fi scans.
@@ -89,7 +84,7 @@ A. Quijano and K. Akkaya, ["Server-Side Fingerprint-Based Indoor Localization Us
 2019 IEEE 16th International Conference on Mobile Ad Hoc and Sensor Systems Workshops (MASSW), Monterey, CA, USA, 2019, 
 pp. 53-57, doi: 10.1109/MASSW.2019.00017
 
-P. Armengol, R. Tobkes, K. Akkaya, B. S. �iftler and I. G�ven�, 
+P. Armengol, R. Tobkes, K. Akkaya, B. S. Ciftler and I. Guvenc, 
 "Efficient Privacy-Preserving Fingerprint-Based Indoor Localization Using Crowdsourcing," 
 2015 IEEE 12th International Conference on Mobile Ad Hoc and Sensor Systems, Dallas, TX, 2015, pp. 549-554, 
 doi: 10.1109/MASS.2015.76.
