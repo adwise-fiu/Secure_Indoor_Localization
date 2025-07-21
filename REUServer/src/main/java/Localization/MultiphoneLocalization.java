@@ -15,39 +15,31 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MultiphoneLocalization extends LocalizationLUT
-{
-	private static Double [] getX_multi(String Model, String Map)
-	{
-		try 
-		{
+public class MultiphoneLocalization extends LocalizationLUT {
+	private static Double [] getX_multi(String Model, String Map) {
+		try {
 			return getX(null, null, Model, null, Map);
 		} 
-		catch (ClassNotFoundException | SQLException e) 
-		{
+		catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
 		}
 		return null;
 	}
 	
-	private static Double [] getY_multi(String Model, String Map)
-	{
-		try 
-		{
+	private static Double [] getY_multi(String Model, String Map) {
+		try {
 			return getY(null, null, Model, null, Map);
 		} 
-		catch (ClassNotFoundException | SQLException e) 
-		{
+		catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
 		}
 		return null;
 	}
 	
 	public static Double [] getX(String OS, String Device, String Model, String Product, String Map)
-			throws ClassNotFoundException, SQLException
-	{
+			throws ClassNotFoundException, SQLException {
 		Double [] X = null;
-		ArrayList<Double> x = new ArrayList<Double>();
+		ArrayList<Double> x = new ArrayList<>();
 
 		Class.forName(myDriver);
 		Connection conn = DriverManager.getConnection(URL, username, password);
@@ -64,8 +56,7 @@ public class MultiphoneLocalization extends LocalizationLUT
 		st.setString(1, Model);
 		st.setString(2, Map);
 		ResultSet rs = st.executeQuery();
-		while (rs.next())
-		{
+		while (rs.next()) {
 			x.add(rs.getDouble("Xcoordinate"));
 		}
 		X = x.toArray(new Double[x.size()]);
@@ -73,8 +64,7 @@ public class MultiphoneLocalization extends LocalizationLUT
 	}
 	
 	public static Double [] getY(String OS, String Device, String Model, String Product, String Map) 
-			throws ClassNotFoundException, SQLException
-	{
+			throws ClassNotFoundException, SQLException {
 		Double [] Y = null;
 		ArrayList<Double> y = new ArrayList<Double>();
 	
@@ -90,8 +80,7 @@ public class MultiphoneLocalization extends LocalizationLUT
 		st.setString(1, Model);
 		st.setString(2, Map);
 		ResultSet rs = st.executeQuery();
-		while (rs.next())
-		{
+		while (rs.next()) {
 			y.add(rs.getDouble("Ycoordinate"));
 		}
 		Y = y.toArray(new Double[y.size()]);	
@@ -99,10 +88,8 @@ public class MultiphoneLocalization extends LocalizationLUT
 	}
 	
 	// Modify to create ONLY one table per device
-	public static boolean createTables()
-	{	
-		try
-		{
+	public static boolean createTables() {
+		try {
 			Class.forName(myDriver);
 			System.out.println("Connecting to a local database...");
 			Connection conn = DriverManager.getConnection(URL, username, password);
@@ -112,10 +99,8 @@ public class MultiphoneLocalization extends LocalizationLUT
 			String [] all_phones = getPhones();
 			String [] all_maps = getMaps();
 			
-			for(String map: all_maps)
-			{
-				for(String phone: all_phones)
-				{
+			for(String map: all_maps) {
+				for(String phone: all_phones) {
 					String [] ColumnNames = getColumnMAC(map);
 					String table_name = phone.replace(" ", "");
 					table_name = table_name.replace("-", "");
@@ -138,24 +123,20 @@ public class MultiphoneLocalization extends LocalizationLUT
 			}
 			return true;
 		}
-		catch(SQLException se)
-		{
+		catch(SQLException se) {
 			se.printStackTrace();
 			return false;
 		}
-		catch(ClassNotFoundException cnf)
-		{
+		catch(ClassNotFoundException cnf) {
 			System.err.println("SQL Exception caught: createTables()");
 			return false;
 		}
 	}
 	
-	private static String [] getPhones()
-	{
+	private static String [] getPhones() {
 		String [] phones = null;
 		List<String> phone = new ArrayList<String>();
-		try
-		{
+		try {
 			Class.forName(myDriver);
 			Connection conn = DriverManager.getConnection(URL, username, password);
 
@@ -163,23 +144,18 @@ public class MultiphoneLocalization extends LocalizationLUT
 			ResultSet rs = st.executeQuery(
 					"select distinct Model " +
 					"from " + DB + "." + TRAININGDATA);
-			while (rs.next())
-			{
+			while (rs.next()) {
 				phone.add(rs.getString("Model"));
 			}
 			phones = phone.toArray(new String[phone.size()]);	
-		}
-		catch(SQLException | ClassNotFoundException e)
-		{
+		} catch(SQLException | ClassNotFoundException e) {
 			System.err.println("SQL Exception caught: createTables()");
 		}
 		return phones;
 	}
 	
-	public static boolean UpdatePlainLUT()
-	{
-		try
-		{
+	public static boolean UpdatePlainLUT() {
+		try {
 			// Init
 			Class.forName(myDriver);
 			Connection conn = DriverManager.getConnection(URL, username, password);
@@ -188,10 +164,8 @@ public class MultiphoneLocalization extends LocalizationLUT
 			String [] all_maps = getMaps();
 			String [] all_phones = getPhones();
 			
-			for(String map: all_maps)
-			{
-				for(String phone: all_phones)
-				{
+			for(String map: all_maps) {
+				for(String phone: all_phones) {
 					// Acquire All Data to Create Plain Text Lookup Table	
 					Double [] X = getX_multi(phone, map);
 					Double [] Y = getY_multi(phone, map);
@@ -201,8 +175,7 @@ public class MultiphoneLocalization extends LocalizationLUT
 					PreparedStatement Plainst; 
 					String getRSS;
 					ResultSet RSS;
-					for (int x = 0; x < X.length; x++)
-					{
+					for (int x = 0; x < X.length; x++) {
 						/*
 				 		select RSS FROM TRAININGDATA
 						WHERE Xcoordinate = 227.761 
@@ -227,14 +200,12 @@ public class MultiphoneLocalization extends LocalizationLUT
 							Plainst.setString(4, phone);
 							Plainst.setString(5, map);
 							RSS = Plainst.executeQuery();
-							while (RSS.next())
-							{
+							while (RSS.next()) {
 								Pinsert [x][currentCol] = RSS.getInt("RSS");
 							}
 							
 							//CHECK IF I GOT A NULL!
-							if (Pinsert[x][currentCol] == 0)
-							{
+							if (Pinsert[x][currentCol] == 0) {
 								Pinsert[x][currentCol] = Distance.v_c;
 							}
 							Plainst.close();		
@@ -243,8 +214,7 @@ public class MultiphoneLocalization extends LocalizationLUT
 					
 					// -----------------Place data----------------------------------------
 					String append = "";
-					for (int i = 0; i < Distance.VECTOR_SIZE; i++)
-					{
+					for (int i = 0; i < Distance.VECTOR_SIZE; i++) {
 						append += " ?,";
 					}
 					//Remove the Extra , at the end!!
@@ -260,10 +230,8 @@ public class MultiphoneLocalization extends LocalizationLUT
 					
 					PreparedStatement Plain;
 
-					for (int PrimaryKey = 0; PrimaryKey < X.length; PrimaryKey++)
-					{
-						if(isNullTuple(Pinsert[PrimaryKey]))
-						{
+					for (int PrimaryKey = 0; PrimaryKey < X.length; PrimaryKey++) {
+						if(isNullTuple(Pinsert[PrimaryKey])) {
 							continue;
 						}
 						Plain = conn.prepareStatement(PlainQuery);
@@ -273,8 +241,7 @@ public class MultiphoneLocalization extends LocalizationLUT
 						Plain.setDouble(2, X[PrimaryKey]);
 						Plain.setDouble(3, Y[PrimaryKey]);
 						
-						for (int j = 0; j < Distance.VECTOR_SIZE;j++)
-						{
+						for (int j = 0; j < Distance.VECTOR_SIZE;j++) {
 							Plain.setInt((j + 4), Pinsert[PrimaryKey][j]);
 						}
 						Plain.execute();
@@ -288,9 +255,7 @@ public class MultiphoneLocalization extends LocalizationLUT
 				}
 			}
 			return true;
-		}
-		catch(SQLException | ClassNotFoundException cnf)
-		{
+		} catch(SQLException | ClassNotFoundException cnf) {
 			cnf.printStackTrace();
 			return false;
 		}
@@ -298,9 +263,7 @@ public class MultiphoneLocalization extends LocalizationLUT
 	
 	public static void getPlainLookup(ArrayList<Long[]> SQLData, ArrayList<Double[]> coordinates, 
 			String [] phone_data, String map) 
-			throws ClassNotFoundException, SQLException
-	{
-		
+			throws ClassNotFoundException, SQLException {
 		Class.forName(myDriver);
 		Connection conn = DriverManager.getConnection(URL, username, password);
 		Statement st = conn.createStatement();
@@ -312,8 +275,7 @@ public class MultiphoneLocalization extends LocalizationLUT
 				+ "select * from " + DB + "." + map + "_" + table
 				+ " Order By Xcoordinate ASC;");
 		
-		while(rs.next())
-		{
+		while(rs.next()) {
 			Long [] RSS = new Long [Distance.VECTOR_SIZE];
 			Double [] Location = new Double [2];
 			Location[0] = rs.getDouble("Xcoordinate");	// 2
@@ -328,30 +290,22 @@ public class MultiphoneLocalization extends LocalizationLUT
 		}
 	}
 	
-	public static void printLUT()
-	{		
-		try
-		{
+	public static void printLUT() {
+		try {
 			Class.forName(myDriver);
 			Connection conn = DriverManager.getConnection(URL, username, password);
 
 			String [] phones = getPhones();
 			String [] all_maps = getMaps();
 			
-			for(String map: all_maps)
-			{
-				for(String phone: phones)
-				{
+			for(String map: all_maps) {
+				for(String phone: phones) {
 					String [] ColumnMac = LocalizationLUT.getColumnMAC(map);
 					String header = "Xcoordinate,Ycoordiante,";
-					for(int i = 0; i < Distance.VECTOR_SIZE; i++)
-					{
-						if(i == Distance.VECTOR_SIZE - 1)
-						{
+					for(int i = 0; i < Distance.VECTOR_SIZE; i++) {
+						if(i == Distance.VECTOR_SIZE - 1) {
 							header += ColumnMac[i];
-						}
-						else
-						{
+						} else {
 							header += ColumnMac[i] + ",";
 						}
 					}
@@ -377,13 +331,11 @@ public class MultiphoneLocalization extends LocalizationLUT
 			
 					String tuple = "";
 					
-					while(PlainResult.next())
-					{
+					while(PlainResult.next()) {
 						// Skip ID, 1
 						tuple += PlainResult.getDouble(2) + ",";
 						tuple += PlainResult.getDouble(3)  + ",";
-						for (int i = 0; i < Distance.VECTOR_SIZE; i++)
-						{
+						for (int i = 0; i < Distance.VECTOR_SIZE; i++) {
 							String name = meta.getColumnName(i+4);
 							tuple += PlainResult.getInt(name)  + ",";
 						}
@@ -395,9 +347,7 @@ public class MultiphoneLocalization extends LocalizationLUT
 					WritePlain.close();
 				}
 			}
-		}
-		catch(IOException | SQLException | ClassNotFoundException cnf)
-		{
+		} catch(IOException | SQLException | ClassNotFoundException cnf) {
 			cnf.printStackTrace();
 		}
 	}

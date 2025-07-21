@@ -21,8 +21,7 @@ Use this command to disable MySQL Server Safe Mode:
 SET SQL_SAFE_UPDATES = 0;
 */
 
-public class LocalizationLUT
-{
+public class LocalizationLUT {
 	/*
 	 * 	For this Class to Build the Lookup Table...
 	 * 	it assumes 
@@ -73,10 +72,8 @@ public class LocalizationLUT
 		
 	 */
 	
-	public static boolean submitTrainingData(SendTrainingData input)
-	{
-		try
-		{
+	public static boolean submitTrainingData(SendTrainingData input) {
+		try {
 			Class.forName(myDriver);
 			Connection conn = DriverManager.getConnection(URL, username, password);
 
@@ -88,8 +85,7 @@ public class LocalizationLUT
 		
 			java.sql.Timestamp date = new java.sql.Timestamp(new java.util.Date().getTime());
 			
-			for (int i = 0; i < MAC.length; i++)
-			{
+			for (int i = 0; i < MAC.length; i++) {
 				insert = conn.prepareStatement(SQL);
 				insert.setString(1, input.getMap());
 				insert.setDouble(2, input.getX());
@@ -112,31 +108,26 @@ public class LocalizationLUT
 			conn.prepareCall("commit;").execute();
 			return true;
 		}
-		catch(SQLException | ClassNotFoundException cnf)
-		{
+		catch(SQLException | ClassNotFoundException cnf) {
 			cnf.printStackTrace();
 			return false;
 		}
 	}
 	
-	public static String [] getColumnMAC(String map)
-	{
+	public static String [] getColumnMAC(String map) {
 		List<String> common_aps = new ArrayList<String>();
-		try
-		{
+		try {
 			Class.forName(myDriver);
 			Connection conn = DriverManager.getConnection(URL, username, password);
 			Statement st = conn.createStatement();
 
 			ResultSet rs = null;
-			if(server.preprocessed)
-			{
+			if(server.preprocessed) {
 				List<String> tables = new ArrayList<String>();
 				// All tables will have same AP columns 
 				// show tables in fiu where tables_in_fiu != 'trainingpoints';
 				rs = st.executeQuery("SHOW tables in " + DB + " where tables_in_" + DB + " != '" + TRAININGDATA + "'");
-				while (rs.next())
-				{
+				while (rs.next()) {
 					tables.add(rs.getString("Tables_in_" + DB));
 				}
 				String table = tables.get(0).replace(" ", "");
@@ -145,29 +136,24 @@ public class LocalizationLUT
 				rs = st.executeQuery("SHOW COLUMNS FROM " + DB + "." + table + " ;");
 				int counter = 1;
 				
-				while (rs.next())
-				{
+				while (rs.next()) {
 					// skip ID(1), XCoordinate(2) and YCoordinate(3)!
-					if(counter != 4)
-					{
+					if(counter != 4) {
 						++counter;
 					}
-					else
-					{
+					else {
 						common_aps.add(rs.getString("Field"));
 					}
 				}
 				
-				for (int i = 0; i < common_aps.size(); i++)
-				{
+				for (int i = 0; i < common_aps.size(); i++) {
 					common_aps.set(i, getColumnName(common_aps.get(i)));
 				}
 			}
 			else
 			{
 				// This will be called when it is time to create the tables
-				if(Distance.VECTOR_SIZE == -1)
-				{
+				if(Distance.VECTOR_SIZE == -1) {
 					// How many AP columns will we have
 					Distance.VECTOR_SIZE = getVectorSize(Distance.FSF);
 				}
@@ -188,22 +174,19 @@ public class LocalizationLUT
 						+ "ORDER BY count DESC LIMIT " + Distance.VECTOR_SIZE + ";");
 				state.setString(1, map);
 				rs = state.executeQuery();
-				while (rs.next())
-				{
+				while (rs.next()) {
 					common_aps.add(rs.getString("MACADDRESS"));
 				}
 			}
 			return common_aps.toArray(new String[common_aps.size()]);
 		}
-		catch(SQLException | ClassNotFoundException cnf)
-		{
+		catch(SQLException | ClassNotFoundException cnf) {
 			cnf.printStackTrace();
 			return null;
 		}
 	}
 	
-	public static HashMap<String, Integer> getCommonMac()
-	{
+	public static HashMap<String, Integer> getCommonMac() {
 		/*
 		Do a SQL Statement to find what are the 10 most prominent MAC Addresses:
 		SELECT MACADDRESS, Count(MACADDRESS) as count 
@@ -214,8 +197,7 @@ public class LocalizationLUT
 		 */
 
 		HashMap<String, Integer> frequency_map = new HashMap<String, Integer>();
-		try
-		{
+		try {
 			Class.forName(myDriver);
 			Connection conn = DriverManager.getConnection(URL, username, password);
 			PreparedStatement st = conn.prepareStatement(
@@ -225,14 +207,12 @@ public class LocalizationLUT
 			// execute the query, and get a java result set
 			ResultSet rs = st.executeQuery();
 	
-			while (rs.next())
-			{
+			while (rs.next()) {
 				frequency_map.put(rs.getString("MACADDRESS"), rs.getInt(2));
 			}
 			return frequency_map;
 		}
-		catch(SQLException | ClassNotFoundException cnf)
-		{
+		catch(SQLException | ClassNotFoundException cnf) {
 			return null;
 		}
 	}
@@ -259,8 +239,7 @@ public class LocalizationLUT
 	 */
 	
 	public static Double [] getX(String Map) 
-			throws ClassNotFoundException, SQLException
-	{
+			throws ClassNotFoundException, SQLException {
 		Double [] X = null;
 		ArrayList<Double> x = new ArrayList<Double>();
 
@@ -283,8 +262,7 @@ public class LocalizationLUT
 				+ "Order By Xcoordinate ASC;");
 		st.setString(1, Map);
 		ResultSet rs = st.executeQuery();
-		while (rs.next())
-		{
+		while (rs.next()) {
 			x.add(rs.getDouble("Xcoordinate"));
 		}
 		X = x.toArray(new Double[x.size()]);
@@ -307,8 +285,7 @@ public class LocalizationLUT
 				+ "Order By Xcoordinate ASC;");
 		st.setString(1, Map);
 		ResultSet rs = st.executeQuery();
-		while (rs.next())
-		{
+		while (rs.next()) {
 			y.add(rs.getDouble("Ycoordinate"));
 		}
 		Y = y.toArray(new Double[y.size()]);	
@@ -316,8 +293,7 @@ public class LocalizationLUT
 	}
 	
 	public static String [] getMaps() 
-			throws ClassNotFoundException, SQLException
-	{
+			throws ClassNotFoundException, SQLException {
 		String [] maps = null;
 		ArrayList<String> list_maps = new ArrayList<String>();
 	
@@ -328,28 +304,23 @@ public class LocalizationLUT
 		ResultSet rs = st.executeQuery(""
 				+ "select distinct Map "
 				+ "from " + DB + "." + TRAININGDATA);
-		while (rs.next())
-		{
+		while (rs.next()) {
 			list_maps.add(rs.getString("Map"));
 		}
 		maps = list_maps.toArray(new String[list_maps.size()]);	
 		return maps;
 	}
 	
-	public static boolean createTrainingTable()
-	{
-		try
-		{
+	public static boolean createTrainingTable() {
+		try {
 			Class.forName(myDriver);
 			Connection conn = DriverManager.getConnection(URL, username, password);
 			Statement stmt = conn.createStatement();
 
-			try
-			{
+			try {
 				stmt.execute("CREATE DATABASE " + DB);	
 			}
-			finally
-			{
+			finally {
 				// Ok the database exists already, but try to make table now...
 				String sqlTrain = "CREATE TABLE " + DB + "." + TRAININGDATA + " " +
 						"( " +
@@ -367,8 +338,7 @@ public class LocalizationLUT
 				stmt.executeUpdate(sqlTrain);
 			}
 		}
-		catch(SQLException | ClassNotFoundException cnf)
-		{
+		catch(SQLException | ClassNotFoundException cnf) {
 			return false;
 		}
 		return true;
@@ -376,16 +346,14 @@ public class LocalizationLUT
 	 
 	public static boolean createTables()
 	{
-		try
-		{
+		try {
 			Class.forName(myDriver);
 			System.out.println("Connecting to a local database...");
 			Connection conn = DriverManager.getConnection(URL, username, password);
 			Statement stmt = conn.createStatement();
 			
 			String [] maps = getMaps();
-			for (String map: maps)
-			{
+			for (String map: maps) {
 				// BUILD ONE TABLE FOR ALL PHONES
 				String [] ColumnNames = getColumnMAC(map);
 				String sql =
@@ -395,8 +363,7 @@ public class LocalizationLUT
 						+ " Xcoordinate DOUBLE not NULL, "
 						+ " Ycoordinate DOUBLE not NULL, ";
 				String add = "";
-				for (int i = 0; i < Distance.VECTOR_SIZE; i++)
-				{
+				for (int i = 0; i < Distance.VECTOR_SIZE; i++) {
 					add += makeColumnName(ColumnNames[i]) + " INTEGER not NULL,";
 				}
 				
@@ -406,15 +373,13 @@ public class LocalizationLUT
 			}
 			return true;
 		}
-		catch(SQLException | ClassNotFoundException se)
-		{
+		catch(SQLException | ClassNotFoundException se) {
 			se.printStackTrace();
 			return false;
 		}
 	}
 	
-	public static boolean isProcessed() throws ClassNotFoundException, SQLException
-	{
+	public static boolean isProcessed() throws ClassNotFoundException, SQLException {
 		int bool = -1;
 		String query = "";
 		query += "SELECT COUNT(*)\n";
@@ -425,8 +390,7 @@ public class LocalizationLUT
 		Connection conn = DriverManager.getConnection(URL, username, password);
 		Statement stmt = conn.createStatement();
 		ResultSet answer = stmt.executeQuery(query);
-		while (answer.next())
-		{
+		while (answer.next()) {
 			bool = answer.getInt(1);
 		}
 		// 1 Table implies only training point table found
@@ -435,16 +399,13 @@ public class LocalizationLUT
 	}
 	
 	// PROCESS LUT
-	public static boolean UpdatePlainLUT()
-	{
-		try
-		{
+	public static boolean UpdatePlainLUT() {
+		try {
 			// Init
 			Class.forName(myDriver);
 			Connection conn = DriverManager.getConnection(URL, username, password);
 			String [] maps = getMaps();
-			for (String map: maps)
-			{
+			for (String map: maps) {
 				// Acquire All Data to Create Plain Text Lookup Table	
 				Double [] X = getX(map);
 				Double [] Y = getY(map);
@@ -454,8 +415,7 @@ public class LocalizationLUT
 				PreparedStatement Plainst; 
 				String getRSS;
 				ResultSet RSS;
-				for (int x = 0; x < X.length; x++)
-				{
+				for (int x = 0; x < X.length; x++) {
 					/*
 			 		select RSS FROM TRAININGDATA
 					WHERE Xcoordinate = 227.761 
@@ -463,8 +423,7 @@ public class LocalizationLUT
 					AND MACADDRESS = '84:1b:5e:4b:80:e2';
 					 */
 					
-					for (int currentCol = 0; currentCol < Distance.VECTOR_SIZE; currentCol++)
-					{
+					for (int currentCol = 0; currentCol < Distance.VECTOR_SIZE; currentCol++) {
 						getRSS = "SELECT RSS FROM " + DB + "." + TRAININGDATA + " "
 								+ "WHERE Xcoordinate = ? "
 								+ "AND Ycoordinate = ? "
@@ -478,14 +437,12 @@ public class LocalizationLUT
 						Plainst.setString(3, CommonMac[currentCol]);
 						Plainst.setString(4, map);
 						RSS = Plainst.executeQuery();
-						while (RSS.next())
-						{
+						while (RSS.next()) {
 							Pinsert [x][currentCol] = RSS.getInt("RSS");
 						}
 						
 						//CHECK IF I GOT A NULL!
-						if (Pinsert[x][currentCol] == 0)
-						{
+						if (Pinsert[x][currentCol] == 0) {
 							Pinsert[x][currentCol] = Distance.v_c;
 						}
 						Plainst.close();		
@@ -494,8 +451,7 @@ public class LocalizationLUT
 				
 				// -----------------Place data----------------------------------------
 				String append = "";
-				for (int i = 0; i < Distance.VECTOR_SIZE; i++)
-				{
+				for (int i = 0; i < Distance.VECTOR_SIZE; i++) {
 					append += " ?,";
 				}
 				//Remove the Extra , at the end!!
@@ -508,10 +464,8 @@ public class LocalizationLUT
 				
 				PreparedStatement Plain;
 
-				for (int PrimaryKey = 0; PrimaryKey < X.length; PrimaryKey++)
-				{
-					if(isNullTuple(Pinsert[PrimaryKey]))
-					{
+				for (int PrimaryKey = 0; PrimaryKey < X.length; PrimaryKey++) {
+					if(isNullTuple(Pinsert[PrimaryKey])) {
 						continue;
 					}
 					Plain = conn.prepareStatement(PlainQuery);
@@ -521,8 +475,7 @@ public class LocalizationLUT
 					Plain.setDouble(2, X[PrimaryKey]);
 					Plain.setDouble(3, Y[PrimaryKey]);
 					
-					for (int j = 0; j < Distance.VECTOR_SIZE;j++)
-					{
+					for (int j = 0; j < Distance.VECTOR_SIZE;j++) {
 						Plain.setInt((j + 4), Pinsert[PrimaryKey][j]);
 					}
 					Plain.execute();
@@ -536,8 +489,7 @@ public class LocalizationLUT
 			}
 			return true;
 		}
-		catch(SQLException | ClassNotFoundException cnf)
-		{
+		catch(SQLException | ClassNotFoundException cnf) {
 			cnf.printStackTrace();
 			return false;
 		}
@@ -558,26 +510,21 @@ public class LocalizationLUT
 	True/False to UpdateTables()
 	*/
 	
-	public static boolean isNullTuple(int [] row)
-	{
+	public static boolean isNullTuple(int [] row) {
 		int counter = 0;
-		for (int i = 0; i < row.length; i++)
-		{
-			if (row[i]==-120)
-			{
+		for (int i = 0; i < row.length; i++) {
+			if (row[i] == -120) {
 				++counter;
 			}
 		}
 		return counter == Distance.VECTOR_SIZE;
 	}
 	
-	public static void printTrainingData()
-	{
+	public static void printTrainingData() {
 		String Q1 = "SELECT * FROM " + DB + "." + TRAININGDATA;
 		String PointsCSV = "./TrainingPoints.csv";
 		
-		try
-		{	
+		try {
 			Class.forName(myDriver);
 			Connection conn = DriverManager.getConnection(URL, username, password);
 
@@ -595,8 +542,7 @@ public class LocalizationLUT
 			WritePoints.println("Xcoordinate,Ycoordinate,AP,RSS,OS,Device,Model,Product,ScanTime");
 			
 			String tuple = "";
-			while(dataSet.next())
-			{
+			while(dataSet.next()) {
 				tuple += dataSet.getDouble("Xcoordinate") 	+ ",";
 				tuple += dataSet.getDouble("Ycoordinate")	+ ",";
 				tuple += dataSet.getString("MACADDRESS")	+ ",";
@@ -613,30 +559,21 @@ public class LocalizationLUT
 			}			
 			WritePoints.close();
 		}
-		catch(IOException | SQLException | ClassNotFoundException cnf)
-		{
+		catch(IOException | SQLException | ClassNotFoundException cnf) {
 			cnf.printStackTrace();
 		}
 	}
 	
-	public static void printLUT()
-	{	
-		
-		try
-		{
+	public static void printLUT() {
+		try {
 			String [] all_maps = getMaps();
-			for(String map: all_maps)
-			{
+			for(String map: all_maps) {
 				String [] ColumnMac = getColumnMAC(map);
 				String header = "Xcoordinate,Ycoordiante,";
-				for(int i = 0; i < Distance.VECTOR_SIZE; i++)
-				{
-					if(i == Distance.VECTOR_SIZE - 1)
-					{
+				for(int i = 0; i < Distance.VECTOR_SIZE; i++) {
+					if(i == Distance.VECTOR_SIZE - 1) {
 						header += ColumnMac[i];
-					}
-					else
-					{
+					} else {
 						header += ColumnMac[i] + ",";
 					}
 				}
@@ -663,13 +600,11 @@ public class LocalizationLUT
 
 				String tuple = "";
 
-				while(PlainResult.next())
-				{
+				while(PlainResult.next()) {
 					// Skip ID, 1
 					tuple += PlainResult.getDouble(2) + ",";
 					tuple += PlainResult.getDouble(3)  + ",";
-					for (int i = 0; i < Distance.VECTOR_SIZE; i++)
-					{
+					for (int i = 0; i < Distance.VECTOR_SIZE; i++) {
 						String name = meta.getColumnName(i+4);
 						tuple += PlainResult.getInt(name)  + ",";
 					}
@@ -681,21 +616,16 @@ public class LocalizationLUT
 				WritePlain.close();
 			}
 		}
-		catch(IOException | SQLException | ClassNotFoundException cnf)
-		{
+		catch(IOException | SQLException | ClassNotFoundException cnf) {
 			cnf.printStackTrace();
 		}
-		
-		
 	}
 	
 	// HARD RESET: RE-TRAIN EVERYTHING!
 	// Delete ALL LUT!
 	// Can be made into an administrator button?
-	public static boolean reset()
-	{
-		try
-		{
+	public static boolean reset() {
+		try {
 			Class.forName(myDriver);
 		
 			Connection conn = DriverManager.getConnection(URL, username, password);
@@ -704,12 +634,10 @@ public class LocalizationLUT
 			// show tables in fiu where tables_in_fiu != 'trainingpoints';
 			ResultSet rs = stmt.executeQuery("SHOW tables in " + DB + " where tables_in_" + DB + " != '" + TRAININGDATA + "'");
 			List<String> tables = new ArrayList<String>();
-			while (rs.next())
-			{
+			while (rs.next()) {
 				tables.add(rs.getString("Tables_in_" + DB));
 			}
-			for (String table: tables)
-			{
+			for (String table: tables) {
 				table = table.replace(" ", "");
 				table = table.replace("-", "");
 				stmt.executeUpdate("DROP TABLE " + DB + "." + table + ";");	
@@ -718,8 +646,7 @@ public class LocalizationLUT
 			stmt.close();
 			return true;
 		}
-		catch(SQLException | ClassNotFoundException cnf)
-		{
+		catch(SQLException | ClassNotFoundException cnf) {
 			cnf.printStackTrace();
 			return false;
 		}
@@ -731,10 +658,8 @@ public class LocalizationLUT
 	 *  Assuming you grant the right for one phone to delete...
 	 */
 	
-	public static boolean undo(Double [] coordinate, String map, String device)
-	{
-		try
-		{
+	public static boolean undo(Double [] coordinate, String map, String device) {
+		try {
 			Class.forName(myDriver);
 			Connection conn = DriverManager.getConnection(URL, username, password);
 			String sql = 
@@ -754,13 +679,11 @@ public class LocalizationLUT
 			stmt.close();
 			return rows_updated != 0;
 		}
-		catch(SQLException se)
-		{
+		catch(SQLException se) {
 			se.printStackTrace();
 			return false;
 		}
-		catch(ClassNotFoundException cnf)
-		{
+		catch(ClassNotFoundException cnf) {
 			cnf.printStackTrace();
 			return false;
 		}
@@ -768,16 +691,13 @@ public class LocalizationLUT
 	
 	// http://www.dummies.com/education/math/statistics/how-to-calculate-percentiles-in-statistics/
 	// Only accept from 0 - 1.
-	public static int getVectorSize(double percentile)
-	{
-		if(percentile < 0 || percentile > 1)
-		{
+	public static int getVectorSize(double percentile) {
+		if(percentile < 0 || percentile > 1) {
 			return -1;
 		}
 		
 		ArrayList<Integer> AP_count = new ArrayList<Integer>();
-		try
-		{
+		try {
 			Class.forName(myDriver);
 			Connection conn = DriverManager.getConnection(URL, username, password);
 			Statement stmt = conn.createStatement();
@@ -788,14 +708,12 @@ public class LocalizationLUT
 			query += "ORDER BY count ASC" + '\n';
 			ResultSet vec = stmt.executeQuery(query);
 			
-			while(vec.next())
-			{
+			while(vec.next()) {
 				AP_count.add(vec.getInt("count"));	
 			}
 			stmt.close();
 		}
-		catch(SQLException | ClassNotFoundException cnf)
-		{
+		catch(SQLException | ClassNotFoundException cnf) {
 			cnf.printStackTrace();
 		}
 		// same as get IDX of Percentile, Note the int is already sorted!
@@ -805,8 +723,7 @@ public class LocalizationLUT
 	}
 	
 	public static void getAPManufacturer() 
-			throws IOException, InterruptedException, SQLException, ClassNotFoundException
-	{
+			throws IOException, InterruptedException, SQLException, ClassNotFoundException {
 		// Should be done before Lookup Tables are made...
 		// Get all APs from MySQL database
 		
@@ -818,23 +735,20 @@ public class LocalizationLUT
 		Statement st = conn.createStatement();
 		ResultSet rs = st.executeQuery("SELECT MACADDRESS from " + DB + "." + TRAININGDATA + ";");
 		
-		while (rs.next())
-		{
+		while (rs.next()) {
 			APs.add(rs.getString("MACADDRESS"));
 		}
 		Makers = new String[APs.size()];
 		
 		// Now get the Manufacturer of all the AP's
-		for (int i = 0; i < APs.size(); i++)
-		{
+		for (int i = 0; i < APs.size(); i++) {
 			StringBuilder result = new StringBuilder();
 			URL url = new URL("http://api.macvendors.com/" + APs.get(i));
 			HttpURLConnection connect = (HttpURLConnection) url.openConnection();
 			connect.setRequestMethod("GET");
 			BufferedReader rd = new BufferedReader(new InputStreamReader(connect.getInputStream()));
 			String line;
-			while ((line = rd.readLine()) != null) 
-			{
+			while ((line = rd.readLine()) != null) {
 				result.append(line);
 			}
 			Makers[i] = line;
@@ -844,8 +758,7 @@ public class LocalizationLUT
 	}
 	
 	public static void getPlainLookup(ArrayList<Long[]> SQLData, ArrayList<Double[]> coordinates, String map) 
-			throws ClassNotFoundException, SQLException
-	{
+			throws ClassNotFoundException, SQLException {
 		Class.forName(myDriver);
 		Connection conn = DriverManager.getConnection(URL, username, password);
 		PreparedStatement st = conn.prepareStatement(""
@@ -853,15 +766,13 @@ public class LocalizationLUT
 				+ "Order By Xcoordinate ASC;");
 		ResultSet rs = st.executeQuery();
 		
-		while(rs.next())
-		{
+		while(rs.next()) {
 			Long [] RSS = new Long [Distance.VECTOR_SIZE];
 			Double [] Location = new Double [2];
 			Location[0] = rs.getDouble("Xcoordinate");	// 2
 			Location[1] = rs.getDouble("Ycoordinate");	// 3
 			// Start with 4....
-			for (int i = 0; i < Distance.VECTOR_SIZE; i++)
-			{
+			for (int i = 0; i < Distance.VECTOR_SIZE; i++) {
 				RSS[i] = (long) rs.getInt(i + 4);
 			}
 			SQLData.add(RSS);
@@ -871,11 +782,9 @@ public class LocalizationLUT
 	
 	// All Column names in MySQL can't start with a number
 	// So if the MAC Address starts with 1 - 9, swap it!
-	protected static String makeColumnName(String column)
-	{
+	protected static String makeColumnName(String column) {
 		String answer = "";
-		if(column == null || column.length() == 0)
-		{
+		if(column == null || column.length() == 0) {
 			return answer;
 		}
 		char first = column.charAt(0);
@@ -891,15 +800,12 @@ public class LocalizationLUT
 		// 8 (56) --> y (121)
 		// 9 (57) --> z (122)
 		
-		if(Character.isDigit(first))
-		{
+		if(Character.isDigit(first)) {
 			char alphabet = (char) (((int) first) + 65);
 			answer = alphabet + column.substring(1);
 			answer = answer.replace(':', '_');
 			return answer;
-		}
-		else
-		{
+		} else {
 			answer = column.replace(':', '_');
 			return answer;
 		}
@@ -907,11 +813,9 @@ public class LocalizationLUT
 	
 	// All Column names in MySQL can't start with a number
 	// So if the MAC Address starts with 1 - 9, swap it!
-	protected static String getColumnName(String column)
-	{
+	protected static String getColumnName(String column) {
 		String answer = "";
-		if(column == null || column.length() == 0)
-		{
+		if(column == null || column.length() == 0) {
 			return answer;
 		}
 		char first = column.charAt(0);
@@ -928,15 +832,12 @@ public class LocalizationLUT
 		// 8 (56) --> y (121)
 		// 9 (57) --> z (122)
 		// If the first character in set [q, z] then -65 to get correct MAC back
-		if("qrstuvwxyz".indexOf(first) != -1)
-		{
+		if("qrstuvwxyz".indexOf(first) != -1) {
 			char alphabet = (char) (((int) first) - 65);
 			answer = alphabet + column.substring(1);
 			answer = answer.replace('_', ':');
 			return answer;
-		}
-		else
-		{
+		} else {
 			answer = column.replace('_', ':');
 			return answer;
 		}

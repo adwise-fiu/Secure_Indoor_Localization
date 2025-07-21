@@ -26,29 +26,22 @@ public class server implements Runnable
 	public static boolean  preprocessed = false;
 	public static boolean  multi_phone = false;
 	
-	public server(int port)
-	{
+	public server(int port) {
 		serverPort = port;
 	}
 
-	public void run()
-	{
-		synchronized(this)
-		{
+	public void run() {
+		synchronized(this) {
 			this.runningThread = Thread.currentThread();
 		}
 		openServerSocket();
-		while(!isStopped())
-		{
+		while(!isStopped()) {
 			Socket clientSocket = null;
-			try
-			{
+			try {
 				clientSocket = this.serverSocket.accept();
 			}
-			catch (IOException e)
-			{
-				if(isStopped())
-				{
+			catch (IOException e) {
+				if(isStopped()) {
 					System.out.println("Server Stopped.") ;
 					return;
 				}
@@ -59,43 +52,32 @@ public class server implements Runnable
 		System.out.println("Server Stopped.") ;
 	}
 
-	private synchronized boolean isStopped()
-	{
+	private synchronized boolean isStopped() {
 		return this.isStopped;
 	}
 
-	public synchronized void stop()
-	{
+	public synchronized void stop() {
 		this.isStopped = true;
-		try
-		{
+		try {
 			this.serverSocket.close();
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			throw new RuntimeException("Error closing server", e);
 		}
 	}
 
-	private void openServerSocket()
-	{
-		try
-		{
+	private void openServerSocket() {
+		try {
 			this.serverSocket = new ServerSocket(this.serverPort);
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			throw new RuntimeException("Cannot open port " + this.serverPort, e);
 		}
 	}
 	
-	public static void main(String[] args)
-	{
+	public static void main(String[] args) {
 		Scanner inputReader = new Scanner(System.in);
 		int port = 9254;
 		
-		try 
-		{
+		try {
 			// Finally, load user/password credentials
 			String username = System.getenv("MYSQL_USER");
 			String password = System.getenv("MYSQL_PASSWORD");
@@ -237,8 +219,7 @@ public class server implements Runnable
 						}
 					}
 				}
-				else if(commands[0].equalsIgnoreCase("reset"))
-				{
+				else if(commands[0].equalsIgnoreCase("reset")) {
 					if(LocalizationLUT.reset()) {
 						System.out.println("RESET SUCCESSFUL!");
 						server.preprocessed = false;
@@ -260,15 +241,12 @@ public class server implements Runnable
 				else if (commands[0].equalsIgnoreCase("exit")) {
 					break;
 				}
-			}
-			catch (NumberFormatException nfe) {
+			} catch (NumberFormatException nfe) {
 				//nfe.printStackTrace();
 				continue;
-			} 
-			catch (ClassNotFoundException e) {
+			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
-			}
-			catch (SQLException e) {
+			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 		}
@@ -286,7 +264,7 @@ public class server implements Runnable
 	private static Map<String, Integer> sortByComparator
 	(HashMap<String, Integer> unsortMap, final boolean order) {
 		List<Entry<String, Integer>> list = 
-				new LinkedList<Entry<String, Integer>>(unsortMap.entrySet());
+				new LinkedList<>(unsortMap.entrySet());
 		// Sorting the list based on values
 		list.sort((o1, o2) -> {
             if (order) {
@@ -318,8 +296,7 @@ public class server implements Runnable
         System.out.println("Index for " + Percentile + " is: " + Index);
         if(Index == 0) {
         	return latencies[0];
-        }
-        else {
+        } else {
         	return latencies[Index - 1];	
         }
     }

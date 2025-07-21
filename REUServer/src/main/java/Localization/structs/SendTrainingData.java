@@ -24,8 +24,7 @@ public class SendTrainingData implements Serializable
     private static final long serialVersionUID = 3907495506938576258L;
 
     public SendTrainingData(String Map, Double x, Double y, String[] m, Integer[] in,
-    		String _OS, String _Device, String _Model, String _Product)
-    {
+    		String _OS, String _Device, String _Model, String _Product) {
     	this.Map = Map;
     	// Coordinates
         X_coordinate = x;
@@ -42,29 +41,43 @@ public class SendTrainingData implements Serializable
         Product = _Product;
     }
 
-    private void readObject(ObjectInputStream aInputStream) throws ClassNotFoundException, IOException
-    {
-        aInputStream.defaultReadObject();
+    public String getMap() {
+        return Map;
     }
 
-    private void writeObject(ObjectOutputStream aOutputStream) throws IOException
-    {
-        aOutputStream.defaultWriteObject();
+    public Double getX() {
+        return X_coordinate;
     }
 
-    public String getMap()			{ return Map;		  }
-    public Double getX() 			{ return X_coordinate;}
-    public Double getY() 			{ return Y_coordinate;}
-    public String[] getMACAddress() { return MACAddress;  }
-    public Integer[] getRSS() 		{ return RSS;		  }
+    public Double getY() {
+        return Y_coordinate;
+    }
 
-    public String getOS()			{ return OS;		  }
-    public String getDevice()		{ return Device;	  }
-    public String getModel()		{ return Model; 	  }
-    public String getProduct()		{ return Product;	  }
+    public String[] getMACAddress() {
+        return MACAddress;
+    }
 
-    public String toString()
-    {
+    public Integer[] getRSS() {
+        return RSS;
+    }
+
+    public String getOS() {
+        return OS;
+    }
+
+    public String getDevice() {
+        return Device;
+    }
+
+    public String getModel() {
+        return Model;
+    }
+
+    public String getProduct() {
+        return Product;
+    }
+
+    public String toString() {
         String train = "";
         train += Map + "\n";
         train += "(" + X_coordinate + ", " + Y_coordinate + ")\n";

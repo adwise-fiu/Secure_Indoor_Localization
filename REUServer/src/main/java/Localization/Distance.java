@@ -9,8 +9,7 @@ import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamal_Ciphertext;
 import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
 import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
 
-public abstract class Distance 
-{
+public abstract class Distance {
 	protected static int v_c = -120;
 	protected static int VECTOR_SIZE = -1;
 	// Filter out ONLY 90% of APs
@@ -56,11 +55,9 @@ public abstract class Distance
 	
 	// DMA NORMALIZATION
 	protected void DMA_Normalization(alice Niu) 
-			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException
-	{
+			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
 		Niu.writeObject(resultList);
-		for (int i = 0; i < resultList.size(); i++)
-		{
+		for (int i = 0; i < resultList.size(); i++) {
 			BigInteger d = Niu.division(resultList.get(i).encryptedDistance, resultList.get(i).matches);
 			resultList.get(i).setEncryptedDistance(d);
 		}
@@ -68,22 +65,17 @@ public abstract class Distance
 	
 	protected int distance_index(BigInteger min)
 	{
-		for(int i = 0; i < resultList.size(); i++)
-		{
-			if(resultList.get(i).encryptedDistance.equals(min))
-			{
+		for(int i = 0; i < resultList.size(); i++) {
+			if(resultList.get(i).encryptedDistance.equals(min)) {
 				return i;
 			}
 		}
 		return -1;
 	}
 	
-	protected int elgamal_distance_index(ElGamal_Ciphertext min)
-	{
-		for(int i = 0; i < resultList.size(); i++)
-		{
-			if(resultList.get(i).e_d.equals(min))
-			{
+	protected int elgamal_distance_index(ElGamal_Ciphertext min) {
+		for(int i = 0; i < resultList.size(); i++) {
+			if(resultList.get(i).e_d.equals(min)) {
 				return i;
 			}
 		}

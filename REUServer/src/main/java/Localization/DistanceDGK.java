@@ -23,25 +23,21 @@ public class DistanceDGK extends Distance
 	private boolean isREU2017;
 	
 	public DistanceDGK(SendLocalizationData in) 
-			throws ClassNotFoundException, SQLException
-	{
+			throws ClassNotFoundException, SQLException {
 		scanAPs = in.APs;
 		S2 = in.S2;
 		S3 = in.S3;
 		S3_comp = in.S3_comp;
 		isREU2017 = in.isREU2017;
 		pk = in.pubKey;
-		if(column == null)
-		{
+		if(column == null) {
 			column = LocalizationLUT.getColumnMAC(in.map);
 		}
 		// Read from Database
-		if(server.multi_phone)
-		{
+		if(server.multi_phone) {
 			MultiphoneLocalization.getPlainLookup(this.RSS_ij, this.coordinates, in.phone_data, in.map);
 		}
-		else
-		{
+		else {
 			LocalizationLUT.getPlainLookup(this.RSS_ij, this.coordinates, in.map);
 		}
 		//MINIMUM_AP_MATCH = (int) (VECTOR_SIZE * FSF);
@@ -52,17 +48,14 @@ public class DistanceDGK extends Distance
 	}
 
 	protected ArrayList<LocalizationResult> MinimumDistance(alice Niu) 
-			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
-	{
+			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
 		resultList = this.MissConstantAlgorithm();
 		// 2015, let the phone do the work!
-		if(!isREU2017)
-		{
+		if(!isREU2017) {
 			return resultList;
 		}
 		// 1- Encrypt and Store coordinates
-		for(int i = 0; i < resultList.size(); i++)
-		{
+		for(int i = 0; i < resultList.size(); i++) {
 			resultList.get(i).add_secret_coordinates(pk);
 		}
 		// 2- Shuffle Result List
@@ -70,10 +63,8 @@ public class DistanceDGK extends Distance
 				
 		// 3- Get Min and return ([[x]], [[y]])
 		BigInteger min = Niu.getKValues(encryptedDistance, 1, true)[0];
-		for(LocalizationResult l: resultList)
-		{
-			if(l.encryptedDistance.equals(min))
-			{
+		for(LocalizationResult l: resultList) {
+			if(l.encryptedDistance.equals(min)) {
 				this.encryptedLocation[0] = l.encryptedCoordinates[0];
 				this.encryptedLocation[1] = l.encryptedCoordinates[1];
 				break;
@@ -83,28 +74,23 @@ public class DistanceDGK extends Distance
 	}
 
 	protected ArrayList<LocalizationResult> MissConstantAlgorithm()
-			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
-	{	
+			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
 		long count = 0;
 		BigInteger d = null;
 		BigInteger S1_Row = null;
 		BigInteger S2_Row = null;
 		
-		for (int i = 0; i < RSS_ij.size();i++)
-		{	
+		for (int i = 0; i < RSS_ij.size();i++) {
 			// Step 1, Compute FSF
 			count = 0;
-			for (int j = 0; j < VECTOR_SIZE; j++)
-			{
-				if(scanAPs[j].equals(column[j]))
-				{
+			for (int j = 0; j < VECTOR_SIZE; j++) {
+				if(scanAPs[j].equals(column[j])) {
 					++count;
 				}
 			}
 			
 			// Step 2, if FSF is NOT satisfied, skip this step!
-			if(count < MINIMUM_AP_MATCH)
-			{
+			if(count < MINIMUM_AP_MATCH) {
 				continue;
 			}
 			
@@ -112,15 +98,12 @@ public class DistanceDGK extends Distance
 			S1_Row = pk.ZERO();
 			S2_Row = pk.ZERO();
 			
-			for (int j = 0; j < VECTOR_SIZE;j++)
-			{
-				if(scanAPs[j].equals(column[j]))
-				{
+			for (int j = 0; j < VECTOR_SIZE;j++) {
+				if(scanAPs[j].equals(column[j])) {
 					S1_Row = DGKOperations.add_plaintext(S1_Row, RSS_ij.get(i)[j] * RSS_ij.get(i)[j], pk);
 					S2_Row = DGKOperations.add(S2_Row, DGKOperations.multiply(S2[j], RSS_ij.get(i)[j].longValue(), pk), pk);
 				}
-				else
-				{
+				else {
 					S1_Row = DGKOperations.add_plaintext(S1_Row, -120 * -120, pk);
 					S2_Row = DGKOperations.add(S2_Row, DGKOperations.multiply(S2[j], -120, pk), pk);
 				}
@@ -134,29 +117,24 @@ public class DistanceDGK extends Distance
 	}
 
 	protected ArrayList<LocalizationResult> DynamicMatchingAlgorithm()
-			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
-	{
+			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
 		long count = 0;
 		BigInteger d = null;
 		BigInteger S1_Row = null;
 		BigInteger S2_Row = null;
 		BigInteger S3_Row = null;
 		
-		for (int i = 0; i < RSS_ij.size();i++)
-		{	
+		for (int i = 0; i < RSS_ij.size();i++) {
 			// Step 1, Compute FSF
 			count = 0;
-			for (int j = 0; j < VECTOR_SIZE; j++)
-			{
-				if(scanAPs[j].equals(column[j]))
-				{
+			for (int j = 0; j < VECTOR_SIZE; j++) {
+				if(scanAPs[j].equals(column[j])) {
 					++count;
 				}
 			}
 			
 			// Step 2, if FSF is NOT satisfied, skip this step!
-			if(count < MINIMUM_AP_MATCH)
-			{
+			if(count < MINIMUM_AP_MATCH) {
 				continue;
 			}
 			
@@ -165,10 +143,8 @@ public class DistanceDGK extends Distance
 			S2_Row = pk.ZERO();
 			S3_Row = pk.ZERO();
 			
-			for (int j = 0; j < VECTOR_SIZE;j++)
-			{
-				if(scanAPs[j].equals(column[j]))
-				{
+			for (int j = 0; j < VECTOR_SIZE;j++) {
+				if(scanAPs[j].equals(column[j])) {
 					S1_Row = DGKOperations.add_plaintext(S1_Row, RSS_ij.get(i)[j] * RSS_ij.get(i)[j], pk);
 					S2_Row = DGKOperations.add(S2_Row, DGKOperations.multiply(S2[j], RSS_ij.get(i)[j].longValue(), pk), pk);
 					S3_Row = DGKOperations.add(S3_comp[j], S3_Row, pk);
@@ -183,8 +159,7 @@ public class DistanceDGK extends Distance
 	}
 
 	protected BigInteger[] Phase3(alice Niu) 
-			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
-	{	
+			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
 		// Get the K-minimum distances!
 		BigInteger [] k_min = Niu.getKValues(encryptedDistance, k, true);
 		
@@ -198,12 +173,9 @@ public class DistanceDGK extends Distance
 		
 		// Get the plain text value from Alice
 		x = Niu.readObject();
-		if(x instanceof BigInteger)
-		{
+		if(x instanceof BigInteger) {
 			divisor = (BigInteger) x;
-		}
-		else
-		{
+		} else {
 			throw new IllegalArgumentException("Did not recive d from the Phone!");
 		}
 		
@@ -216,8 +188,7 @@ public class DistanceDGK extends Distance
 		 * MULTIPLY BY 100 THE WHOLE THING
 		 * 100/(k - 1) - 100d_i/sum(d_i)/(k - 1)
 		 */
-		for (int i = 0; i < Distance.k; i++)
-		{
+		for (int i = 0; i < Distance.k; i++) {
 			weights[i] = DGKOperations.multiply(k_min[i], FACTOR, pk);
 			weights[i] = Niu.division(weights[i], divisor.longValue() * (k - 1));
 			weights[i] = DGKOperations.subtract(weights[i], DGKOperations.encrypt(FACTOR/(k - 1), pk), pk);
@@ -227,8 +198,7 @@ public class DistanceDGK extends Distance
 		
 		int index = -1;
 		// Now I multiply it with all scalars. (x, y)
-		for (int i = 0; i < Distance.k; i++)
-		{
+		for (int i = 0; i < Distance.k; i++) {
 			// NOTE, IT WILL NOT GIVE ME CORRECT X_I, Y_I since it is NOT sorted.
 			// So I need to get the correct index!
 			index = distance_index(k_min[i]);

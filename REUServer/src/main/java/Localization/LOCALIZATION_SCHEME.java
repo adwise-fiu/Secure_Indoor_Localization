@@ -1,6 +1,5 @@
 package Localization;
-public enum LOCALIZATION_SCHEME
-{
+public enum LOCALIZATION_SCHEME {
 	UNDO(-5),
 	RESET(-4),
 	GETXY(-3),
@@ -19,15 +18,12 @@ public enum LOCALIZATION_SCHEME
 	
 	public final int value;
 
-	LOCALIZATION_SCHEME(int value)
-	{
+	LOCALIZATION_SCHEME(int value) {
 		this.value = value;
 	}
 	
-	public static LOCALIZATION_SCHEME from_int(Integer x)
-	{
-		switch(x)
-		{
+	public static LOCALIZATION_SCHEME from_int(Integer x) {
+		switch(x) {
 			case -5:
 				return UNDO;
 			case -4:
