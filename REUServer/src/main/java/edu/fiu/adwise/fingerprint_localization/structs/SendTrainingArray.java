@@ -1,8 +1,6 @@
-package Localization.structs;
+package edu.fiu.adwise.fingerprint_localization.structs;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Arrays;
 
@@ -19,6 +17,7 @@ public class SendTrainingArray implements Serializable {
     private final String Model;
     private final String Product;
 
+    @Serial
     private static final long serialVersionUID = 3907495506938576258L;
 
     public SendTrainingArray(Double x, Double y, String[] m, Integer[] in,

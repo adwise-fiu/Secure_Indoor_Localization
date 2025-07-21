@@ -1,4 +1,4 @@
-package Localization;
+package edu.fiu.adwise.fingerprint_localization.distance_computation;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -6,39 +6,39 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import Localization.structs.LocalizationResult;
-import Localization.structs.SendLocalizationData;
+import edu.fiu.adwise.fingerprint_localization.database.LocalizationLUT;
+import edu.fiu.adwise.fingerprint_localization.database.MultiphoneLocalization;
+import edu.fiu.adwise.fingerprint_localization.server;
+import edu.fiu.adwise.fingerprint_localization.structs.LocalizationResult;
+import edu.fiu.adwise.fingerprint_localization.structs.SendLocalizationData;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKOperations;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
 import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
-import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierCipher;
-//import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPrivateKey;
-import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
 import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
 
 
-public class DistancePaillier extends Distance
-{
+public class DistanceDGK extends Distance {
 	private BigInteger [] S2;
-	private	BigInteger S3;
+	private BigInteger S3;
 	private BigInteger [] S3_comp;
 	
+	private DGKPublicKey pk = null;
 	private boolean isREU2017;
-	private PaillierPublicKey pk = null;
-
-	public DistancePaillier(SendLocalizationData in)
+	
+	public DistanceDGK(SendLocalizationData in) 
 			throws ClassNotFoundException, SQLException {
-		pk = in.pk;
+		scanAPs = in.APs;
 		S2 = in.S2;
 		S3 = in.S3;
 		S3_comp = in.S3_comp;
 		isREU2017 = in.isREU2017;
-		scanAPs = in.APs;
+		pk = in.pubKey;
 		if(column == null) {
 			column = LocalizationLUT.getColumnMAC(in.map);
 		}
-		
-		// Read from Database, get S_1 and S_2 Parts!
+		// Read from Database
 		if(server.multi_phone) {
-			MultiphoneLocalization.getPlainLookup(this.RSS_ij, this.coordinates, in.phone_data, in.map);	
+			MultiphoneLocalization.getPlainLookup(this.RSS_ij, this.coordinates, in.phone_data, in.map);
 		}
 		else {
 			LocalizationLUT.getPlainLookup(this.RSS_ij, this.coordinates, in.map);
@@ -46,26 +46,24 @@ public class DistancePaillier extends Distance
 		//MINIMUM_AP_MATCH = (int) (VECTOR_SIZE * FSF);
 		// THIS NUMBER SHOULD ALWAYS BE >= 1 FOR THE FOLLOWING REASONS
 		// 1- Inform User if they are not in floor map
-		// 2- MCA/DMA will break because division by 0 becomes possible!	
+		// 2- MCA/DMA will break because division by 0 becomes possible!
 		MINIMUM_AP_MATCH = 1;
 	}
 
-	protected ArrayList<LocalizationResult> MinimumDistance(alice Niu)
+	public ArrayList<LocalizationResult> MinimumDistance(alice Niu)
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
 		resultList = this.MissConstantAlgorithm();
-		// REU 2015, let the phone do the work!
+		// 2015, let the phone do the work!
 		if(!isREU2017) {
 			return resultList;
 		}
-		
 		// 1- Encrypt and Store coordinates
 		for(int i = 0; i < resultList.size(); i++) {
 			resultList.get(i).add_secret_coordinates(pk);
 		}
-		
 		// 2- Shuffle Result List
 		Collections.shuffle(resultList);
-		
+				
 		// 3- Get Min and return ([[x]], [[y]])
 		BigInteger min = Niu.getKValues(encryptedDistance, 1, true)[0];
 		for(LocalizationResult l: resultList) {
@@ -78,7 +76,7 @@ public class DistancePaillier extends Distance
 		return resultList;
 	}
 
-	protected ArrayList<LocalizationResult> MissConstantAlgorithm()
+	public ArrayList<LocalizationResult> MissConstantAlgorithm()
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
 		long count = 0;
 		BigInteger d = null;
@@ -100,27 +98,28 @@ public class DistancePaillier extends Distance
 			}
 			
 			// Repeat MCA/DMA as shown in the paper to compute distance
-			S1_Row = PaillierCipher.encrypt(0, pk);
-			S2_Row = PaillierCipher.encrypt(0, pk);
+			S1_Row = pk.ZERO();
+			S2_Row = pk.ZERO();
 			
 			for (int j = 0; j < VECTOR_SIZE;j++) {
 				if(scanAPs[j].equals(column[j])) {
-					S1_Row = PaillierCipher.add_plaintext(S1_Row, BigInteger.valueOf(RSS_ij.get(i)[j] * RSS_ij.get(i)[j]), pk);
-					S2_Row = PaillierCipher.add(S2_Row, PaillierCipher.multiply(S2[j], RSS_ij.get(i)[j], pk), pk);
-				} else {
-					S1_Row = PaillierCipher.add_plaintext(S1_Row, BigInteger.valueOf((long) v_c * v_c), pk);
-					S2_Row = PaillierCipher.add(S2_Row, PaillierCipher.multiply(S2[j], v_c, pk), pk);
+					S1_Row = DGKOperations.add_plaintext(S1_Row, RSS_ij.get(i)[j] * RSS_ij.get(i)[j], pk);
+					S2_Row = DGKOperations.add(S2_Row, DGKOperations.multiply(S2[j], RSS_ij.get(i)[j].longValue(), pk), pk);
+				}
+				else {
+					S1_Row = DGKOperations.add_plaintext(S1_Row, -120 * -120, pk);
+					S2_Row = DGKOperations.add(S2_Row, DGKOperations.multiply(S2[j], -120, pk), pk);
 				}
 			}
-			d = PaillierCipher.add(S1_Row, S3, pk);
-			d = PaillierCipher.add(d, S2_Row, pk);
+			d = DGKOperations.add(S3, S1_Row, pk);
+			d = DGKOperations.add(S2_Row, d, pk);
 			encryptedDistance.add(d);
 			resultList.add(new LocalizationResult(coordinates.get(i)[0], coordinates.get(i)[1], d, null));
 		}
 		return resultList;
 	}
 
-	protected ArrayList<LocalizationResult> DynamicMatchingAlgorithm()
+	public ArrayList<LocalizationResult> DynamicMatchingAlgorithm()
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
 		long count = 0;
 		BigInteger d = null;
@@ -143,44 +142,44 @@ public class DistancePaillier extends Distance
 			}
 			
 			// Repeat MCA/DMA as shown in the paper to compute distance
-			S1_Row = PaillierCipher.encrypt(0, pk);
-			S2_Row = PaillierCipher.encrypt(0, pk);
-			S3_Row = PaillierCipher.encrypt(0, pk);
+			S1_Row = pk.ZERO();
+			S2_Row = pk.ZERO();
+			S3_Row = pk.ZERO();
 			
 			for (int j = 0; j < VECTOR_SIZE;j++) {
 				if(scanAPs[j].equals(column[j])) {
-					S1_Row = PaillierCipher.add_plaintext(S1_Row, BigInteger.valueOf(RSS_ij.get(i)[j] * RSS_ij.get(i)[j]), pk);
-					S2_Row = PaillierCipher.add(S2_Row, PaillierCipher.multiply(S2[j], RSS_ij.get(i)[j], pk), pk);
-					S3_Row = PaillierCipher.add(S3_Row, S3_comp[j], pk);
+					S1_Row = DGKOperations.add_plaintext(S1_Row, RSS_ij.get(i)[j] * RSS_ij.get(i)[j], pk);
+					S2_Row = DGKOperations.add(S2_Row, DGKOperations.multiply(S2[j], RSS_ij.get(i)[j].longValue(), pk), pk);
+					S3_Row = DGKOperations.add(S3_comp[j], S3_Row, pk);
 				}
 			}
-			d = PaillierCipher.add(S1_Row, S3_Row, pk);
-			d = PaillierCipher.add(d, S2_Row, pk);
+			d = DGKOperations.add(S3_Row, S1_Row, pk);
+			d = DGKOperations.add(S2_Row, d, pk);
 			encryptedDistance.add(d);
 			resultList.add(new LocalizationResult(coordinates.get(i)[0], coordinates.get(i)[1], d, count));
 		}
 		return resultList;
 	}
-	
-	protected BigInteger[] Phase3(alice Niu)
+
+	public BigInteger[] Phase3(alice Niu)
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
 		// Get the K-minimum distances!
 		BigInteger [] k_min = Niu.getKValues(encryptedDistance, k, true);
-		// TODO: If it is DMA, you need to divide distances first right??
-		int index = -1;
-		Object x = null;
+		
+		// Continue with Phase 3 of centriod finding
+		Object x;
 		BigInteger divisor = null;
 		BigInteger [] weights = new BigInteger[Distance.k];
 		
-		divisor = PaillierCipher.sum(k_min, pk, Distance.k);
+		divisor = DGKOperations.sum(k_min, pk, Distance.k);
 		Niu.writeObject(divisor);
 		
-		// Get the plain text value
+		// Get the plain text value from Alice
 		x = Niu.readObject();
 		if(x instanceof BigInteger) {
 			divisor = (BigInteger) x;
 		} else {
-			throw new IllegalArgumentException("DID NOT GET d decrypted!");
+			throw new IllegalArgumentException("Did not recive d from the Phone!");
 		}
 		
 		// Now I get the k distances and divide by divisor
@@ -193,22 +192,22 @@ public class DistancePaillier extends Distance
 		 * 100/(k - 1) - 100d_i/sum(d_i)/(k - 1)
 		 */
 		for (int i = 0; i < Distance.k; i++) {
-			weights[i] = PaillierCipher.multiply(k_min[i], Distance.FACTOR, pk);
+			weights[i] = DGKOperations.multiply(k_min[i], FACTOR, pk);
 			weights[i] = Niu.division(weights[i], divisor.longValue() * (k - 1));
-			weights[i] = PaillierCipher.subtract(PaillierCipher.encrypt(FACTOR/(k - 1), pk), weights[i], pk);
+			weights[i] = DGKOperations.subtract(weights[i], DGKOperations.encrypt(FACTOR/(k - 1), pk), pk);
 		}
+		encryptedLocation[0] = pk.ZERO();
+		encryptedLocation[1] = pk.ZERO();
 		
-		encryptedLocation[0] = PaillierCipher.encrypt(0, pk);
-		encryptedLocation[1] = PaillierCipher.encrypt(0, pk);
-		
+		int index = -1;
 		// Now I multiply it with all scalars. (x, y)
 		for (int i = 0; i < Distance.k; i++) {
 			// NOTE, IT WILL NOT GIVE ME CORRECT X_I, Y_I since it is NOT sorted.
 			// So I need to get the correct index!
 			index = distance_index(k_min[i]);
-			encryptedLocation[0] = PaillierCipher.add(encryptedLocation[0], PaillierCipher.multiply(weights[i] , resultList.get(index).getX().longValue(), pk), pk);
-			encryptedLocation[1] = PaillierCipher.add(encryptedLocation[1], PaillierCipher.multiply(weights[i] , resultList.get(index).getY().longValue(), pk), pk);
+			encryptedLocation[0] = DGKOperations.add(encryptedLocation[0], DGKOperations.multiply(weights[i] , resultList.get(index).getX().longValue(), pk), pk);
+			encryptedLocation[1] = DGKOperations.add(encryptedLocation[1], DGKOperations.multiply(weights[i] , resultList.get(index).getY().longValue(), pk), pk);
 		}
 		return encryptedLocation;
-	}	
+	}
 }

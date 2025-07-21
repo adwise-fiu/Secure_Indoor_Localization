@@ -1,4 +1,4 @@
-package Localization;
+package edu.fiu.adwise.fingerprint_localization.distance_computation;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -6,12 +6,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import Localization.structs.LocalizationResult;
-import Localization.structs.SendLocalizationData;
+import edu.fiu.adwise.fingerprint_localization.database.LocalizationLUT;
+import edu.fiu.adwise.fingerprint_localization.database.MultiphoneLocalization;
+import edu.fiu.adwise.fingerprint_localization.server;
+import edu.fiu.adwise.fingerprint_localization.structs.LocalizationResult;
+import edu.fiu.adwise.fingerprint_localization.structs.SendLocalizationData;
 import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
 
-public class DistancePlain extends Distance
-{
+public class DistancePlain extends Distance {
 	private boolean isREU2017;
 	public DistancePlain(SendLocalizationData in) throws ClassNotFoundException, SQLException {
 		scanAPs = in.APs;
@@ -29,8 +31,7 @@ public class DistancePlain extends Distance
 		}
 	}
 
-
-	protected ArrayList<LocalizationResult> MinimumDistance(alice Niu) 
+	public ArrayList<LocalizationResult> MinimumDistance(alice Niu)
 			throws ClassNotFoundException, IOException {
 		resultList = this.MissConstantAlgorithm();
 		if(isREU2017) {
@@ -40,7 +41,7 @@ public class DistancePlain extends Distance
 		return resultList;
 	}
 
-	protected ArrayList<LocalizationResult> MissConstantAlgorithm() 
+	public ArrayList<LocalizationResult> MissConstantAlgorithm()
 			throws ClassNotFoundException, IOException {
 		long distance = 0;
 		for (int i = 0; i < RSS_ij.size(); i++) {
@@ -58,9 +59,8 @@ public class DistancePlain extends Distance
 		return resultList;
 	}
 
-	protected ArrayList<LocalizationResult> DynamicMatchingAlgorithm() 
-			throws ClassNotFoundException, IOException
-	{
+	public ArrayList<LocalizationResult> DynamicMatchingAlgorithm()
+			throws ClassNotFoundException, IOException {
 		Long distance = (long) 0;
 		Long matches = (long) 0;
 		for (int i = 0; i < RSS_ij.size();i++) {

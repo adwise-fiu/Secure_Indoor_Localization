@@ -1,4 +1,5 @@
-package Localization;
+package edu.fiu.adwise.fingerprint_localization.distance_computation;
+
 public enum LOCALIZATION_SCHEME {
 	UNDO(-5),
 	RESET(-4),

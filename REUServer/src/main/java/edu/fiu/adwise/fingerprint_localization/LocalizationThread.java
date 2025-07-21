@@ -1,4 +1,4 @@
-package Localization;
+package edu.fiu.adwise.fingerprint_localization;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -14,14 +14,24 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
-import Localization.structs.LocalizationResult;
-import Localization.structs.SendLocalizationData;
-import Localization.structs.SendTrainingData;
+import edu.fiu.adwise.fingerprint_localization.database.MultiphoneLocalization;
+import edu.fiu.adwise.fingerprint_localization.distance_computation.DistanceDGK;
+import edu.fiu.adwise.fingerprint_localization.distance_computation.DistancePaillier;
+import edu.fiu.adwise.fingerprint_localization.distance_computation.DistancePlain;
+import edu.fiu.adwise.fingerprint_localization.distance_computation.LOCALIZATION_SCHEME;
+import edu.fiu.adwise.fingerprint_localization.structs.LocalizationResult;
+import edu.fiu.adwise.fingerprint_localization.structs.SendLocalizationData;
+import edu.fiu.adwise.fingerprint_localization.structs.SendTrainingData;
+import edu.fiu.adwise.fingerprint_localization.database.LocalizationLUT;
+import edu.fiu.adwise.fingerprint_localization.distance_computation.Distance;
+
 import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
 import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamalPublicKey;
 import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
 import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
 import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /*
  * Uses Multi-thread code from:
@@ -29,6 +39,8 @@ import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
  */
 
 public class LocalizationThread implements Runnable {
+	private static final Logger logger = LogManager.getLogger(LocalizationThread.class);
+
 	// REU Variables
 	private LOCALIZATION_SCHEME LOCALIZATIONSCHEME;
 	private boolean isREU2017;
@@ -72,7 +84,7 @@ public class LocalizationThread implements Runnable {
         try {
 			BASEDIR = new File(".").getCanonicalPath() + "/";
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.fatal("Error obtaining BASEDIR: " + e.getMessage());
 		}
         
 		try {
@@ -86,28 +98,28 @@ public class LocalizationThread implements Runnable {
 				String command = (String) x;
 
 				if (command.equalsIgnoreCase("UNDO")) {
-					System.out.println("Command acquired: UNDO");
+					logger.info("Command acquired: UNDO");
 					Double [] coordinate = (Double []) fromClient.readObject();
 					String map = (String) fromClient.readObject();
 					String device = (String) fromClient.readObject();
-					System.out.println(coordinate[0] + " " + coordinate[1] + " " + map + " " + device);
+					logger.info(coordinate[0] + " " + coordinate[1] + " " + map + " " + device);
 					toClient.writeBoolean(LocalizationLUT.undo(coordinate, map, device));
-					System.out.println("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
+					logger.info("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
 
 					// Flush and Close I/O streams and Socket
 					this.closeClientConnection();
 					return;
 				} else if (command.equals("RESET")) {
-					System.out.println("Command acquired: RESET"); 
+					logger.info("Command acquired: RESET");
 					toClient.writeBoolean(LocalizationLUT.reset());
-					System.out.println("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
+					logger.info("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
 					server.preprocessed = false;
 					
 					// Flush and Close I/O streams and Socket
 					this.closeClientConnection();
 					return;
 				} else if (command.equals("Acquire all current training points")) {
-					System.out.println("Command acquired: Obtain all Fingerprints!");
+					logger.info("Command acquired: Obtain all Fingerprints!");
 					String Map = (String) fromClient.readObject();
 					if(server.multi_phone) {
 						x = fromClient.readObject();
@@ -127,14 +139,14 @@ public class LocalizationThread implements Runnable {
 						toClient.writeObject(LocalizationLUT.getX(Map));
 						toClient.writeObject(LocalizationLUT.getY(Map));
 					}
-					System.out.println("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
+					logger.info("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
 
 					// Flush and Close I/O streams and Socket
 					this.closeClientConnection();
 					return;
 				}
 				else if (command.equals("Process LUT")) {
-					System.out.println("Command acquired: Process Lookup Table");
+					logger.info("Command acquired: Process Lookup Table");
 					if(server.multi_phone) {
 						toClient.writeBoolean(process());
 					}
@@ -142,17 +154,17 @@ public class LocalizationThread implements Runnable {
 						toClient.writeBoolean(multiprocess());
 					}
 					toClient.flush();
-					System.out.println("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
+					logger.info("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
 
 					// Flush and Close I/O streams and Socket
 					this.closeClientConnection();		
 					return;
 				} else if(command.equals("Get Lookup Columns")) {
-					System.out.println("Command acquired: Get Lookup MAC Addresses!");
+					logger.info("Command acquired: Get Lookup MAC Addresses!");
 					String map = (String) fromClient.readObject();
 					toClient.writeObject(LocalizationLUT.getColumnMAC(map));
 					toClient.flush();
-					System.out.println("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
+					logger.info("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
 
 					// Flush and Close I/O streams and Socket
 					this.closeClientConnection();
@@ -163,7 +175,6 @@ public class LocalizationThread implements Runnable {
 					File file = null;
 					try {
 						file = new File(BASEDIR + map_name);
-						//System.out.println(file.getAbsolutePath());
 						if (file.getCanonicalPath().startsWith(BASEDIR)) {
 						    // process file
 							byte[] map = new byte[(int) file.length()];
@@ -184,7 +195,7 @@ public class LocalizationThread implements Runnable {
 							toClient.flush();
 						}
 					} catch(FileNotFoundException e) {
-						e.printStackTrace();
+						logger.warn("File not found: " + map_name);
 						toClient.writeInt(0);
 						toClient.flush();
 					}
@@ -205,20 +216,20 @@ public class LocalizationThread implements Runnable {
 							BufferedImage image = ImageIO.read(new ByteArrayInputStream(map));
 							ImageIO.write(image, "BMP", new File(map_name));
 							toClient.writeBoolean(true);
-							System.out.println("New Map: " + map_name +" Sucessfully uploaded!");
+							logger.info("New Map: " + map_name +" Sucessfully uploaded!");
 						} else {
 							toClient.writeBoolean(false);
 						}
 					} catch (Exception e) {
 						toClient.writeBoolean(false);
-						e.printStackTrace();
+						logger.warn("Error uploading map: " + e.getMessage());
 					}
 					// Flush and Close I/O streams and Socket
 					this.closeClientConnection();
 					return;
 				} else {
-					System.out.println("INVALID Command acquired: " + command);
-					System.out.println("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
+					logger.info("INVALID Command acquired: " + command);
+					logger.info("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
 					// Flush and Close I/O streams and Socket
 					this.closeClientConnection();
 					return;
@@ -227,16 +238,16 @@ public class LocalizationThread implements Runnable {
 				// Train the Database
 				// dataType = 0
 				trainDatabase = (SendTrainingData) x;
-				System.out.println("TRAINING DATA RECEIVED...");
+				logger.info("TRAINING DATA RECEIVED...");
 				toClient.writeBoolean(LocalizationLUT.submitTrainingData(trainDatabase));
-				System.out.println("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
+				logger.info("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
 
 				// Flush and Close I/O streams and Socket
 				this.closeClientConnection();
 				return;
 			} else if (!(x instanceof SendLocalizationData)) {
-				System.out.println("INVALID OBJECT: " + x.getClass() + "! Closing...");
-				System.out.println("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
+				logger.info("INVALID OBJECT: " + x.getClass() + "! Closing...");
+				logger.info("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
 				
 				// Flush and Close I/O streams and Socket
 				this.closeClientConnection();		
@@ -252,7 +263,7 @@ public class LocalizationThread implements Runnable {
 			pk = transmission.pk;
 			e_pk = transmission.e_pk;
 			
-			System.out.println("LOCALIZATION SCHEME: " + LOCALIZATIONSCHEME + " isREU2017: " + isREU2017);
+			logger.info("LOCALIZATION SCHEME: " + LOCALIZATIONSCHEME + " isREU2017: " + isREU2017);
 			Niu = new alice(clientSocket);
 			Niu.setDGKMode(true);
 			
@@ -363,39 +374,37 @@ public class LocalizationThread implements Runnable {
 					System.err.println("INVALID LOCALIZATION SCHEME!");
 					break;
 			}
-			System.out.println("Computation completed, it took " + (System.nanoTime() - startTime)/BILLION + " seconds");
+			logger.info("Computation completed, it took " + (System.nanoTime() - startTime)/BILLION + " seconds");
 			this.closeClientConnection();
 			return;
-		} catch(IOException | SQLException | ClassNotFoundException | IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (HomomorphicException e) {
-			e.printStackTrace();
+		} catch(IOException | SQLException | ClassNotFoundException | IllegalArgumentException | HomomorphicException e) {
+			logger.fatal("Error in Localization Thread: " + e.getMessage());
 		}
     }
 	
 	public static boolean process() {
 		if(!server.preprocessed) {
 			if(LocalizationLUT.createTables()) {
-				System.out.println("Created new Lookup Table!");
+				logger.info("Created new Lookup Table!");
 			}
 			else {
-				System.out.println("The table exists! Drop it first!");
+				logger.info("The table exists! Drop it first!");
 				return false;
 			}
-			System.out.println("Computing Lookup Table Data...");
+			logger.info("Computing Lookup Table Data...");
 			Distance.VECTOR_SIZE = LocalizationLUT.getVectorSize(Distance.FSF);
-			System.out.println("NEW VECTOR SIZE: " + Distance.VECTOR_SIZE);
+			logger.info("NEW VECTOR SIZE: " + Distance.VECTOR_SIZE);
 			
 			if(LocalizationLUT.UpdatePlainLUT()) {
-				System.out.println("Sucessfully created Lookup table!");
+				logger.info("Sucessfully created Lookup table!");
 				server.preprocessed = true;
 				return true;
 			} else {
-				System.out.println("Failed to create Lookup table!");
+				logger.info("Failed to create Lookup table!");
 				return false;
 			}
 		} else {
-			System.out.println("Denied to pre-process again. Reset First!");
+			logger.info("Denied to pre-process again. Reset First!");
 			return false;
 		}
 	}
@@ -403,26 +412,26 @@ public class LocalizationThread implements Runnable {
 	public static boolean multiprocess() {
 		if(!server.preprocessed) {
 			if(MultiphoneLocalization.createTables()) {
-				System.out.println("Created new Lookup Table!");
+				logger.info("Created new Lookup Table!");
 			}
 			else {
-				System.out.println("The table exists! Drop it first!");
+				logger.info("The table exists! Drop it first!");
 				return false;
 			}
-			System.out.println("Computing Lookup Table Data...");
+			logger.info("Computing Lookup Table Data...");
 			Distance.VECTOR_SIZE = LocalizationLUT.getVectorSize(Distance.FSF);
-			System.out.println("NEW VECTOR SIZE: " + Distance.VECTOR_SIZE);
+			logger.info("NEW VECTOR SIZE: " + Distance.VECTOR_SIZE);
 			
 			if(MultiphoneLocalization.UpdatePlainLUT()) {
-				System.out.println("Sucessfully created Lookup table!");
+				logger.info("Sucessfully created Lookup table!");
 				server.preprocessed = true;
 				return true;
 			} else {
-				System.out.println("Failed to create Lookup table!");
+				logger.info("Failed to create Lookup table!");
 				return false;
 			}
 		} else {
-			System.out.println("Denied to pre-process again. Reset First!");
+			logger.info("Denied to pre-process again. Reset First!");
 			return false;
 		}
 	}

@@ -1,18 +1,14 @@
-package Localization;
+package edu.fiu.adwise.fingerprint_localization.database;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import Localization.structs.SendTrainingData;
+import edu.fiu.adwise.fingerprint_localization.server;
+import edu.fiu.adwise.fingerprint_localization.structs.SendTrainingData;
+import edu.fiu.adwise.fingerprint_localization.distance_computation.Distance;
 
 import java.net.*;
 
@@ -140,8 +136,7 @@ public class LocalizationLUT {
 					// skip ID(1), XCoordinate(2) and YCoordinate(3)!
 					if(counter != 4) {
 						++counter;
-					}
-					else {
+					} else {
 						common_aps.add(rs.getString("Field"));
 					}
 				}
@@ -348,7 +343,6 @@ public class LocalizationLUT {
 	{
 		try {
 			Class.forName(myDriver);
-			System.out.println("Connecting to a local database...");
 			Connection conn = DriverManager.getConnection(URL, username, password);
 			Statement stmt = conn.createStatement();
 			
@@ -520,47 +514,34 @@ public class LocalizationLUT {
 		return counter == Distance.VECTOR_SIZE;
 	}
 	
-	public static void printTrainingData() {
+	public static void printTrainingData() throws SQLException, FileNotFoundException {
 		String Q1 = "SELECT * FROM " + DB + "." + TRAININGDATA;
 		String PointsCSV = "./TrainingPoints.csv";
-		
-		try {
-			Class.forName(myDriver);
-			Connection conn = DriverManager.getConnection(URL, username, password);
-
-			// create the java statement
-			Statement stFour = conn.createStatement();
-			
-			// execute the query, and get a java result set
-			ResultSet dataSet = stFour.executeQuery(Q1);
-			
-			PrintWriter WritePoints = new PrintWriter(
-					new BufferedWriter(
-							new OutputStreamWriter(
-									new FileOutputStream(PointsCSV))));
-			
+		try (
+				Connection conn = DriverManager.getConnection(URL, username, password);
+				Statement stFour = conn.createStatement();
+				ResultSet dataSet = stFour.executeQuery(Q1);
+				PrintWriter WritePoints = new PrintWriter(
+						new BufferedWriter(
+								new OutputStreamWriter(
+										new FileOutputStream(PointsCSV))))
+		) {
 			WritePoints.println("Xcoordinate,Ycoordinate,AP,RSS,OS,Device,Model,Product,ScanTime");
-			
 			String tuple = "";
-			while(dataSet.next()) {
-				tuple += dataSet.getDouble("Xcoordinate") 	+ ",";
-				tuple += dataSet.getDouble("Ycoordinate")	+ ",";
-				tuple += dataSet.getString("MACADDRESS")	+ ",";
-				tuple += dataSet.getInt("RSS")				+ ",";
-				// Phone Data and Date
-				tuple += dataSet.getString("OS")			+ ",";
-				tuple += dataSet.getString("Device")		+ ",";
-				tuple += dataSet.getString("Model")			+ ",";
-				tuple += dataSet.getString("Product")		+ ",";
+			while (dataSet.next()) {
+				tuple += dataSet.getDouble("Xcoordinate") + ",";
+				tuple += dataSet.getDouble("Ycoordinate") + ",";
+				tuple += dataSet.getString("MACADDRESS") + ",";
+				tuple += dataSet.getInt("RSS") + ",";
+				tuple += dataSet.getString("OS") + ",";
+				tuple += dataSet.getString("Device") + ",";
+				tuple += dataSet.getString("Model") + ",";
+				tuple += dataSet.getString("Product") + ",";
 				tuple += dataSet.getTimestamp("currentTime").toString() + ",";
 				tuple += dataSet.getString("Map");
 				WritePoints.println(tuple);
 				tuple = "";
-			}			
-			WritePoints.close();
-		}
-		catch(IOException | SQLException | ClassNotFoundException cnf) {
-			cnf.printStackTrace();
+			}
 		}
 	}
 	
@@ -718,7 +699,6 @@ public class LocalizationLUT {
 		}
 		// same as get IDX of Percentile, Note the int is already sorted!
 		int num_AP_filtered = (int) Math.ceil(percentile * AP_count.size());
-		System.out.println("At " + percentile * 100 + "% this AP is detected " + AP_count.get(num_AP_filtered) + " times and you filtered " + num_AP_filtered + " APs");
 		return AP_count.size() - num_AP_filtered;
 	}
 	

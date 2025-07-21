@@ -1,4 +1,4 @@
-package Localization;
+package edu.fiu.adwise.fingerprint_localization.database;
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
@@ -14,6 +14,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import edu.fiu.adwise.fingerprint_localization.distance_computation.Distance;
+
 
 public class MultiphoneLocalization extends LocalizationLUT {
 	private static Double [] getX_multi(String Model, String Map) {
@@ -91,7 +93,6 @@ public class MultiphoneLocalization extends LocalizationLUT {
 	public static boolean createTables() {
 		try {
 			Class.forName(myDriver);
-			System.out.println("Connecting to a local database...");
 			Connection conn = DriverManager.getConnection(URL, username, password);
 			Statement stmt = conn.createStatement();
 			

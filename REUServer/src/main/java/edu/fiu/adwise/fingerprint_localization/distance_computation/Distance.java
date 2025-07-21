@@ -1,19 +1,19 @@
-package Localization;
+package edu.fiu.adwise.fingerprint_localization.distance_computation;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-import Localization.structs.LocalizationResult;
+import edu.fiu.adwise.fingerprint_localization.structs.LocalizationResult;
 import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamal_Ciphertext;
 import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
 import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
 
 public abstract class Distance {
-	protected static int v_c = -120;
-	protected static int VECTOR_SIZE = -1;
+	public static int v_c = -120;
+	public static int VECTOR_SIZE = -1;
 	// Filter out ONLY 90% of APs
-	protected static double FSF = 0.9;
+	public static double FSF = 0.9;
 	protected long MINIMUM_AP_MATCH;
 	protected final static long FACTOR = 10; 
 
@@ -25,10 +25,10 @@ public abstract class Distance {
 	// Other variables variable
 	protected static String [] column = null;
 
-	protected Double [] location = new Double [2];
-	protected BigInteger [] encryptedLocation = new BigInteger[2];
+	public Double [] location = new Double [2];
+	public BigInteger [] encryptedLocation = new BigInteger[2];
 	
-	protected static int k = 2;
+	public static int k = 2;
 
 	// Three Distance Methods..
 	
@@ -57,14 +57,13 @@ public abstract class Distance {
 	protected void DMA_Normalization(alice Niu) 
 			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
 		Niu.writeObject(resultList);
-		for (int i = 0; i < resultList.size(); i++) {
-			BigInteger d = Niu.division(resultList.get(i).encryptedDistance, resultList.get(i).matches);
-			resultList.get(i).setEncryptedDistance(d);
-		}
+        for (LocalizationResult localizationResult : resultList) {
+            BigInteger d = Niu.division(localizationResult.encryptedDistance, localizationResult.matches);
+            localizationResult.setEncryptedDistance(d);
+        }
 	}
 	
-	protected int distance_index(BigInteger min)
-	{
+	protected int distance_index(BigInteger min) {
 		for(int i = 0; i < resultList.size(); i++) {
 			if(resultList.get(i).encryptedDistance.equals(min)) {
 				return i;

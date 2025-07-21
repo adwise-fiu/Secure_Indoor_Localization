@@ -1,15 +1,10 @@
-package Localization.structs;
+package edu.fiu.adwise.fingerprint_localization.structs;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.math.BigInteger;
 import java.util.List;
 
-//import edu.fiu.adwise.homomorphic_encryption.DGK.DGKPrivateKey;
-//import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPrivateKey;
-import Localization.LOCALIZATION_SCHEME;
+import edu.fiu.adwise.fingerprint_localization.distance_computation.LOCALIZATION_SCHEME;
 import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
 import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamalPublicKey;
 import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamal_Ciphertext;
@@ -33,6 +28,7 @@ public class SendLocalizationData implements Serializable {
     public final List<ElGamal_Ciphertext> e_S3_comp;
     public final ElGamal_Ciphertext e_S3;
 
+    @Serial
     private static final long serialVersionUID = 201194517759072124L;
 
     // Public Keys

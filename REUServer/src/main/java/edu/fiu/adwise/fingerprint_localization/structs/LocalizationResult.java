@@ -1,8 +1,6 @@
-package Localization.structs;
+package edu.fiu.adwise.fingerprint_localization.structs;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigInteger;
 
@@ -19,7 +17,8 @@ import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPrivateKey;
 import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
 
 public class LocalizationResult implements Serializable, Comparable<LocalizationResult> {
-    private static final long serialVersionUID = -1884589588377067950L;
+    @Serial
+	private static final long serialVersionUID = -1884589588377067950L;
 
     public final Long matches;
     

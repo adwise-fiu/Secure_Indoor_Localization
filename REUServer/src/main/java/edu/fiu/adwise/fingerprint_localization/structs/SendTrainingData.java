@@ -1,15 +1,12 @@
-package Localization.structs;
+package edu.fiu.adwise.fingerprint_localization.structs;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Arrays;
 
 // Created by Andrew on 7/6/2017.
 
-public class SendTrainingData implements Serializable
-{
+public class SendTrainingData implements Serializable {
 	private final String Map;
     private final Double X_coordinate;
     private final Double Y_coordinate;
@@ -21,6 +18,7 @@ public class SendTrainingData implements Serializable
     private final String Model;
     private final String Product;
 
+    @Serial
     private static final long serialVersionUID = 3907495506938576258L;
 
     public SendTrainingData(String Map, Double x, Double y, String[] m, Integer[] in,
