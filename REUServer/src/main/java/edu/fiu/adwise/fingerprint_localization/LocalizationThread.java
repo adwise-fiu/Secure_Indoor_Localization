@@ -50,10 +50,10 @@ public class LocalizationThread implements Runnable {
     private SendLocalizationData transmission;	// Data from Android Phone to Localize
     private SendTrainingData trainDatabase;	// For Training  Data
  
-    // I am measuring in nano-seconds, this converts back to seconds...
+    // I am measuring in nanoseconds, this converts back to seconds...
     private final static long BILLION = 1000000000;
     
-    protected Socket clientSocket = null;
+    protected Socket clientSocket;
 
     // I/O streams
 	private ObjectInputStream fromClient = null;
