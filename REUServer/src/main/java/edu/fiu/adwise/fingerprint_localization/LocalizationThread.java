@@ -18,7 +18,7 @@ import edu.fiu.adwise.fingerprint_localization.database.MultiphoneLocalization;
 import edu.fiu.adwise.fingerprint_localization.distance_computation.DistanceDGK;
 import edu.fiu.adwise.fingerprint_localization.distance_computation.DistancePaillier;
 import edu.fiu.adwise.fingerprint_localization.distance_computation.DistancePlain;
-import edu.fiu.adwise.fingerprint_localization.distance_computation.LOCALIZATION_SCHEME;
+
 import edu.fiu.adwise.fingerprint_localization.structs.LocalizationResult;
 import edu.fiu.adwise.fingerprint_localization.structs.SendLocalizationData;
 import edu.fiu.adwise.fingerprint_localization.structs.SendTrainingData;
@@ -41,11 +41,7 @@ import org.apache.logging.log4j.Logger;
 public class LocalizationThread implements Runnable {
 	private static final Logger logger = LogManager.getLogger(LocalizationThread.class);
 
-	// REU Variables
-	private LOCALIZATION_SCHEME LOCALIZATIONSCHEME;
-	private boolean isREU2017;
-	
-	// Paillier and DGK Public Keys
+    // Paillier and DGK Public Keys
 	public PaillierPublicKey pk = null;
 	public DGKPublicKey pubKey = null;
 	public ElGamalPublicKey e_pk = null;
@@ -62,7 +58,7 @@ public class LocalizationThread implements Runnable {
     // I/O streams
 	private ObjectInputStream fromClient = null;
 	private ObjectOutputStream toClient = null;
-    
+
     //Distance Computations
 	private DistancePlain PlaintextLocalization = null;
 	private DistanceDGK DGKLocalization = null;
@@ -70,13 +66,12 @@ public class LocalizationThread implements Runnable {
 
 	// For File safety
 	private String BASEDIR;
-	
+
 	//To either return Encrypted Values...or Send encrypted distances back...
 	private ArrayList<LocalizationResult> replyToClient = new ArrayList<LocalizationResult>();
 	private alice Niu = null;
 	
-    public LocalizationThread(Socket clientSocket)
-    {
+    public LocalizationThread(Socket clientSocket) {
         this.clientSocket = clientSocket;
     }
 
@@ -84,7 +79,7 @@ public class LocalizationThread implements Runnable {
         try {
 			BASEDIR = new File(".").getCanonicalPath() + "/";
 		} catch (IOException e) {
-			logger.fatal("Error obtaining BASEDIR: " + e.getMessage());
+            logger.fatal("Error obtaining BASEDIR: {}", e.getMessage());
 		}
         
 		try {
@@ -94,10 +89,8 @@ public class LocalizationThread implements Runnable {
 			long startTime = System.nanoTime();//Start Timer
 			Object x = fromClient.readObject();
 
-			if (x instanceof String) {
-				String command = (String) x;
-
-				if (command.equalsIgnoreCase("UNDO")) {
+			if (x instanceof String command) {
+                if (command.equalsIgnoreCase("UNDO")) {
 					logger.info("Command acquired: UNDO");
 					Double [] coordinate = (Double []) fromClient.readObject();
 					String map = (String) fromClient.readObject();
@@ -123,9 +116,8 @@ public class LocalizationThread implements Runnable {
 					String Map = (String) fromClient.readObject();
 					if(server.multi_phone) {
 						x = fromClient.readObject();
-						if(x instanceof String []) {
-							String [] phone_data = (String []) x;
-							String map = (String) fromClient.readObject();
+						if(x instanceof String[] phone_data) {
+                            String map = (String) fromClient.readObject();
 							// Get All X-Y Coordinates from Training Table
 							// Multi-Phone patch, Give only training points with specific phone
 		                    String OS = phone_data[0];
@@ -216,19 +208,19 @@ public class LocalizationThread implements Runnable {
 							BufferedImage image = ImageIO.read(new ByteArrayInputStream(map));
 							ImageIO.write(image, "BMP", new File(map_name));
 							toClient.writeBoolean(true);
-							logger.info("New Map: " + map_name +" Sucessfully uploaded!");
+                            logger.info("New Map: {} Successfully uploaded!", map_name);
 						} else {
 							toClient.writeBoolean(false);
 						}
 					} catch (Exception e) {
 						toClient.writeBoolean(false);
-						logger.warn("Error uploading map: " + e.getMessage());
+                        logger.warn("Error uploading map: {}", e.getMessage());
 					}
 					// Flush and Close I/O streams and Socket
 					this.closeClientConnection();
 					return;
 				} else {
-					logger.info("INVALID Command acquired: " + command);
+                    logger.info("INVALID Command acquired: {}", command);
 					logger.info("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
 					// Flush and Close I/O streams and Socket
 					this.closeClientConnection();
@@ -246,7 +238,7 @@ public class LocalizationThread implements Runnable {
 				this.closeClientConnection();
 				return;
 			} else if (!(x instanceof SendLocalizationData)) {
-				logger.info("INVALID OBJECT: " + x.getClass() + "! Closing...");
+                logger.info("INVALID OBJECT: {}! Closing...", x.getClass());
 				logger.info("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
 				
 				// Flush and Close I/O streams and Socket
@@ -257,18 +249,17 @@ public class LocalizationThread implements Runnable {
 			transmission = (SendLocalizationData) x;
 
 			// Obtain Algorithm and keys
-			isREU2017 = transmission.isREU2017;
-			LOCALIZATIONSCHEME = transmission.LOCALIZATION_SCHEME;
+            boolean isREU2017 = transmission.isREU2017;
+            // REU Variables
 			pubKey = transmission.pubKey;
 			pk = transmission.pk;
 			e_pk = transmission.e_pk;
-			
-			logger.info("LOCALIZATION SCHEME: " + LOCALIZATIONSCHEME + " isREU2017: " + isREU2017);
+
 			Niu = new alice(clientSocket);
 			Niu.setDGKMode(true);
 			
 			// Read from Database
-			switch(LOCALIZATIONSCHEME) {
+			switch(transmission.LOCALIZATION_SCHEME) {
 				case PLAIN_MIN:
 					PlaintextLocalization = new DistancePlain(transmission);
 					replyToClient = PlaintextLocalization.MinimumDistance(null);
@@ -374,11 +365,10 @@ public class LocalizationThread implements Runnable {
 					System.err.println("INVALID LOCALIZATION SCHEME!");
 					break;
 			}
-			logger.info("Computation completed, it took " + (System.nanoTime() - startTime)/BILLION + " seconds");
+            logger.info("Computation completed, it took {} seconds", (System.nanoTime() - startTime) / BILLION);
 			this.closeClientConnection();
-			return;
-		} catch(IOException | SQLException | ClassNotFoundException | IllegalArgumentException | HomomorphicException e) {
-			logger.fatal("Error in Localization Thread: " + e.getMessage());
+        } catch(IOException | SQLException | ClassNotFoundException | IllegalArgumentException | HomomorphicException e) {
+            logger.fatal("Error in Localization Thread: {}", e.getMessage());
 		}
     }
 	

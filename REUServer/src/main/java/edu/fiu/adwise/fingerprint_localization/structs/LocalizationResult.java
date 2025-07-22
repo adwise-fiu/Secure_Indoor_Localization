@@ -152,8 +152,7 @@ public class LocalizationResult implements Serializable, Comparable<Localization
 		this.encryptedDistance = d;
 	}
 	
-	public void setElGamalEncryptedDistance(ElGamal_Ciphertext d)
-	{
+	public void setElGamalEncryptedDistance(ElGamal_Ciphertext d) {
 		this.e_d = d;
 	}
 	

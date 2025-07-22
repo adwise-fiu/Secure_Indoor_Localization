@@ -18,12 +18,12 @@ import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
 
 
 public class DistancePaillier extends Distance {
-	private BigInteger [] S2;
-	private	BigInteger S3;
-	private BigInteger [] S3_comp;
+	private final BigInteger [] S2;
+	private final BigInteger S3;
+	private final BigInteger [] S3_comp;
 	
-	private boolean isREU2017;
-	private PaillierPublicKey pk = null;
+	private final boolean isREU2017;
+	private final PaillierPublicKey pk;
 
 	public DistancePaillier(SendLocalizationData in)
 			throws ClassNotFoundException, SQLException {
@@ -58,15 +58,15 @@ public class DistancePaillier extends Distance {
 		if(!isREU2017) {
 			return resultList;
 		}
-		
+
 		// 1- Encrypt and Store coordinates
-		for(int i = 0; i < resultList.size(); i++) {
-			resultList.get(i).add_secret_coordinates(pk);
-		}
-		
+        for (LocalizationResult localizationResult : resultList) {
+            localizationResult.add_secret_coordinates(pk);
+        }
+
 		// 2- Shuffle Result List
 		Collections.shuffle(resultList);
-		
+
 		// 3- Get Min and return ([[x]], [[y]])
 		BigInteger min = Niu.getKValues(encryptedDistance, 1, true)[0];
 		for(LocalizationResult l: resultList) {
@@ -81,25 +81,16 @@ public class DistancePaillier extends Distance {
 
 	public ArrayList<LocalizationResult> MissConstantAlgorithm()
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
-		long count = 0;
-		BigInteger d = null;
-		BigInteger S1_Row = null;
-		BigInteger S2_Row = null;
+		BigInteger d;
+		BigInteger S1_Row;
+		BigInteger S2_Row;
 		
 		for (int i = 0; i < RSS_ij.size();i++) {
 			// Step 1, Compute FSF
-			count = 0;
-			for (int j = 0; j < VECTOR_SIZE; j++) {
-				if(scanAPs[j].equals(column[j])) {
-					++count;
-				}
-			}
-			
-			// Step 2, if FSF is NOT satisfied, skip this step!
-			if(count < MINIMUM_AP_MATCH) {
+			if (!has_sufficient_fsf()) {
 				continue;
 			}
-			
+
 			// Repeat MCA/DMA as shown in the paper to compute distance
 			S1_Row = PaillierCipher.encrypt(0, pk);
 			S2_Row = PaillierCipher.encrypt(0, pk);
@@ -123,11 +114,11 @@ public class DistancePaillier extends Distance {
 
 	public ArrayList<LocalizationResult> DynamicMatchingAlgorithm()
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
-		long count = 0;
-		BigInteger d = null;
-		BigInteger S1_Row = null;
-		BigInteger S2_Row = null;
-		BigInteger S3_Row = null;
+		long count;
+		BigInteger d;
+		BigInteger S1_Row;
+		BigInteger S2_Row;
+		BigInteger S3_Row;
 		
 		for (int i = 0; i < RSS_ij.size();i++) {
 			// Step 1, Compute FSF
@@ -168,9 +159,9 @@ public class DistancePaillier extends Distance {
 		// Get the K-minimum distances!
 		BigInteger [] k_min = Niu.getKValues(encryptedDistance, k, true);
 		// TODO: If it is DMA, you need to divide distances first right??
-		int index = -1;
-		Object x = null;
-		BigInteger divisor = null;
+		int index;
+		Object x;
+		BigInteger divisor;
 		BigInteger [] weights = new BigInteger[Distance.k];
 		
 		divisor = PaillierCipher.sum(k_min, pk, Distance.k);

@@ -95,23 +95,23 @@ public class server implements Runnable {
 			// If made, update vector size now!
 			if(server.preprocessed) {
 				Distance.VECTOR_SIZE = LocalizationLUT.getVectorSize(Distance.FSF);
-				logger.info("NEW VECTOR SIZE: " + Distance.VECTOR_SIZE);
+                logger.info("NEW VECTOR SIZE: {}", Distance.VECTOR_SIZE);
 			}
 			
 			// Custom Port if needed?
 			if (args.length == 1) {
 				port = Integer.parseInt(args[0]);
 				if(port <= 1024) {
-					logger.fatal("Invalid Port! " + port + " use value over 1024!");
+                    logger.fatal("Invalid Port! {} use value over 1024!", port);
 					System.exit(1);
 				}
 				else if(port > 65535) {
-					logger.fatal("Invalid Port! " + port + " use value below 65535!");
+                    logger.fatal("Invalid Port! {} use value below 65535!", port);
 					System.exit(1);					
 				}
 			}
 		} catch (ClassNotFoundException | SQLException e) {
-			logger.fatal("Error loading database credentials or checking LUT: " + e.getMessage());
+            logger.fatal("Error loading database credentials or checking LUT: {}", e.getMessage());
 			System.exit(1);
 		} catch (NumberFormatException nfe) {
 			logger.warn("Please enter a valid custom port number");
@@ -138,11 +138,11 @@ public class server implements Runnable {
 				input = input.trim();
 				String [] commands = input.split(" ");
 
-				logger.info("Database preprocessed? " + server.preprocessed);
-				logger.info("Vector size: " + Distance.VECTOR_SIZE);
-				logger.info("APs in Training Data: " + LocalizationLUT.getVectorSize(0.0));
-				logger.info("N_F: " + LocalizationLUT.getX("BWY_FL_03").length);
-				logger.info("Current value of K is: " + Distance.k);
+                logger.info("Database preprocessed? {}", server.preprocessed);
+                logger.info("Vector size: {}", Distance.VECTOR_SIZE);
+                logger.info("APs in Training Data: {}", LocalizationLUT.getVectorSize(0.0));
+                logger.info("N_F: {}", LocalizationLUT.getX("BWY_FL_03").length);
+                logger.info("Current value of K is: {}", Distance.k);
 				
 				// Clear CLI
 				if (commands[0].equalsIgnoreCase("clr")) {
@@ -164,6 +164,10 @@ public class server implements Runnable {
 				}
 				else if (commands[0].equals("frequency")) {
 					HashMap<String, Integer> frequency_map = LocalizationLUT.getCommonMac();
+					if (frequency_map == null) {
+						logger.info("Frequencies not processed yet!");
+						continue;
+					}
 					int idx = 1;
 					// Get sorted
 					Map<String, Integer> sorted_map = sortByComparator(frequency_map, true);
@@ -176,15 +180,14 @@ public class server implements Runnable {
 				// Change k
 				else if(commands[0].equals("k")) {
 					Distance.k = Integer.parseInt(commands[1]);
-					logger.info("Updated value of K is: " + Distance.k);
+                    logger.info("Updated value of K is: {}", Distance.k);
 				}
 				// Test FSF
 				else if (commands[0].equalsIgnoreCase("test-FSF")) {
 					double fsf = Double.parseDouble(commands[1]);
 					if (fsf < 0 || fsf > 1) {
 						logger.info("Invalid FSF value! " +  fsf);
-						continue;
-					}
+                    }
 					else {
 						logger.warn("Given FSF value: " + fsf + " minimum AP match is: " + LocalizationLUT.getVectorSize(fsf));
 					}
@@ -193,9 +196,8 @@ public class server implements Runnable {
 				else if (commands[0].equalsIgnoreCase("FSF")) {
 					double fsf = Double.parseDouble(commands[1]);
 					if (fsf < 0 || fsf > 1) {
-						logger.info("Invalid FSF value! " +  fsf);
-						continue;
-					}
+                        logger.info("Invalid FSF value to set! {}", fsf);
+                    }
 					else {
 						Distance.FSF = fsf;
 						if(server.preprocessed) {
@@ -209,7 +211,7 @@ public class server implements Runnable {
 							logger.info("Preprocessing all Lookup Tables successful!");
 						}
 						else {
-							logger.info("Preprocessing all Lookup Tables failed!");
+							logger.info("Preprocessing all Lookup Tables failed! (Single)");
 						}
 					}
 					else {
@@ -217,7 +219,7 @@ public class server implements Runnable {
 							logger.info("Preprocessing one Lookup Table successful!");
 						}
 						else {
-							logger.info("Preprocessing all Lookup Tables failed!");
+							logger.info("Preprocessing all Lookup Tables failed! (Multiple)");
 						}
 					}
 				}
@@ -232,7 +234,7 @@ public class server implements Runnable {
 				}
 				else if (commands[0].equalsIgnoreCase("switch")) {
 					if(server.multi_phone) {
-						logger.info("Server is switcthed to 1 LUT");
+						logger.info("Server is switched to 1 LUT");
 						server.multi_phone = false;
 					}
 					else {
@@ -244,12 +246,11 @@ public class server implements Runnable {
 					break;
 				}
 			} catch (NumberFormatException nfe) {
-				//nfe.printStackTrace();
-				continue;
+				logger.info("Please enter a valid number!");
 			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
+                logger.fatal("Error loading database driver: {}", e.getMessage());
 			} catch (SQLException e) {
-				e.printStackTrace();
+                logger.fatal("Error connecting to database: {}", e.getMessage());
 			} catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }

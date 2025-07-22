@@ -14,7 +14,7 @@ import edu.fiu.adwise.fingerprint_localization.structs.SendLocalizationData;
 import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
 
 public class DistancePlain extends Distance {
-	private boolean isREU2017;
+	private final boolean isREU2017;
 	public DistancePlain(SendLocalizationData in) throws ClassNotFoundException, SQLException {
 		scanAPs = in.APs;
 		scanRSS = in.RSS;
@@ -43,14 +43,14 @@ public class DistancePlain extends Distance {
 
 	public ArrayList<LocalizationResult> MissConstantAlgorithm()
 			throws ClassNotFoundException, IOException {
-		long distance = 0;
+		long distance;
 		for (int i = 0; i < RSS_ij.size(); i++) {
 			distance = 0;
 			for (int j = 0; j < VECTOR_SIZE; j++) {
 				if(scanAPs[j].equals(column[j])) {
 					distance += (RSS_ij.get(i)[j] - scanRSS[j]) * (RSS_ij.get(i)[j] - scanRSS[j]);	
 				} else {
-					distance += (v_c - scanRSS[j]) * (v_c - scanRSS[j]);
+					distance += (long) (v_c - scanRSS[j]) * (v_c - scanRSS[j]);
 				}
 			}
 			resultList.add(new LocalizationResult(coordinates.get(i)[0], coordinates.get(i)[1], distance, null));
@@ -61,10 +61,10 @@ public class DistancePlain extends Distance {
 
 	public ArrayList<LocalizationResult> DynamicMatchingAlgorithm()
 			throws ClassNotFoundException, IOException {
-		Long distance = (long) 0;
-		Long matches = (long) 0;
+		long distance = 0;
+		long matches;
 		for (int i = 0; i < RSS_ij.size();i++) {
-			matches = (long) 0;
+			matches = 0;
 			for (int j = 0; j < VECTOR_SIZE;j++) {
 				if (scanAPs[i].equals(column[i])) {
 					distance = (RSS_ij.get(i)[j] - scanRSS[j]) * (RSS_ij.get(i)[j] - scanRSS[j]);
@@ -78,21 +78,20 @@ public class DistancePlain extends Distance {
 		return resultList;
 	}
 	
-	protected BigInteger[] Phase3(alice Niu)
-			throws ClassNotFoundException, IOException {
+	protected BigInteger[] Phase3(alice Niu) {
 		long distanceSUM = 0;
 		double [] w = new double[k];
 		
 		// Step 2: Sort them...Merge Sort should be the best...
     	Collections.sort(resultList);
         
-    	// Finish rest of Phase 3
+    	// Finish the rest of Phase 3
 		for (int i = 0; i < k;i++) {
 			distanceSUM += resultList.get(i).getPlainDistance();
 		}
 		    
         double x = 0, y = 0;
-        // Find value of all w_i
+        // Find the value of all w_i
         for (int i = 0 ; i < k; i++) {
             w[i] = (1.0 - ((double) resultList.get(i).getPlainDistance()/distanceSUM))/(k - 1);
 			x += w[i] * resultList.get(i).coordinates[0];

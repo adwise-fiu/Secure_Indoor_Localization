@@ -5,7 +5,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 
 import edu.fiu.adwise.fingerprint_localization.structs.LocalizationResult;
-import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamal_Ciphertext;
 import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
 import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
 
@@ -36,7 +35,7 @@ public abstract class Distance {
 	protected ArrayList<Long []> RSS_ij = new ArrayList<Long []>();
 	protected ArrayList<Double []> coordinates = new ArrayList<Double []>();
 	
-	// Select smallest distance. This uses MCA!
+	// Select the smallest distance. This uses MCA!
 	protected abstract ArrayList<LocalizationResult> MinimumDistance(alice Niu) 
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException, 
 			IllegalArgumentException, HomomorphicException;
@@ -52,17 +51,7 @@ public abstract class Distance {
 	// Phase 3, for DGK and Paillier
 	protected abstract BigInteger[] Phase3(alice Niu)
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException;
-	
-	// DMA NORMALIZATION
-	protected void DMA_Normalization(alice Niu) 
-			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
-		Niu.writeObject(resultList);
-        for (LocalizationResult localizationResult : resultList) {
-            BigInteger d = Niu.division(localizationResult.encryptedDistance, localizationResult.matches);
-            localizationResult.setEncryptedDistance(d);
-        }
-	}
-	
+
 	protected int distance_index(BigInteger min) {
 		for(int i = 0; i < resultList.size(); i++) {
 			if(resultList.get(i).encryptedDistance.equals(min)) {
@@ -71,13 +60,17 @@ public abstract class Distance {
 		}
 		return -1;
 	}
-	
-	protected int elgamal_distance_index(ElGamal_Ciphertext min) {
-		for(int i = 0; i < resultList.size(); i++) {
-			if(resultList.get(i).e_d.equals(min)) {
-				return i;
+
+	protected boolean has_sufficient_fsf() {
+		// Step 1, Compute FSF
+		int count = 0;
+		for (int j = 0; j < VECTOR_SIZE; j++) {
+			if(scanAPs[j].equals(column[j])) {
+				++count;
 			}
 		}
-		return -1;
+
+		// Step 2, if FSF is NOT satisfied, skip this step!
+		return count < MINIMUM_AP_MATCH;
 	}
 }

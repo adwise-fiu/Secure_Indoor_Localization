@@ -18,14 +18,14 @@ import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
 
 
 public class DistanceDGK extends Distance {
-	private BigInteger [] S2;
-	private BigInteger S3;
-	private BigInteger [] S3_comp;
+	private final BigInteger [] S2;
+	private final BigInteger S3;
+	private final BigInteger [] S3_comp;
 	
-	private DGKPublicKey pk = null;
-	private boolean isREU2017;
+	private final DGKPublicKey pk;
+	private final boolean isREU2017;
 	
-	public DistanceDGK(SendLocalizationData in) 
+	public DistanceDGK(SendLocalizationData in)
 			throws ClassNotFoundException, SQLException {
 		scanAPs = in.APs;
 		S2 = in.S2;
@@ -58,9 +58,9 @@ public class DistanceDGK extends Distance {
 			return resultList;
 		}
 		// 1- Encrypt and Store coordinates
-		for(int i = 0; i < resultList.size(); i++) {
-			resultList.get(i).add_secret_coordinates(pk);
-		}
+        for (LocalizationResult localizationResult : resultList) {
+            localizationResult.add_secret_coordinates(pk);
+        }
 		// 2- Shuffle Result List
 		Collections.shuffle(resultList);
 				
@@ -78,22 +78,12 @@ public class DistanceDGK extends Distance {
 
 	public ArrayList<LocalizationResult> MissConstantAlgorithm()
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
-		long count = 0;
-		BigInteger d = null;
-		BigInteger S1_Row = null;
-		BigInteger S2_Row = null;
+		BigInteger d;
+		BigInteger S1_Row;
+		BigInteger S2_Row;
 		
 		for (int i = 0; i < RSS_ij.size();i++) {
-			// Step 1, Compute FSF
-			count = 0;
-			for (int j = 0; j < VECTOR_SIZE; j++) {
-				if(scanAPs[j].equals(column[j])) {
-					++count;
-				}
-			}
-			
-			// Step 2, if FSF is NOT satisfied, skip this step!
-			if(count < MINIMUM_AP_MATCH) {
+			if (!has_sufficient_fsf()) {
 				continue;
 			}
 			
@@ -104,7 +94,7 @@ public class DistanceDGK extends Distance {
 			for (int j = 0; j < VECTOR_SIZE;j++) {
 				if(scanAPs[j].equals(column[j])) {
 					S1_Row = DGKOperations.add_plaintext(S1_Row, RSS_ij.get(i)[j] * RSS_ij.get(i)[j], pk);
-					S2_Row = DGKOperations.add(S2_Row, DGKOperations.multiply(S2[j], RSS_ij.get(i)[j].longValue(), pk), pk);
+					S2_Row = DGKOperations.add(S2_Row, DGKOperations.multiply(S2[j], RSS_ij.get(i)[j], pk), pk);
 				}
 				else {
 					S1_Row = DGKOperations.add_plaintext(S1_Row, -120 * -120, pk);
@@ -121,11 +111,11 @@ public class DistanceDGK extends Distance {
 
 	public ArrayList<LocalizationResult> DynamicMatchingAlgorithm()
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
-		long count = 0;
-		BigInteger d = null;
-		BigInteger S1_Row = null;
-		BigInteger S2_Row = null;
-		BigInteger S3_Row = null;
+		long count;
+		BigInteger d;
+		BigInteger S1_Row;
+		BigInteger S2_Row;
+		BigInteger S3_Row;
 		
 		for (int i = 0; i < RSS_ij.size();i++) {
 			// Step 1, Compute FSF
@@ -135,7 +125,7 @@ public class DistanceDGK extends Distance {
 					++count;
 				}
 			}
-			
+
 			// Step 2, if FSF is NOT satisfied, skip this step!
 			if(count < MINIMUM_AP_MATCH) {
 				continue;
@@ -149,7 +139,7 @@ public class DistanceDGK extends Distance {
 			for (int j = 0; j < VECTOR_SIZE;j++) {
 				if(scanAPs[j].equals(column[j])) {
 					S1_Row = DGKOperations.add_plaintext(S1_Row, RSS_ij.get(i)[j] * RSS_ij.get(i)[j], pk);
-					S2_Row = DGKOperations.add(S2_Row, DGKOperations.multiply(S2[j], RSS_ij.get(i)[j].longValue(), pk), pk);
+					S2_Row = DGKOperations.add(S2_Row, DGKOperations.multiply(S2[j], RSS_ij.get(i)[j], pk), pk);
 					S3_Row = DGKOperations.add(S3_comp[j], S3_Row, pk);
 				}
 			}
@@ -166,9 +156,9 @@ public class DistanceDGK extends Distance {
 		// Get the K-minimum distances!
 		BigInteger [] k_min = Niu.getKValues(encryptedDistance, k, true);
 		
-		// Continue with Phase 3 of centriod finding
+		// Continue with Phase 3 of centroid finding
 		Object x;
-		BigInteger divisor = null;
+		BigInteger divisor;
 		BigInteger [] weights = new BigInteger[Distance.k];
 		
 		divisor = DGKOperations.sum(k_min, pk, Distance.k);
@@ -179,7 +169,7 @@ public class DistanceDGK extends Distance {
 		if(x instanceof BigInteger) {
 			divisor = (BigInteger) x;
 		} else {
-			throw new IllegalArgumentException("Did not recive d from the Phone!");
+			throw new IllegalArgumentException("Did not receive d from the Phone!");
 		}
 		
 		// Now I get the k distances and divide by divisor
@@ -199,7 +189,7 @@ public class DistanceDGK extends Distance {
 		encryptedLocation[0] = pk.ZERO();
 		encryptedLocation[1] = pk.ZERO();
 		
-		int index = -1;
+		int index;
 		// Now I multiply it with all scalars. (x, y)
 		for (int i = 0; i < Distance.k; i++) {
 			// NOTE, IT WILL NOT GIVE ME CORRECT X_I, Y_I since it is NOT sorted.
