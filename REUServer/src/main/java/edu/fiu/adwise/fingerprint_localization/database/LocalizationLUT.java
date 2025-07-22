@@ -29,8 +29,8 @@ public class LocalizationLUT {
 	 *  Final assumption, you are using the correct column names!
 	 */
 
-	public static String username = "hello";
-	public static String password = "world";
+	public static String username = System.getenv("MYSQL_USER");
+	public static String password = System.getenv("MYSQL_PASSWORD");
 	private static final Logger logger = LogManager.getLogger(LocalizationLUT.class);
 
 	public final static String myDriver = "com.mysql.cj.jdbc.Driver";
