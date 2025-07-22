@@ -14,7 +14,6 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
-import edu.fiu.adwise.fingerprint_localization.database.MultiphoneLocalization;
 import edu.fiu.adwise.fingerprint_localization.distance_computation.DistanceDGK;
 import edu.fiu.adwise.fingerprint_localization.distance_computation.DistancePaillier;
 import edu.fiu.adwise.fingerprint_localization.distance_computation.DistancePlain;
@@ -114,23 +113,8 @@ public class LocalizationThread implements Runnable {
 				} else if (command.equals("Acquire all current training points")) {
 					logger.info("Command acquired: Obtain all Fingerprints!");
 					String Map = (String) fromClient.readObject();
-					if(server.multi_phone) {
-						x = fromClient.readObject();
-						if(x instanceof String[] phone_data) {
-                            String map = (String) fromClient.readObject();
-							// Get All X-Y Coordinates from Training Table
-							// Multi-Phone patch, Give only training points with specific phone
-		                    String OS = phone_data[0];
-		                    String Device = phone_data[1];
-		                    String Model = phone_data[2];
-		                    String Product = phone_data[3];
-							toClient.writeObject(MultiphoneLocalization.getX(OS, Device, Model, Product, map));
-							toClient.writeObject(MultiphoneLocalization.getY(OS, Device, Model, Product, map));
-						}
-					} else {
-						toClient.writeObject(LocalizationLUT.getX(Map));
-						toClient.writeObject(LocalizationLUT.getY(Map));
-					}
+					toClient.writeObject(LocalizationLUT.getX(Map));
+					toClient.writeObject(LocalizationLUT.getY(Map));
 					logger.info("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
 
 					// Flush and Close I/O streams and Socket
@@ -139,12 +123,7 @@ public class LocalizationThread implements Runnable {
 				}
 				else if (command.equals("Process LUT")) {
 					logger.info("Command acquired: Process Lookup Table");
-					if(server.multi_phone) {
-						toClient.writeBoolean(process());
-					}
-					else {
-						toClient.writeBoolean(multiprocess());
-					}
+					toClient.writeBoolean(process());
 					toClient.flush();
 					logger.info("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
 
@@ -386,33 +365,6 @@ public class LocalizationThread implements Runnable {
 			logger.info("NEW VECTOR SIZE: " + Distance.VECTOR_SIZE);
 			
 			if(LocalizationLUT.UpdatePlainLUT()) {
-				logger.info("Sucessfully created Lookup table!");
-				server.preprocessed = true;
-				return true;
-			} else {
-				logger.info("Failed to create Lookup table!");
-				return false;
-			}
-		} else {
-			logger.info("Denied to pre-process again. Reset First!");
-			return false;
-		}
-	}
-	
-	public static boolean multiprocess() {
-		if(!server.preprocessed) {
-			if(MultiphoneLocalization.createTables()) {
-				logger.info("Created new Lookup Table!");
-			}
-			else {
-				logger.info("The table exists! Drop it first!");
-				return false;
-			}
-			logger.info("Computing Lookup Table Data...");
-			Distance.VECTOR_SIZE = LocalizationLUT.getVectorSize(Distance.FSF);
-			logger.info("NEW VECTOR SIZE: " + Distance.VECTOR_SIZE);
-			
-			if(MultiphoneLocalization.UpdatePlainLUT()) {
 				logger.info("Sucessfully created Lookup table!");
 				server.preprocessed = true;
 				return true;

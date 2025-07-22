@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import edu.fiu.adwise.fingerprint_localization.database.LocalizationLUT;
-import edu.fiu.adwise.fingerprint_localization.database.MultiphoneLocalization;
 import edu.fiu.adwise.fingerprint_localization.distance_computation.Distance;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -192,11 +191,7 @@ public class server implements Runnable {
 				} else if (commands[0].equalsIgnoreCase("print")) {
 					if (server.preprocessed) {
 						LocalizationLUT.printTrainingData();
-						if (server.multi_phone) {
-							MultiphoneLocalization.printLUT();
-						} else {
-							LocalizationLUT.printLUT();
-						}
+						LocalizationLUT.printLUT();
 					} else {
 						logger.info("Lookup Tables not processed yet!");
 					}
@@ -235,18 +230,10 @@ public class server implements Runnable {
 						}
 					}
 				} else if (commands[0].equalsIgnoreCase("process")) {
-					if (server.multi_phone) {
-						if (LocalizationThread.multiprocess()) {
-							logger.info("Preprocessing all Lookup Tables successful!");
-						} else {
-							logger.info("Preprocessing all Lookup Tables failed! (Single)");
-						}
+					if (LocalizationThread.process()) {
+						logger.info("Preprocessing one Lookup Table successful!");
 					} else {
-						if (LocalizationThread.process()) {
-							logger.info("Preprocessing one Lookup Table successful!");
-						} else {
-							logger.info("Preprocessing all Lookup Tables failed! (Multiple)");
-						}
+						logger.info("Preprocessing all Lookup Tables failed! (Multiple)");
 					}
 				} else if (commands[0].equalsIgnoreCase("reset")) {
 					if (LocalizationLUT.reset()) {
