@@ -29,15 +29,14 @@ public class LocalizationLUT {
 	 *  Final assumption, you are using the correct column names!
 	 */
 
-	public static String username = System.getenv("MYSQL_USER");
-	public static String password = System.getenv("MYSQL_PASSWORD");
+	public static String username = System.getenv("MYSQL_USER") != null ? System.getenv("MYSQL_USER") : "";
+	public static String password = System.getenv("MYSQL_PASSWORD") != null ? System.getenv("MYSQL_PASSWORD") : "";
+	public final static String DB = System.getenv("DATABASE") != null ? System.getenv("DATABASE") : "fiu";
 	private static final Logger logger = LogManager.getLogger(LocalizationLUT.class);
 
 	public final static String myDriver = "com.mysql.cj.jdbc.Driver";
-	public final static String DB = "fiu";
 	public final static String URL = "jdbc:mysql://localhost:3306/?&useSSL=false";
-	
-	//Data to be modified
+
 	protected final static String TRAININGDATA = "trainingpoints";
 	
 	/*
@@ -425,7 +424,8 @@ public class LocalizationLUT {
 						Plainst = conn.prepareStatement(getRSS);
 						Plainst.setDouble(1, X[x]);
 						Plainst.setDouble(2, Y[x]);
-						Plainst.setString(3, CommonMac[currentCol]);
+                        assert CommonMac != null;
+                        Plainst.setString(3, CommonMac[currentCol]);
 						Plainst.setString(4, map);
 						RSS = Plainst.executeQuery();
 						while (RSS.next()) {
