@@ -3,35 +3,60 @@ package edu.fiu.adwise.fingerprint_localization.distance_computation;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import edu.fiu.adwise.fingerprint_localization.database.LocalizationLUT;
-import edu.fiu.adwise.fingerprint_localization.database.MultiphoneLocalization;
-import edu.fiu.adwise.fingerprint_localization.server;
 import edu.fiu.adwise.fingerprint_localization.structs.LocalizationResult;
 import edu.fiu.adwise.fingerprint_localization.structs.SendLocalizationData;
 import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
 
+/**
+ * Implements plaintext distance computation for Wi-Fi fingerprint localization.
+ * <p>
+ * This class provides methods for calculating distances between scanned and database RSS values
+ * without homomorphic encryption. It supports both Miss Constant Algorithm (MCA) and Dynamic Matching Algorithm (DMA)
+ * approaches, and computes location coordinates using centroid finding.
+ * </p>
+ *
+ * <ul>
+ *   <li>Uses standard arithmetic for privacy-unaware localization.</li>
+ *   <li>Handles both constant and dynamic AP matching strategies.</li>
+ *   <li>Supports centroid calculation for estimated location.</li>
+ * </ul>
+ *
+ * @author Andrew Quijano
+ * @since 2017-07-06
+ */
 public class DistancePlain extends Distance {
-	private final boolean isREU2017;
+	/**
+	 * Constructs a plaintext distance computation instance from localization input data.
+	 *
+	 * @param in input data containing scan APs, RSS values, and map information
+	 * @throws ClassNotFoundException if database class is not found
+	 * @throws SQLException if database access error occurs
+	 */
 	public DistancePlain(SendLocalizationData in) throws ClassNotFoundException, SQLException {
 		scanAPs = in.APs;
 		scanRSS = in.RSS;
-		isREU2017 = in.isREU2017;
-		
 		if(column == null) {
 			column = LocalizationLUT.getColumnMAC(in.map);
 		}
 		// Read from Database
-		if(server.multi_phone) {
-			MultiphoneLocalization.getPlainLookup(this.RSS_ij, this.coordinates, in.phone_data, in.map);
-		} else {
-			LocalizationLUT.getPlainLookup(this.RSS_ij, this.coordinates, in.map);
-		}
+		LocalizationLUT.getPlainLookup(this.RSS_ij, this.coordinates, in.map);
 	}
 
-	public ArrayList<LocalizationResult> MinimumDistance(alice Niu)
+	/**
+	 * Computes minimum distance between scan and database entries.
+	 * If REU2017 mode is enabled, sorts results and updates estimated location.
+	 *
+	 * @param Niu instance of Alice (unused in plaintext mode)
+	 * @param isREU2017 flag indicating REU2017 mode
+	 * @return list of localization results
+	 * @throws ClassNotFoundException if database class is not found
+	 * @throws IOException if I/O error occurs
+	 */
+	public List<LocalizationResult> MinimumDistance(alice Niu, boolean isREU2017)
 			throws ClassNotFoundException, IOException {
 		resultList = this.MissConstantAlgorithm();
 		if(isREU2017) {
@@ -41,7 +66,15 @@ public class DistancePlain extends Distance {
 		return resultList;
 	}
 
-	public ArrayList<LocalizationResult> MissConstantAlgorithm()
+	/**
+	 * Computes distances using the Miss Constant Algorithm (MCA).
+	 * Substitutes missing RSS values with a constant and calculates distances.
+	 *
+	 * @return list of localization results with computed distances
+	 * @throws ClassNotFoundException if database class is not found
+	 * @throws IOException if I/O error occurs
+	 */
+	public List<LocalizationResult> MissConstantAlgorithm()
 			throws ClassNotFoundException, IOException {
 		long distance;
 		for (int i = 0; i < RSS_ij.size(); i++) {
@@ -59,7 +92,15 @@ public class DistancePlain extends Distance {
 		return resultList;
 	}
 
-	public ArrayList<LocalizationResult> DynamicMatchingAlgorithm()
+	/**
+	 * Computes distances using the Dynamic Matching Algorithm (DMA).
+	 * Only matches APs present in the scan and calculates distances.
+	 *
+	 * @return list of localization results with computed distances
+	 * @throws ClassNotFoundException if database class is not found
+	 * @throws IOException if I/O error occurs
+	 */
+	public List<LocalizationResult> DynamicMatchingAlgorithm()
 			throws ClassNotFoundException, IOException {
 		long distance = 0;
 		long matches;
@@ -77,7 +118,13 @@ public class DistancePlain extends Distance {
 		this.Phase3(null);
 		return resultList;
 	}
-	
+
+	/**
+	 * Performs centroid calculation for estimated location using the k-nearest results.
+	 *
+	 * @param Niu instance of Alice (unused in plaintext mode)
+	 * @return null (location is updated in the class fields)
+	 */
 	protected BigInteger[] Phase3(alice Niu) {
 		long distanceSUM = 0;
 		double [] w = new double[k];

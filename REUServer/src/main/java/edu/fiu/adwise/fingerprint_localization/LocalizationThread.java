@@ -11,6 +11,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -67,7 +68,7 @@ public class LocalizationThread implements Runnable {
 	private String BASEDIR;
 
 	//To either return Encrypted Values...or Send encrypted distances back...
-	private ArrayList<LocalizationResult> replyToClient = new ArrayList<LocalizationResult>();
+	private List<LocalizationResult> replyToClient = new ArrayList<>();
 	private alice Niu = null;
 	
     public LocalizationThread(Socket clientSocket) {
@@ -241,7 +242,7 @@ public class LocalizationThread implements Runnable {
 			switch(transmission.LOCALIZATION_SCHEME) {
 				case PLAIN_MIN:
 					PlaintextLocalization = new DistancePlain(transmission);
-					replyToClient = PlaintextLocalization.MinimumDistance(null);
+					replyToClient = PlaintextLocalization.MinimumDistance(null, isREU2017);
 					if(isREU2017) {
 						toClient.writeObject(PlaintextLocalization.location);
 					} else {
@@ -251,7 +252,7 @@ public class LocalizationThread implements Runnable {
 					break;
 				case DGK_MIN:
 					DGKLocalization = new DistanceDGK(transmission);
-					replyToClient = DGKLocalization.MinimumDistance(Niu);
+					replyToClient = DGKLocalization.MinimumDistance(Niu, isREU2017);
 					if (isREU2017) {
 						toClient.writeObject(DGKLocalization.encryptedLocation);	
 					} else {
@@ -263,7 +264,7 @@ public class LocalizationThread implements Runnable {
 				case PAILLIER_MIN:
 					PaillierLocalization = new DistancePaillier(transmission);
 					Niu.setDGKMode(false);
-					replyToClient = PaillierLocalization.MinimumDistance(Niu);
+					replyToClient = PaillierLocalization.MinimumDistance(Niu, isREU2017);
 
 					if (isREU2017) {
 						toClient.writeObject(PaillierLocalization.encryptedLocation);

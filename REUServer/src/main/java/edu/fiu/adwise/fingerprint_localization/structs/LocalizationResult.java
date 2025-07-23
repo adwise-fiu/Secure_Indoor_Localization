@@ -16,6 +16,23 @@ import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierCipher;
 import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPrivateKey;
 import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
 
+/**
+ * Implements distance computation for Wi-Fi fingerprint localization using Paillier homomorphic encryption.
+ * <p>
+ * This class provides methods for calculating encrypted distances between scanned and database RSS values,
+ * supporting both Miss Constant Algorithm (MCA) and Dynamic Matching Algorithm (DMA) approaches.
+ * It also computes encrypted location coordinates using secure centroid finding with the Socialist Millionaire protocol.
+ * </p>
+ *
+ * <ul>
+ *   <li>Uses Paillier encryption for privacy-preserving localization.</li>
+ *   <li>Handles both constant and dynamic AP matching strategies.</li>
+ *   <li>Supports secure computation phases for encrypted location estimation.</li>
+ * </ul>
+ *
+ * @author Andrew Quijano
+ * @since 2017-07-06
+ */
 public class LocalizationResult implements Serializable, Comparable<LocalizationResult> {
 	/** Serialization identifier for compatibility. */
 	@Serial

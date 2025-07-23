@@ -33,12 +33,12 @@ import org.apache.logging.log4j.Logger;
  * <a href="http://tutorials.jenkov.com/java-multithreaded-servers/multithreaded-server.html"> multithreaded server</a>
  * </p>
  *
- * @author Andrew
+ * @author Andrew Quijano
  * @since 2017-07-06
  */
 public class server implements Runnable {
 	/** Port number for the server to listen on. */
-	protected int serverPort = 9254;
+	protected int serverPort;
 	/** Server socket for accepting client connections. */
 	protected ServerSocket serverSocket = null;
 	/** Indicates if the server is stopped. */

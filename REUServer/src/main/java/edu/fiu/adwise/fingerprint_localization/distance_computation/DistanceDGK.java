@@ -3,12 +3,9 @@ package edu.fiu.adwise.fingerprint_localization.distance_computation;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.List;
 
 import edu.fiu.adwise.fingerprint_localization.database.LocalizationLUT;
-import edu.fiu.adwise.fingerprint_localization.database.MultiphoneLocalization;
-import edu.fiu.adwise.fingerprint_localization.server;
 import edu.fiu.adwise.fingerprint_localization.structs.LocalizationResult;
 import edu.fiu.adwise.fingerprint_localization.structs.SendLocalizationData;
 import edu.fiu.adwise.homomorphic_encryption.dgk.DGKOperations;
@@ -17,32 +14,53 @@ import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
 import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
 
 
+/**
+ * Implements distance computation for Wi-Fi fingerprint localization using DGK homomorphic encryption.
+ * <p>
+ * This class provides methods for calculating encrypted distances between scanned and database RSS values,
+ * supporting both Miss Constant Algorithm (MCA) and Dynamic Matching Algorithm (DMA) approaches.
+ * It also computes encrypted location coordinates using secure centroid finding with the Socialist Millionaire protocol.
+ * </p>
+ *
+ * <ul>
+ *   <li>Uses DGK encryption for privacy-preserving localization.</li>
+ *   <li>Handles both constant and dynamic AP matching strategies.</li>
+ *   <li>Supports secure computation phases for encrypted location estimation.</li>
+ * </ul>
+ *
+ * @author Andrew Quijano
+ * @since 2017-07-06
+ */
 public class DistanceDGK extends Distance {
+	/** DGK-encrypted S2 vector for distance computation. */
 	private final BigInteger [] S2;
+	/** DGK-encrypted S3 scalar for distance computation. */
 	private final BigInteger S3;
+	/** DGK-encrypted S3 components for DMA. */
 	private final BigInteger [] S3_comp;
-	
+	/** DGK public key for encryption operations. */
 	private final DGKPublicKey pk;
-	private final boolean isREU2017;
-	
+
+	/**
+	 * Constructs a DGK distance computation instance from localization input data.
+	 *
+	 * @param in input data containing scan APs, DGK keys, and precomputed values
+	 * @throws ClassNotFoundException if database class is not found
+	 * @throws SQLException if database access error occurs
+	 */
 	public DistanceDGK(SendLocalizationData in)
 			throws ClassNotFoundException, SQLException {
 		scanAPs = in.APs;
 		S2 = in.S2;
 		S3 = in.S3;
 		S3_comp = in.S3_comp;
-		isREU2017 = in.isREU2017;
 		pk = in.pubKey;
 		if(column == null) {
 			column = LocalizationLUT.getColumnMAC(in.map);
 		}
 		// Read from Database
-		if(server.multi_phone) {
-			MultiphoneLocalization.getPlainLookup(this.RSS_ij, this.coordinates, in.phone_data, in.map);
-		}
-		else {
-			LocalizationLUT.getPlainLookup(this.RSS_ij, this.coordinates, in.map);
-		}
+		LocalizationLUT.getPlainLookup(this.RSS_ij, this.coordinates, in.map);
+
 		//MINIMUM_AP_MATCH = (int) (VECTOR_SIZE * FSF);
 		// THIS NUMBER SHOULD ALWAYS BE >= 1 FOR THE FOLLOWING REASONS
 		// 1- Inform User if they are not in floor map
@@ -50,33 +68,17 @@ public class DistanceDGK extends Distance {
 		MINIMUM_AP_MATCH = 1;
 	}
 
-	public ArrayList<LocalizationResult> MinimumDistance(alice Niu)
-			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
-		resultList = this.MissConstantAlgorithm();
-		// 2015, let the phone do the work!
-		if(!isREU2017) {
-			return resultList;
-		}
-		// 1- Encrypt and Store coordinates
-        for (LocalizationResult localizationResult : resultList) {
-            localizationResult.add_secret_coordinates(pk);
-        }
-		// 2- Shuffle Result List
-		Collections.shuffle(resultList);
-				
-		// 3- Get Min and return ([[x]], [[y]])
-		BigInteger min = Niu.getKValues(encryptedDistance, 1, true)[0];
-		for(LocalizationResult l: resultList) {
-			if(l.encryptedDistance.equals(min)) {
-				this.encryptedLocation[0] = l.encryptedCoordinates[0];
-				this.encryptedLocation[1] = l.encryptedCoordinates[1];
-				break;
-			}
-		}
-		return resultList;
-	}
-
-	public ArrayList<LocalizationResult> MissConstantAlgorithm()
+	/**
+	 * Computes encrypted distances using the Miss Constant Algorithm (MCA).
+	 * Substitutes missing RSS values with a constant and calculates DGK-encrypted distances.
+	 *
+	 * @return list of localization results with encrypted distances
+	 * @throws ClassNotFoundException if database class is not found
+	 * @throws IOException if I/O error occurs
+	 * @throws IllegalArgumentException if arguments are invalid
+	 * @throws HomomorphicException if DGK encryption fails
+	 */
+	public List<LocalizationResult> MissConstantAlgorithm()
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
 		BigInteger d;
 		BigInteger S1_Row;
@@ -109,7 +111,17 @@ public class DistanceDGK extends Distance {
 		return resultList;
 	}
 
-	public ArrayList<LocalizationResult> DynamicMatchingAlgorithm()
+	/**
+	 * Computes encrypted distances using the Dynamic Matching Algorithm (DMA).
+	 * Only matches APs present in the scan and calculates DGK-encrypted distances.
+	 *
+	 * @return list of localization results with encrypted distances
+	 * @throws ClassNotFoundException if database class is not found
+	 * @throws IOException if I/O error occurs
+	 * @throws IllegalArgumentException if arguments are invalid
+	 * @throws HomomorphicException if DGK encryption fails
+	 */
+	public List<LocalizationResult> DynamicMatchingAlgorithm()
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
 		long count;
 		BigInteger d;
@@ -151,6 +163,17 @@ public class DistanceDGK extends Distance {
 		return resultList;
 	}
 
+	/**
+	 * Performs phase 3 of secure centroid finding using DGK encryption.
+	 * Computes encrypted location coordinates based on the k-minimum distances and their weights.
+	 *
+	 * @param Niu instance of Alice for secure computation
+	 * @return array of encrypted location coordinates [x, y]
+	 * @throws ClassNotFoundException if database class is not found
+	 * @throws IOException if I/O error occurs
+	 * @throws IllegalArgumentException if arguments are invalid or protocol fails
+	 * @throws HomomorphicException if DGK encryption fails
+	 */
 	public BigInteger[] Phase3(alice Niu)
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
 		// Get the K-minimum distances!
@@ -192,7 +215,7 @@ public class DistanceDGK extends Distance {
 		int index;
 		// Now I multiply it with all scalars. (x, y)
 		for (int i = 0; i < Distance.k; i++) {
-			// NOTE, IT WILL NOT GIVE ME CORRECT X_I, Y_I since it is NOT sorted.
+			// NOTE; IT WILL NOT GIVE ME CORRECT X_I, Y_I since it is NOT sorted.
 			// So I need to get the correct index!
 			index = distance_index(k_min[i]);
 			encryptedLocation[0] = DGKOperations.add(encryptedLocation[0], DGKOperations.multiply(weights[i] , resultList.get(index).getX().longValue(), pk), pk);

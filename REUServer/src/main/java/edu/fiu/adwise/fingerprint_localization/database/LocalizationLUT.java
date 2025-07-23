@@ -231,7 +231,6 @@ public class LocalizationLUT {
 	 * 	Which returns to the TrainActivity on the Phone, informing which points are already
 	 * 	trained
 	 */
-	
 	public static Double [] getX(String Map) 
 			throws ClassNotFoundException, SQLException {
 		Double [] X;
@@ -288,7 +287,7 @@ public class LocalizationLUT {
 	public static String [] getMaps() 
 			throws ClassNotFoundException, SQLException {
 		String [] maps;
-		ArrayList<String> list_maps = new ArrayList<>();
+		List<String> list_maps = new ArrayList<>();
 	
 		Class.forName(myDriver);
 		Connection conn = DriverManager.getConnection(URL, username, password);
@@ -498,7 +497,6 @@ public class LocalizationLUT {
 	Returns:
 	True/False to UpdateTables()
 	*/
-	
 	public static boolean isNullTuple(int [] row) {
 		int counter = 0;
         for (int j : row) {
@@ -728,7 +726,7 @@ public class LocalizationLUT {
 		}
 	}
 	
-	public static void getPlainLookup(ArrayList<Long[]> SQLData, ArrayList<Double[]> coordinates, String map) 
+	public static void getPlainLookup(List<Long[]> SQLData, List<Double[]> coordinates, String map)
 			throws ClassNotFoundException, SQLException {
 		Class.forName(myDriver);
 		Connection conn = DriverManager.getConnection(URL, username, password);

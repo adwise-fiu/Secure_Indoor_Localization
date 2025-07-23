@@ -12,7 +12,6 @@ import java.util.Arrays;
  * It is serializable for network or file transfer.
  * </p>
  *
- * <p>
  * Typical usage:
  * <pre>
  *     SendTrainingData data = new SendTrainingData(
@@ -21,52 +20,30 @@ import java.util.Arrays;
  *         "Android", "Pixel", "Pixel 5", "Google"
  *     );
  * </pre>
- * </p>
  *
- * @author Andrew
+ * @author Andrew Quijano
  * @since 7/6/2017
  */
 public class SendTrainingData implements Serializable {
-    /**
-     * The map identifier where the training data was collected.
-     */
+    /** The map identifier where the training data was collected. */
     private final String Map;
-    /**
-     * The X coordinate of the training data location.
-     */
+    /** The X coordinate of the training data location. */
     private final Double X_coordinate;
-    /**
-     * The Y coordinate of the training data location.
-     */
+    /** The Y coordinate of the training data location. */
     private final Double Y_coordinate;
-    /**
-     * Array of Wi-Fi access point MAC addresses detected at the location.
-     */
+    /** Array of Wi-Fi access point MAC addresses detected at the location. */
     private final String [] MACAddress;
-    /**
-     * Array of received signal strength (RSS) values corresponding to the MAC addresses.
-     */
+    /** Array of received signal strength (RSS) values corresponding to the MAC addresses. */
     private final Integer[] RSS;
-    /**
-     * Operating system of the device used for data collection.
-     */
+    /** Operating system of the device used for data collection. */
     private final String OS;
-    /**
-     * Device name or identifier.
-     */
+    /** Device name or identifier. */
     private final String Device;
-    /**
-     * Device model.
-     */
+    /** Device model. */
     private final String Model;
-    /**
-     * Device product name.
-     */
+    /** Device product name. */
     private final String Product;
-
-    /**
-     * Serialization identifier for compatibility.
-     */
+    /** Serialization identifier for compatibility. */
     @Serial
     private static final long serialVersionUID = 3907495506938576258L;
 

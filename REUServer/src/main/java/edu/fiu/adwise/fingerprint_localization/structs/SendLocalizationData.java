@@ -29,88 +29,55 @@ import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
         * @author Andrew Quijano
  * @since 2017-07-06
  */
-
 public class SendLocalizationData implements Serializable {
 
-    /**
-     * The localization scheme used (e.g., plaintext, DGK, Paillier, ElGamal).
-     */
+    /** The localization scheme used (e.g., plaintext, DGK, Paillier, ElGamal). */
     public final LOCALIZATION_SCHEME LOCALIZATION_SCHEME;
 
-    /**
-     * Received Signal Strength (RSS) values for each access point (plaintext mode).
-     */
+    /** Received Signal Strength (RSS) values for each access point (plaintext mode). */
     public final Integer[] RSS;
 
-    /**
-     * Access point MAC addresses
-     */
+    /** Access point MAC addresses */
     public final String[] APs;
 
-    /**
-     * Encrypted S2 values for secure triple computation (Paillier/DGK).
-     */
+    /** Encrypted S2 values for secure triple computation (Paillier/DGK). */
     public final BigInteger[] S2;
 
-    /**
-     * Encrypted S3 comparison values for secure triple computation (Paillier/DGK).
-     */
+    /** Encrypted S3 comparison values for secure triple computation (Paillier/DGK). */
     public final BigInteger[] S3_comp;
 
-    /**
-     * Encrypted S3 value for secure triple computation (Paillier/DGK).
-     */
+    /** Encrypted S3 value for secure triple computation (Paillier/DGK). */
     public final BigInteger S3;
 
-    /**
-     * Encrypted S2 values for secure triple computation (ElGamal).
-     */
+    /** Encrypted S2 values for secure triple computation (ElGamal). */
     public final List<ElGamal_Ciphertext> e_S2;
 
-    /**
-     * Encrypted S3 comparison values for secure triple computation (ElGamal).
-     */
+    /** Encrypted S3 comparison values for secure triple computation (ElGamal). */
     public final List<ElGamal_Ciphertext> e_S3_comp;
 
-    /**
-     * Encrypted S3 value for secure triple computation (ElGamal).
-     */
+    /** Encrypted S3 value for secure triple computation (ElGamal). */
     public final ElGamal_Ciphertext e_S3;
 
-    /**
-     * Serialization identifier for compatibility.
-     */
+    /** Serialization identifier for compatibility. */
     @Serial
     private static final long serialVersionUID = 201194517759072124L;
 
-    /**
-     * ElGamal public key for encryption (ElGamal mode).
-     */
+    /** ElGamal public key for encryption (ElGamal mode). */
     public final ElGamalPublicKey e_pk;
 
-    /**
-     * DGK public key for encryption (DGK mode).
-     */
+    /** DGK public key for encryption (DGK mode). */
     public final DGKPublicKey pubKey;
 
-    /**
-     * Paillier public key for encryption (Paillier mode).
-     */
+    /** Paillier public key for encryption (Paillier mode) */
     public final PaillierPublicKey pk;
 
-    /**
-     * Indicates if the REU2017 mode is enabled (legacy compatibility).
-     */
+    /** Indicates if the REU2017 mode is enabled (legacy compatibility). */
     public final boolean isREU2017;
 
-    /**
-     * Device metadata (e.g., OS, model, product) for filtering or context.
-     */
+    /** Device metadata (e.g., OS, model, product) for filtering or context. */
     public final String[] phone_data;
 
-    /**
-     * Map identifier for the localization context.
-     */
+    /** Map identifier for the localization context. */
     public final String map;
 
     /**
