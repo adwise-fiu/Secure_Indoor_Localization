@@ -15,6 +15,7 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import edu.fiu.adwise.fingerprint_localization.database.FingerprintDbUtils;
 import edu.fiu.adwise.fingerprint_localization.distance_computation.DistanceDGK;
 import edu.fiu.adwise.fingerprint_localization.distance_computation.DistancePaillier;
 import edu.fiu.adwise.fingerprint_localization.distance_computation.DistancePlain;
@@ -35,7 +36,7 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * Handles client requests for Wi-Fi fingerprint localization, training data submission,
- * and map file operations in a multi-threaded server environment.
+ * and map file operations in a multithreaded server environment.
  * <p>
  * This class processes localization queries using various algorithms (Plain, DGK, Paillier),
  * manages training data, and supports map file upload/download. It communicates with clients
@@ -79,9 +80,14 @@ public class LocalizationThread implements Runnable {
 	/** List of localization results to send to a client. */
 	private List<LocalizationResult> replyToClient = new ArrayList<>();
 
-    public LocalizationThread(Socket clientSocket) {
-        this.clientSocket = clientSocket;
-    }
+	/**
+	 * Constructs a new LocalizationThread with the specified client socket.
+	 *
+	 * @param clientSocket the socket for client communication
+	 */
+	public LocalizationThread(Socket clientSocket) {
+		this.clientSocket = clientSocket;
+	}
 
 	/**
 	 * Main thread execution method. Processes client requests for localization,
@@ -110,28 +116,27 @@ public class LocalizationThread implements Runnable {
 					String device = (String) fromClient.readObject();
                     logger.info("{} {} {} {}", coordinate[0], coordinate[1], map, device);
 					toClient.writeBoolean(LocalizationLUT.undo(coordinate, map, device));
-				} else if (command.equals("RESET")) {
+				} else if (command.equalsIgnoreCase("RESET")) {
 					logger.info("Command acquired: RESET");
 					toClient.writeBoolean(LocalizationLUT.reset());
-					logger.info("Completion time: " + (System.nanoTime() - startTime)/BILLION + " seconds");
 					server.preprocessed = false;
 					return;
-				} else if (command.equals("Acquire all current training points")) {
+				} else if (command.equalsIgnoreCase("Acquire all current training points")) {
 					logger.info("Command acquired: Obtain all Fingerprints!");
 					String Map = (String) fromClient.readObject();
-					toClient.writeObject(LocalizationLUT.getX(Map));
-					toClient.writeObject(LocalizationLUT.getY(Map));
+					toClient.writeObject(LocalizationLUT.get_xy(Map, "Xcoordinate"));
+					toClient.writeObject(LocalizationLUT.get_xy(Map, "Ycoordinate"));
 				}
-				else if (command.equals("Process LUT")) {
+				else if (command.equalsIgnoreCase("Process LUT")) {
 					logger.info("Command acquired: Process Lookup Table");
 					toClient.writeBoolean(process());
 					toClient.flush();
-				} else if(command.equals("Get Lookup Columns")) {
+				} else if(command.equalsIgnoreCase("Get Lookup Columns")) {
 					logger.info("Command acquired: Get Lookup MAC Addresses!");
 					String map = (String) fromClient.readObject();
 					toClient.writeObject(LocalizationLUT.getColumnMAC(map));
 					toClient.flush();
-				} else if(command.equals("GET")) {
+				} else if(command.equalsIgnoreCase("GET")) {
 					// AddMapActivity, download Bitmap and save to storage
 					String map_name = (String) fromClient.readObject();
 					File file = new File(BASEDIR + map_name);
@@ -160,7 +165,7 @@ public class LocalizationThread implements Runnable {
 						toClient.flush();
 					}
 					return;
-				} else if(command.equals("SET")) {
+				} else if(command.equalsIgnoreCase("SET")) {
 					// Get the correct Map back to the User
 					try {
 						String map_name = (String) fromClient.readObject();
@@ -306,7 +311,7 @@ public class LocalizationThread implements Runnable {
 						toClient.flush();
 						break;
 					default:
-						System.err.println("INVALID LOCALIZATION SCHEME!");
+						logger.fatal("INVALID LOCALIZATION SCHEME!");
 						break;
 				}
 				// Log completion time
@@ -342,7 +347,7 @@ public class LocalizationThread implements Runnable {
 	 */
 	public static boolean process() {
 		if(!server.preprocessed) {
-			if(LocalizationLUT.createTables()) {
+			if(FingerprintDbUtils.createTables()) {
 				logger.info("Created new Lookup Table!");
 			}
 			else {
@@ -351,7 +356,7 @@ public class LocalizationThread implements Runnable {
 			}
 			logger.info("Computing Lookup Table Data...");
 			Distance.VECTOR_SIZE = LocalizationLUT.getVectorSize(Distance.FSF);
-			logger.info("NEW VECTOR SIZE: " + Distance.VECTOR_SIZE);
+            logger.info("NEW VECTOR SIZE: {}", Distance.VECTOR_SIZE);
 			
 			if(LocalizationLUT.UpdatePlainLUT()) {
 				logger.info("Successfully created Lookup table!");

@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import edu.fiu.adwise.fingerprint_localization.database.LocalizationLUT;
+import edu.fiu.adwise.fingerprint_localization.database.PrintTables;
 import edu.fiu.adwise.fingerprint_localization.distance_computation.Distance;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -181,7 +182,7 @@ public class server implements Runnable {
 				logger.info("Database preprocessed? {}", server.preprocessed);
 				logger.info("Vector size: {}", Distance.VECTOR_SIZE);
 				logger.info("APs in Training Data: {}", LocalizationLUT.getVectorSize(0.0));
-				logger.info("N_F: {}", LocalizationLUT.getX("BWY_FL_03").length);
+				logger.info("N_F: {}", LocalizationLUT.get_xy("BWY_FL_03", "Xcoordinate").length);
 				logger.info("Current value of K is: {}", Distance.k);
 
 				// Command handling
@@ -190,8 +191,8 @@ public class server implements Runnable {
 					System.out.flush();
 				} else if (commands[0].equalsIgnoreCase("print")) {
 					if (server.preprocessed) {
-						LocalizationLUT.printTrainingData();
-						LocalizationLUT.printLUT();
+						PrintTables.printTrainingData();
+						PrintTables.printLookupTables();
 					} else {
 						logger.info("Lookup Tables not processed yet!");
 					}

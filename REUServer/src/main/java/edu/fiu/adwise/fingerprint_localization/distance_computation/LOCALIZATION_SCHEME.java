@@ -22,7 +22,7 @@ package edu.fiu.adwise.fingerprint_localization.distance_computation;
  */
 
 public enum LOCALIZATION_SCHEME {
-	/** Undo training data insersetion operation. */
+	/** Undo training data insertion operation. */
 	UNDO(-5),
 	/** Reset server, delete all training points and lookup table */
 	RESET(-4),
@@ -30,7 +30,7 @@ public enum LOCALIZATION_SCHEME {
 	GETXY(-3),
 	/** Process lookup tables using training data */
 	PROCESS(-2),
-	/** Get column information. a list of MAC Addresses */
+	/** Get column information. A list of MAC Addresses */
 	GET_COLUMN(-1),
 	/** Place training data */
 	TRAIN(0),

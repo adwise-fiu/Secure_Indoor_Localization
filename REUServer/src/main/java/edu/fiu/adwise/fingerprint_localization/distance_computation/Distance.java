@@ -67,11 +67,11 @@ public abstract class Distance {
 	/** Number of nearest neighbors (K) for KNN-based algorithms. */
 	public static int k = 2;
 
-	/** RSS values from database for each candidate location. */
-	protected ArrayList<Long[]> RSS_ij = new ArrayList<Long[]>();
+	/** RSS values from a database for each candidate location. */
+	protected List<Long[]> RSS_ij = new ArrayList<>();
 
-	/** Coordinates from database for each candidate location. */
-	protected ArrayList<Double[]> coordinates = new ArrayList<Double[]>();
+	/** Coordinates from a database for each candidate location. */
+	protected List<Double[]> coordinates = new ArrayList<>();
 
 	/**
 	 * Computes distances using MCA, substituting missing RSS values with v_c.
@@ -173,9 +173,9 @@ public abstract class Distance {
 	}
 
 	/**
-	 * Checks if the scan has sufficient AP matches to satisfy the FSF threshold.
+	 * Checks if the scan has enough AP matches to satisfy the FSF threshold.
 	 *
-	 * @return true if the number of matches is less than the minimum required, false otherwise
+	 * @return true if the number of matches is lower than the minimum required, false otherwise
 	 */
 	protected boolean has_sufficient_fsf() {
 		// Step 1, Compute FSF

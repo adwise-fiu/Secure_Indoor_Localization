@@ -1,44 +1,99 @@
 package edu.fiu.adwise.fingerprint_tests;
 
-import static org.junit.Assert.assertEquals;
-
+import edu.fiu.adwise.fingerprint_localization.database.FingerprintDbUtils;
+import edu.fiu.adwise.fingerprint_localization.database.LocalizationLUT;
+import edu.fiu.adwise.fingerprint_localization.distance_computation.Distance;
+import edu.fiu.adwise.fingerprint_localization.server;
+import edu.fiu.adwise.fingerprint_localization.structs.SendLocalizationData;
+import edu.fiu.adwise.fingerprint_localization.structs.SendTrainingData;
 import edu.fiu.adwise.homomorphic_encryption.dgk.DGKKeyPairGenerator;
-import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPrivateKey;
-import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.math.BigInteger;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.security.KeyPair;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.*;
 
 public class PlainTestDistanceTest {
 
-    private static int KEY_SIZE = 1024;
-    private static DGKPublicKey public_key;
-    private static DGKPrivateKey private_key;
-
-    private static BigInteger a;
+    public static List<SendTrainingData> readTrainingData(String csvPath, String mapName) throws IOException {
+        Map<String, List<String[]>> grouped = new HashMap<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(csvPath))) {
+            br.readLine(); // skip header
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] tokens = line.split(",");
+                String key = tokens[0] + "," + tokens[1] + "," + tokens[4] + "," + tokens[5] + "," + tokens[6] + "," + tokens[7];
+                grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(tokens);
+            }
+        }
+        List<SendTrainingData> result = new ArrayList<>();
+        for (Map.Entry<String, List<String[]>> entry : grouped.entrySet()) {
+            List<String[]> rows = entry.getValue();
+            String[] first = rows.get(0);
+            Double x = Double.valueOf(first[0]);
+            Double y = Double.valueOf(first[1]);
+            String os = first[4], device = first[5], model = first[6], product = first[7];
+            String[] macs = rows.stream().map(r -> r[2]).toArray(String[]::new);
+            Integer[] rss = rows.stream().map(r -> Integer.valueOf(r[3])).toArray(Integer[]::new);
+            result.add(new SendTrainingData(mapName, x, y, macs, rss, os, device, model, product));
+        }
+        return result;
+    }
 
     @BeforeClass
     public static void generate_keys() {
         DGKKeyPairGenerator pa = new DGKKeyPairGenerator();
+        int KEY_SIZE = 2048;
         pa.initialize(KEY_SIZE, null);
         KeyPair dgk = pa.generateKeyPair();
-        public_key = (DGKPublicKey) dgk.getPublic();
-        private_key = (DGKPrivateKey) dgk.getPrivate();
     }
 
     @BeforeClass
-    public static void prepare_fingerprint_database() {
+    public static void prepare_fingerprint_database() throws SQLException, ClassNotFoundException, IOException {
         // Load training data into Fingerprint database
+        assertTrue("Failed to create database and training data table", LocalizationLUT.createTrainingTable());
+        assertFalse("Confirm that the database has no lookup table", LocalizationLUT.isProcessed());
 
-        // Process the training data, create the lookup table
+        // Process the training data: Read from a file and use train database function
+        assertTrue("Confirm that training data was has created a look up table", LocalizationLUT.submitTrainingData(null));
+        List<SendTrainingData> test_data = readTrainingData("TrainingPoints.csv", "Broadway");
+        assertFalse("Confirming non-empty training data array", test_data.isEmpty());
 
+        // Create and populate the lookup table
+        assertTrue("Failed to create Lookup Table", FingerprintDbUtils.createTables());
+        Distance.VECTOR_SIZE = LocalizationLUT.getVectorSize(Distance.FSF);
+        assertTrue("Populated the lookup table", LocalizationLUT.UpdatePlainLUT());
+        assertTrue("Confirm that the database has a lookup table created", LocalizationLUT.isProcessed());
     }
 
     @Test 
     public void test_plaintext_minimum_distance() {
-		assertEquals(100, 100);
+        // Mock client sending localization request
+        SendLocalizationData data = new SendLocalizationData(
+            new String[]{"00:11:22:33:44:55", "66:77:88:99:AA:BB"},
+            new Integer[]{-50, -60},
+            public_key,
+            LOCALIZATION_SCHEME.PLAIN,
+            false,
+            new String[]{"Android", "Pixel 4"},
+            "Broadway-3"
+        );
+
+        // Create a server to handle the request
+        server Localizationserver = new server(9000);
+        new Thread(Localizationserver).start();
+
+        // Close the server since you are done
+        Localizationserver.stop();
     }
 
     @Test

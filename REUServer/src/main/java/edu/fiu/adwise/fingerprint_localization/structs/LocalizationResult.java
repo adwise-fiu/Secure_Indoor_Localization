@@ -162,8 +162,7 @@ public class LocalizationResult implements Serializable, Comparable<Localization
 	 *
 	 * @return X coordinate
 	 */
-    public Double getX()
-    {
+    public Double getX() {
     	return coordinates[0];
     }
 
@@ -172,8 +171,7 @@ public class LocalizationResult implements Serializable, Comparable<Localization
 	 *
 	 * @return Y coordinate
 	 */
-    public Double getY()
-    {
+    public Double getY() {
     	return coordinates[1];
     }
 
@@ -233,8 +231,7 @@ public class LocalizationResult implements Serializable, Comparable<Localization
 	/**
 	 * Divides the plaintext distance by matches (for DMA).
 	 */
-	public void plain_decrypt()
-	{
+	public void plain_decrypt() {
 		this.plainDistance = plainDistance/matches;
 	}
 
@@ -243,8 +240,7 @@ public class LocalizationResult implements Serializable, Comparable<Localization
 	 *
 	 * @return plaintext distance
 	 */
-	public Long getPlainDistance()
-	{
+	public Long getPlainDistance() {
 		return this.plainDistance;
 	}
 
@@ -253,8 +249,7 @@ public class LocalizationResult implements Serializable, Comparable<Localization
 	 *
 	 * @param d encrypted distance
 	 */
-	public void setEncryptedDistance(BigInteger d)
-	{
+	public void setEncryptedDistance(BigInteger d) {
 		this.encryptedDistance = d;
 	}
 
