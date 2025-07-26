@@ -125,7 +125,11 @@ public class FingerprintDbUtils {
      */
     public static int getVectorSize(double percentile) {
         if(percentile < 0 || percentile > 1) {
+            logger.fatal("Invalid percentile value: {}. Must be between 0 and 1.", percentile);
             return -1;
+        }
+        else {
+            logger.info("Calculating vector size with percentile Access Points filtered out: {}", percentile);
         }
 
         List<Integer> AP_count = new ArrayList<>();
@@ -146,7 +150,7 @@ public class FingerprintDbUtils {
         } catch (SQLException | ClassNotFoundException cnf) {
             logger.warn("Failed to the new vector size: {}", cnf.getMessage());
         }
-// same as get IDX of Percentile, Note the int is already sorted!
+        // same as get IDX of Percentile, Note the int is already sorted!
         int num_AP_filtered = (int) Math.ceil(percentile * AP_count.size());
         return AP_count.size() - num_AP_filtered;
     }

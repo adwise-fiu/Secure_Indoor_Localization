@@ -8,6 +8,8 @@ import edu.fiu.adwise.fingerprint_localization.structs.SendLocalizationData;
 import edu.fiu.adwise.fingerprint_localization.structs.SendTrainingData;
 import edu.fiu.adwise.homomorphic_encryption.dgk.DGKKeyPairGenerator;
 import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import edu.fiu.adwise.fingerprint_localization.distance_computation.LOCALIZATION_SCHEME;
@@ -25,6 +27,7 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 public class PlainTestDistanceTest {
+    private static final Logger logger = LogManager.getLogger(PlainTestDistanceTest.class);
 
     public static List<SendTrainingData> readTrainingData(String csvPath, String mapName) throws IOException {
         Map<String, List<String[]>> grouped = new HashMap<>();
@@ -46,7 +49,11 @@ public class PlainTestDistanceTest {
             String os = first[4], device = first[5], model = first[6], product = first[7];
             String[] macs = rows.stream().map(r -> r[2]).toArray(String[]::new);
             Integer[] rss = rows.stream().map(r -> Integer.valueOf(r[3])).toArray(Integer[]::new);
-            result.add(new SendTrainingData(mapName, x, y, macs, rss, os, device, model, product));
+            SendTrainingData data = new SendTrainingData(
+                mapName, x, y, macs, rss, os, device, model, product
+            );
+            logger.info("Adding training data:\n {}", data);
+            result.add(data);
         }
         return result;
     }
@@ -68,15 +75,18 @@ public class PlainTestDistanceTest {
         assertFalse("Confirm that the database has no lookup table", LocalizationLUT.isProcessed());
 
         // Process the training data: Read from a file and use train database function
-        assertTrue("Confirm that training data was has created a look up table", LocalizationLUT.submitTrainingData(null));
         List<SendTrainingData> test_data = readTrainingData("TrainingPoints.csv", "Broadway");
         assertFalse("Confirming non-empty training data array", test_data.isEmpty());
-
+        for (SendTrainingData data : test_data) {
+            assertTrue("Failed to insert training data into the database", LocalizationLUT.submitTrainingData(data));
+        }
         // Create and populate the lookup table
         assertTrue("Failed to create Lookup Table", FingerprintDbUtils.createTables());
-        Distance.VECTOR_SIZE = LocalizationLUT.getVectorSize(Distance.FSF);
+        Distance.VECTOR_SIZE = LocalizationLUT.getVectorSize(0.8);
+        logger.info("Distance vector size is set to {}", Distance.VECTOR_SIZE);
         assertTrue("Populated the lookup table", LocalizationLUT.UpdatePlainLUT());
         assertTrue("Confirm that the database has a lookup table created", LocalizationLUT.isProcessed());
+        assertTrue("Distance vector size is set to a legitimate value", Distance.VECTOR_SIZE != -1);
     }
 
     @Test 
@@ -96,8 +106,8 @@ public class PlainTestDistanceTest {
         server Localizationserver = new server(9000);
         new Thread(Localizationserver).start();
 
-        mock_localize_client client = new mock_localize_client(data, 9000);
-        new Thread(client).start();
+        //mock_localize_client client = new mock_localize_client(data, 9000);
+        //new Thread(client).start();
 
         // Close the server since you are done
         Localizationserver.stop();

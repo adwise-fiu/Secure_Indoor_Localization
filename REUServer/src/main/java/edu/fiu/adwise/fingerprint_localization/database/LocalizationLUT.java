@@ -245,8 +245,14 @@ public class LocalizationLUT extends FingerprintDbUtils {
 	 */
 	public static boolean UpdatePlainLUT() {
 		try {
+			if (Distance.VECTOR_SIZE == -1) {
+				logger.warn("Distance.VECTOR_SIZE is not set. Please set it before building the lookup tables.");
+				return false;
+			}
+
 			Class.forName(myDriver);
 			try (Connection conn = DriverManager.getConnection(URL, username, password)) {
+				conn.setAutoCommit(false);
 				String[] maps = getMaps();
 				for (String map : maps) {
 					Double[] X = get_xy(map, "Xcoordinate");
@@ -291,11 +297,11 @@ public class LocalizationLUT extends FingerprintDbUtils {
 					String PlainQuery = "insert into " + DB + "." + map
 							+ " values (?, ?, ?," + append;
 
-					for (int PrimaryKey = 0; PrimaryKey < X.length; PrimaryKey++) {
-						if (isNullTuple(Pinsert[PrimaryKey])) {
-							continue;
-						}
-						try (PreparedStatement Plain = conn.prepareStatement(PlainQuery)) {
+					try (PreparedStatement Plain = conn.prepareStatement(PlainQuery)) {
+						for (int PrimaryKey = 0; PrimaryKey < X.length; PrimaryKey++) {
+							if (isNullTuple(Pinsert[PrimaryKey])) {
+								continue;
+							}
 							Plain.setInt(1, PrimaryKey + 1);
 							Plain.setDouble(2, X[PrimaryKey]);
 							Plain.setDouble(3, Y[PrimaryKey]);
@@ -305,8 +311,13 @@ public class LocalizationLUT extends FingerprintDbUtils {
 							Plain.execute();
 						}
 					}
-					conn.commit();
+					catch (SQLException e) {
+						logger.error("Error deleting the lookup table {}: {}", map, e.getMessage());
+						conn.rollback();
+						return false;
+					}
 				}
+				conn.commit();
 			}
 			return true;
 		} catch (SQLException | ClassNotFoundException cnf) {
@@ -350,6 +361,7 @@ public class LocalizationLUT extends FingerprintDbUtils {
 				String sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = ? AND table_name != ?";
 				try (Connection conn = DriverManager.getConnection(URL, username, password);
 					 PreparedStatement stmt = conn.prepareStatement(sql)) {
+					conn.setAutoCommit(false);
 					stmt.setString(1, DB);
 					stmt.setString(2, TRAININGDATA);
 					List<String> tables = new ArrayList<>();
@@ -362,6 +374,10 @@ public class LocalizationLUT extends FingerprintDbUtils {
 					for (String table : tables) {
 						try (Statement dropStmt = conn.createStatement()) {
 							dropStmt.executeUpdate("DROP TABLE " + DB + "." + table + ";");
+						} catch (SQLException e) {
+							logger.warn("Dropping table {}: {}", table, e.getMessage());
+							conn.rollback();
+							return false;
 						}
 					}
 					conn.commit();
@@ -403,7 +419,6 @@ public class LocalizationLUT extends FingerprintDbUtils {
 				stmt.setString(3, map);
 				stmt.setString(4, device);
 				int rows_updated = stmt.executeUpdate();
-				conn.commit();
 				return rows_updated != 0;
 			}
 		} catch (SQLException | ClassNotFoundException e) {
@@ -491,6 +506,7 @@ public class LocalizationLUT extends FingerprintDbUtils {
 
 	/**
 	 * Retrieves all rows from the specified lookup table and populates the provided lists with RSS vectors and coordinates.
+	 * This function is used by the distance_computation module to obtain the RSS vectors and coordinates.
 	 * <p>
 	 * For each row in the lookup table, this method extracts the X and Y coordinates and the RSS values for all access points,
 	 * then adds them to the given lists. The order of the results is sorted by X coordinate.
