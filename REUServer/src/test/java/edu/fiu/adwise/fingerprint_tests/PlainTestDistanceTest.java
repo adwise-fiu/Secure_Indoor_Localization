@@ -7,8 +7,10 @@ import edu.fiu.adwise.fingerprint_localization.server;
 import edu.fiu.adwise.fingerprint_localization.structs.SendLocalizationData;
 import edu.fiu.adwise.fingerprint_localization.structs.SendTrainingData;
 import edu.fiu.adwise.homomorphic_encryption.dgk.DGKKeyPairGenerator;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import edu.fiu.adwise.fingerprint_localization.distance_computation.LOCALIZATION_SCHEME;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -49,12 +51,14 @@ public class PlainTestDistanceTest {
         return result;
     }
 
+    private static KeyPair dgk;
+
     @BeforeClass
     public static void generate_keys() {
         DGKKeyPairGenerator pa = new DGKKeyPairGenerator();
         int KEY_SIZE = 2048;
         pa.initialize(KEY_SIZE, null);
-        KeyPair dgk = pa.generateKeyPair();
+        dgk = pa.generateKeyPair();
     }
 
     @BeforeClass
@@ -81,8 +85,8 @@ public class PlainTestDistanceTest {
         SendLocalizationData data = new SendLocalizationData(
             new String[]{"00:11:22:33:44:55", "66:77:88:99:AA:BB"},
             new Integer[]{-50, -60},
-            public_key,
-            LOCALIZATION_SCHEME.PLAIN,
+                (DGKPublicKey) dgk.getPublic(),
+            LOCALIZATION_SCHEME.PLAIN_MIN,
             false,
             new String[]{"Android", "Pixel 4"},
             "Broadway-3"
@@ -91,6 +95,9 @@ public class PlainTestDistanceTest {
         // Create a server to handle the request
         server Localizationserver = new server(9000);
         new Thread(Localizationserver).start();
+
+        mock_localize_client client = new mock_localize_client(data, 9000);
+        new Thread(client).start();
 
         // Close the server since you are done
         Localizationserver.stop();
