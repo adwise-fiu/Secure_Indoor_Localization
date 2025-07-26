@@ -45,6 +45,10 @@ jobs:
           cache: 'gradle'
       - name: Run Gradle tests
         working-directory: REUServer
+        env:
+          MYSQL_PASSWORD: ${{ secrets.REU_SERVER_PASSWORD }}
+          MYSQL_DATABASE: fiu 
+          MYSQL_USER: ${{ github.actor }}
         run: |
           chmod +x gradlew
           ./gradlew test

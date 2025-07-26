@@ -64,12 +64,8 @@ public class LocalizationLUT extends FingerprintDbUtils {
 			try (Connection conn = DriverManager.getConnection(URL, username, password);
 				 Statement stmt = conn.createStatement()) {
 
-				// Parameterize the database name using PreparedStatement for safety
-				String createDbSQL = "CREATE DATABASE IF NOT EXISTS ?";
-				try (PreparedStatement createDbStmt = conn.prepareStatement(createDbSQL)) {
-					createDbStmt.setString(1, DB);
-					createDbStmt.execute();
-				}
+				String createDbSQL = "CREATE DATABASE IF NOT EXISTS " + DB;
+				stmt.executeUpdate(createDbSQL);
 
 				String sqlTrain = "CREATE TABLE IF NOT EXISTS " + DB + "." + TRAININGDATA + " " +
 						"( " +
@@ -115,7 +111,7 @@ public class LocalizationLUT extends FingerprintDbUtils {
 				throw new SQLException("Invalid database or table name.");
 			}
 
-			String SQL = "INSERT INTO `" + DB + "`.`" + TRAININGDATA + "` VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			String SQL = "INSERT INTO " + DB + "." + TRAININGDATA + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 			String[] MAC = input.getMACAddress();
 			Integer[] RSS = input.getRSS();
 			java.sql.Timestamp date = new java.sql.Timestamp(new java.util.Date().getTime());

@@ -75,5 +75,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.create_release.outputs.v-version }}
-          files: build/libs/ciphercraft*.jar
+          files: build/libs/fingerprint_localization*.jar
           token: ${{ secrets.GITHUB_TOKEN }}
