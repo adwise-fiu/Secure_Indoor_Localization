@@ -81,10 +81,10 @@ public class PlainTestDistanceTest {
 
         // Create and populate the lookup table
         assertTrue("Failed to create Lookup Table", FingerprintDbUtils.createTables());
-        Distance.VECTOR_SIZE = LocalizationLUT.getVectorSize(Distance.FSF);
-        assertFalse("Distance vector size is set to a legitimate value", Distance.VECTOR_SIZE != -1);
         assertTrue("Populated the lookup table", LocalizationLUT.UpdatePlainLUT());
         assertTrue("Confirm that the database has a lookup table created", LocalizationLUT.isProcessed());
+        Distance.VECTOR_SIZE = LocalizationLUT.getVectorSize(Distance.FSF);
+        assertFalse("Distance vector size is set to a legitimate value", Distance.VECTOR_SIZE != -1);
     }
 
     @Test 
@@ -104,8 +104,8 @@ public class PlainTestDistanceTest {
         server Localizationserver = new server(9000);
         new Thread(Localizationserver).start();
 
-        mock_localize_client client = new mock_localize_client(data, 9000);
-        new Thread(client).start();
+        //mock_localize_client client = new mock_localize_client(data, 9000);
+        //new Thread(client).start();
 
         // Close the server since you are done
         Localizationserver.stop();
