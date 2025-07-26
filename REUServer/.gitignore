@@ -1,7 +1,9 @@
 # Ignore class files
 bin/
 
+.env
 .gradle
+*.log
 **/build/
 !**/src/**/build/
 

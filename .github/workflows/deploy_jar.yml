@@ -50,6 +50,7 @@ jobs:
       # https://central.sonatype.org/publish/publish-portal-api/
       # https://central.sonatype.com/api-doc
       - name: Create Bundle.zip file and use Publisher API
+        working-directory: REUServer
         run: |
           ./gradlew publishToMavenLocal
           bash create_bundle.sh $VERSION
@@ -74,5 +75,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.create_release.outputs.v-version }}
-          files: build/libs/ciphercraft*.jar
+          files: build/libs/fingerprint_localization*.jar
           token: ${{ secrets.GITHUB_TOKEN }}
