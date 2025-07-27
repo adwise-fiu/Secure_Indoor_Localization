@@ -52,6 +52,7 @@ jobs:
       - name: Create Bundle.zip file and use Publisher API
         working-directory: REUServer
         run: |
+          chmod +x ./gradlew
           ./gradlew publishToMavenLocal
           bash create_bundle.sh $VERSION
           curl --request POST \
