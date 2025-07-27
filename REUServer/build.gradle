@@ -11,12 +11,22 @@ plugins {
     id 'java-library'
     id 'jacoco'
     id 'application'
+    id 'maven-publish'
+    id 'signing'
 }
 
+// name is set in settings.gradle
+group = 'io.github.andrewquijano'
+version = System.getenv("VERSION") ?: "2.0.0"
+
+// https://www.baeldung.com/gradle-sourcecompatiblity-vs-targetcompatibility
 java {
+    withJavadocJar()
+    withSourcesJar()
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
 }
+
 
 repositories {
     mavenCentral()
@@ -30,12 +40,128 @@ dependencies {
     implementation 'io.github.andrewquijano:ciphercraft:1.0.6'
 
     // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api
-    implementation 'org.apache.logging.log4j:log4j-api:2.24.3'
+    implementation 'org.apache.logging.log4j:log4j-core:2.24.3'
 
     // Use JUnit test framework
-    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'junit:junit:4.13.2'
+
+    // Make sure log4j-core is used in testing too
+    testImplementation 'org.apache.logging.log4j:log4j-core:2.24.3'
 }
 
 application {
-    mainClass.set(project.findProperty("chooseRole").toString())
+    mainClass.set('edu.fiu.adwise.fingerprint_localization.server')
+}
+
+// To create the JAR file with 'gradlew jar'
+tasks.named('jar') {
+    archiveFileName = "${project.name}-${project.version}.jar"
+    manifest {
+        attributes(
+                'Implementation-Title': project.name,
+                'Implementation-Version': System.getenv('VERSION') ?: project.version
+        )
+    }
+}
+
+test {
+    testLogging {
+// Make sure output from
+// standard out or error is shown
+// in Gradle output.
+        showStandardStreams = true
+    }
+}
+
+tasks.register('generateJavadoc', Javadoc) {
+    source = sourceSets.main.allJava
+    classpath = sourceSets.main.compileClasspath
+    options.encoding = 'UTF-8'
+    options.memberLevel = JavadocMemberLevel.PUBLIC
+    options.addStringOption('Xdoclint:none', '-quiet')
+    options.docTitle = 'Fingerprint Server Localization API'
+}
+
+// This is for publishing the library to Maven Central
+publishing {
+    publications {
+        register("mavenJava", MavenPublication) {
+            from components.java
+
+            pom {
+                name.set('fingerprint_localization')
+                description.set('This package is the JAR file used for secure indoor localization using Wi-Fi fingerprints. ' +
+                        'This utilizes homomorphic encryption to preserve privacy')
+                url.set('https://github.com/adwise-fiu/Secure_Indoor_Localization')
+
+                licenses {
+                    license {
+                        name.set('MIT License')
+                        url.set('https://opensource.org/licenses/MIT')
+                    }
+                }
+
+                developers {
+                    developer {
+                        id.set('AndrewQuijano')
+                        name.set('Andrew Quijano')
+                        email.set('andrew.quijano@nyu.edu')
+                    }
+                }
+
+                scm {
+                    connection.set('scm:git:git://github.com/adwise-fiu/Secure_Indoor_Localization.git')
+                    developerConnection.set('scm:git:ssh://github.com:adwise-fiu/Secure_Indoor_Localization.git')
+                    url.set('https://github.com/adwise-fiu/Secure_Indoor_Localization')
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "Sonatype"
+            url = version.endsWith("SNAPSHOT") ?
+                    uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") :
+                    uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+
+            credentials {
+                username = findProperty("ossrhUsername") ?: System.getenv("OSSRH_USERNAME")
+                password = findProperty("ossrhPassword") ?: System.getenv("OSSRH_PASSWORD")
+            }
+        }
+    }
+}
+
+// Update this file, ~/.gnupg/dirmngr.conf
+// and add this line 'keyserver hkps://keyserver.ubuntu.com' to the file
+// then run 'gpg --send-keys YOUR_KEY_ID'
+signing {
+    // Point to the key file on your machine, used for local testing
+    def signingKeyFile = findProperty("signingKeyFile") ?: System.getenv("SIGNING_KEY_FILE")
+    // gpg --armor --export-secret-keys YOUR_KEY_ID, export the key into a secret
+    def signingKey = findProperty("signingKey") ?: System.getenv("SIGNING_KEY")
+    // If no property or environment variable is found, it will be empty password
+    def signingPassword = findProperty("signingPassword") ?: System.getenv("SIGNING_PASSWORD") ?: ""
+
+    if (signingKeyFile) {
+        println("Reading signing key from file: $signingKeyFile")
+        def signingKey_content = new File(signingKeyFile.toString()).text
+        useInMemoryPgpKeys(signingKey_content.toString(), signingPassword.toString())
+        publishing.publications.named("mavenJava").configure { publication ->
+            signing.sign(publication)
+        }
+    }
+    else {
+        println("No signing key file found, will attempt to use in-memory key")
+        if (signingKey) {
+            useInMemoryPgpKeys(signingKey.toString(), signingPassword?.toString())
+            publishing.publications.named("mavenJava").configure { publication ->
+                signing.sign(publication)
+            }
+        }
+        else {
+            println("No signing key found. Skipping signing.")
+        }
+    }
 }
