@@ -29,13 +29,7 @@ import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
  */
 public abstract class Distance {
 	/** Default RSS value for missing access points. */
-	public static int v_c = -120;
-
-	/** Number of access points (vector size) used in computation. */
-	public static int VECTOR_SIZE = -1;
-
-	/** Feature Selection Factor: fraction of APs to filter (default 0.9). */
-	public static double FSF = 0.9;
+	public static final int v_c = -120;
 
 	/** Minimum number of AP matches required for computation. */
 	protected long MINIMUM_AP_MATCH;
@@ -56,7 +50,7 @@ public abstract class Distance {
 	protected List<LocalizationResult> resultList = new ArrayList<>();
 
 	/** Array of column names (APs) from the database. */
-	protected static String[] column = null;
+	protected static String[] lookup_table_column = null;
 
 	/** Estimated location coordinates [x, y] (plaintext). */
 	public Double[] location = new Double[2];
@@ -180,8 +174,8 @@ public abstract class Distance {
 	protected boolean has_sufficient_fsf() {
 		// Step 1, Compute FSF
 		int count = 0;
-		for (int j = 0; j < VECTOR_SIZE; j++) {
-			if(scanAPs[j].equals(column[j])) {
+		for (int j = 0; j < lookup_table_column.length; j++) {
+			if(scanAPs[j].equals(lookup_table_column[j])) {
 				++count;
 			}
 		}

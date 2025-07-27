@@ -1,8 +1,6 @@
 package edu.fiu.adwise.fingerprint_tests;
 
-import edu.fiu.adwise.fingerprint_localization.database.FingerprintDbUtils;
 import edu.fiu.adwise.fingerprint_localization.database.LocalizationLUT;
-import edu.fiu.adwise.fingerprint_localization.distance_computation.Distance;
 import edu.fiu.adwise.fingerprint_localization.server;
 import edu.fiu.adwise.fingerprint_localization.structs.SendLocalizationData;
 import edu.fiu.adwise.fingerprint_localization.structs.SendTrainingData;
@@ -81,16 +79,18 @@ public class PlainTestDistanceTest {
             assertTrue("Failed to insert training data into the database", LocalizationLUT.submitTrainingData(data));
         }
         // Create and populate the lookup table
-        assertTrue("Failed to create Lookup Table", FingerprintDbUtils.createTables());
-        Distance.VECTOR_SIZE = LocalizationLUT.getVectorSize(0.8);
-        logger.info("Distance vector size is set to {}", Distance.VECTOR_SIZE);
+        assertTrue("Failed to create Lookup Table", LocalizationLUT.createTables());
         assertTrue("Populated the lookup table", LocalizationLUT.UpdatePlainLUT());
         assertTrue("Confirm that the database has a lookup table created", LocalizationLUT.isProcessed());
-        assertTrue("Distance vector size is set to a legitimate value", Distance.VECTOR_SIZE != -1);
+        String [] look_up_mac_addresses = LocalizationLUT.getColumnMAC("Broadway");
+        assertNotNull("Lookup MAC addresses should not be null", look_up_mac_addresses);
+        for (String mac : look_up_mac_addresses) {
+            logger.info("Looking up mac address {}", mac);
+        }
     }
 
     @Test 
-    public void test_plaintext_minimum_distance() {
+    public void test_plaintext_minimum_distance() throws InterruptedException {
         // Mock client sending localization request
         SendLocalizationData data = new SendLocalizationData(
             new String[]{"00:11:22:33:44:55", "66:77:88:99:AA:BB"},
@@ -105,6 +105,9 @@ public class PlainTestDistanceTest {
         // Create a server to handle the request
         server Localizationserver = new server(9000);
         new Thread(Localizationserver).start();
+
+        // Wait for the server to initialize (for example, 1 second)
+        Thread.sleep(1000);
 
         //mock_localize_client client = new mock_localize_client(data, 9000);
         //new Thread(client).start();

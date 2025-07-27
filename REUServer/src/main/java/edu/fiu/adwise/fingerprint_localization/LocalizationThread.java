@@ -24,7 +24,6 @@ import edu.fiu.adwise.fingerprint_localization.structs.LocalizationResult;
 import edu.fiu.adwise.fingerprint_localization.structs.SendLocalizationData;
 import edu.fiu.adwise.fingerprint_localization.structs.SendTrainingData;
 import edu.fiu.adwise.fingerprint_localization.database.LocalizationLUT;
-import edu.fiu.adwise.fingerprint_localization.distance_computation.Distance;
 
 import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
 import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamalPublicKey;
@@ -119,7 +118,6 @@ public class LocalizationThread implements Runnable {
 				} else if (command.equalsIgnoreCase("RESET")) {
 					logger.info("Command acquired: RESET");
 					toClient.writeBoolean(LocalizationLUT.reset());
-					server.preprocessed = false;
 					return;
 				} else if (command.equalsIgnoreCase("Acquire all current training points")) {
 					logger.info("Command acquired: Obtain all Fingerprints!");
@@ -345,8 +343,8 @@ public class LocalizationThread implements Runnable {
 	 *
 	 * @return true if lookup table was successfully created and updated, false otherwise
 	 */
-	public static boolean process() {
-		if(!server.preprocessed) {
+	public static boolean process() throws SQLException, ClassNotFoundException {
+		if(!LocalizationLUT.isProcessed()) {
 			if(FingerprintDbUtils.createTables()) {
 				logger.info("Created new Lookup Table!");
 			}
@@ -355,12 +353,9 @@ public class LocalizationThread implements Runnable {
 				return false;
 			}
 			logger.info("Computing Lookup Table Data...");
-			Distance.VECTOR_SIZE = LocalizationLUT.getVectorSize(Distance.FSF);
-            logger.info("NEW VECTOR SIZE: {}", Distance.VECTOR_SIZE);
 			
 			if(LocalizationLUT.UpdatePlainLUT()) {
 				logger.info("Successfully created Lookup table!");
-				server.preprocessed = true;
 				return true;
 			} else {
 				logger.info("Failed to create Lookup table!");

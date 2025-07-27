@@ -55,8 +55,8 @@ public class DistanceDGK extends Distance {
 		S3 = in.S3;
 		S3_comp = in.S3_comp;
 		pk = in.pubKey;
-		if(column == null) {
-			column = LocalizationLUT.getColumnMAC(in.map);
+		if(lookup_table_column == null) {
+			lookup_table_column = LocalizationLUT.getColumnMAC(in.map);
 		}
 		// Read from Database
 		LocalizationLUT.getPlainLookup(this.RSS_ij, this.coordinates, in.map);
@@ -93,8 +93,8 @@ public class DistanceDGK extends Distance {
 			S1_Row = pk.ZERO();
 			S2_Row = pk.ZERO();
 			
-			for (int j = 0; j < VECTOR_SIZE;j++) {
-				if(scanAPs[j].equals(column[j])) {
+			for (int j = 0; j < lookup_table_column.length; j++) {
+				if(scanAPs[j].equals(lookup_table_column[j])) {
 					S1_Row = DGKOperations.add_plaintext(S1_Row, RSS_ij.get(i)[j] * RSS_ij.get(i)[j], pk);
 					S2_Row = DGKOperations.add(S2_Row, DGKOperations.multiply(S2[j], RSS_ij.get(i)[j], pk), pk);
 				}
@@ -132,8 +132,8 @@ public class DistanceDGK extends Distance {
 		for (int i = 0; i < RSS_ij.size();i++) {
 			// Step 1, Compute FSF
 			count = 0;
-			for (int j = 0; j < VECTOR_SIZE; j++) {
-				if(scanAPs[j].equals(column[j])) {
+			for (int j = 0; j < lookup_table_column.length; j++) {
+				if(scanAPs[j].equals(lookup_table_column[j])) {
 					++count;
 				}
 			}
@@ -148,8 +148,8 @@ public class DistanceDGK extends Distance {
 			S2_Row = pk.ZERO();
 			S3_Row = pk.ZERO();
 			
-			for (int j = 0; j < VECTOR_SIZE;j++) {
-				if(scanAPs[j].equals(column[j])) {
+			for (int j = 0; j < lookup_table_column.length; j++) {
+				if(scanAPs[j].equals(lookup_table_column[j])) {
 					S1_Row = DGKOperations.add_plaintext(S1_Row, RSS_ij.get(i)[j] * RSS_ij.get(i)[j], pk);
 					S2_Row = DGKOperations.add(S2_Row, DGKOperations.multiply(S2[j], RSS_ij.get(i)[j], pk), pk);
 					S3_Row = DGKOperations.add(S3_comp[j], S3_Row, pk);

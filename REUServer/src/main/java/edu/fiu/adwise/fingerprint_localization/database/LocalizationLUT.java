@@ -245,11 +245,6 @@ public class LocalizationLUT extends FingerprintDbUtils {
 	 */
 	public static boolean UpdatePlainLUT() {
 		try {
-			if (Distance.VECTOR_SIZE == -1) {
-				logger.warn("Distance.VECTOR_SIZE is not set. Please set it before building the lookup tables.");
-				return false;
-			}
-
 			Class.forName(myDriver);
 			try (Connection conn = DriverManager.getConnection(URL, username, password)) {
 				conn.setAutoCommit(false);
@@ -258,11 +253,12 @@ public class LocalizationLUT extends FingerprintDbUtils {
 					Double[] X = get_xy(map, "Xcoordinate");
 					Double[] Y = get_xy(map, "Ycoordinate");
 					String[] CommonMac = getColumnMAC(map);
-					int[][] Pinsert = new int[X.length][Distance.VECTOR_SIZE];
+                    assert CommonMac != null;
+                    int[][] Pinsert = new int[X.length][CommonMac.length];
 
 					// This collects the information for the Lookup Table
 					for (int x = 0; x < X.length; x++) {
-						for (int currentCol = 0; currentCol < Distance.VECTOR_SIZE; currentCol++) {
+						for (int currentCol = 0; currentCol < CommonMac.length; currentCol++) {
 							String getRSS = "SELECT RSS FROM " + DB + "." + TRAININGDATA + " "
 									+ "WHERE Xcoordinate = ? "
 									+ "AND Ycoordinate = ? "
@@ -272,7 +268,6 @@ public class LocalizationLUT extends FingerprintDbUtils {
 							try (PreparedStatement Plainst = conn.prepareStatement(getRSS)) {
 								Plainst.setDouble(1, X[x]);
 								Plainst.setDouble(2, Y[x]);
-								assert CommonMac != null;
 								Plainst.setString(3, CommonMac[currentCol]);
 								Plainst.setString(4, map);
 								try (ResultSet RSS = Plainst.executeQuery()) {
@@ -290,7 +285,7 @@ public class LocalizationLUT extends FingerprintDbUtils {
 
 					// This is the SQL Query to insert into the Lookup tables
 					StringBuilder append = new StringBuilder();
-					append.append(" ?,".repeat(Math.max(0, Distance.VECTOR_SIZE)));
+					append.append(" ?,".repeat(CommonMac.length));
 					append = new StringBuilder(append.substring(0, append.length() - 1));
 					append.append(");");
 
@@ -305,7 +300,7 @@ public class LocalizationLUT extends FingerprintDbUtils {
 							Plain.setInt(1, PrimaryKey + 1);
 							Plain.setDouble(2, X[PrimaryKey]);
 							Plain.setDouble(3, Y[PrimaryKey]);
-							for (int j = 0; j < Distance.VECTOR_SIZE; j++) {
+							for (int j = 0; j < CommonMac.length; j++) {
 								Plain.setInt((j + 4), Pinsert[PrimaryKey][j]);
 							}
 							Plain.execute();
@@ -343,7 +338,7 @@ public class LocalizationLUT extends FingerprintDbUtils {
 				++counter;
 			}
 		}
-		return counter == Distance.VECTOR_SIZE;
+		return counter == row.length;
 	}
 
 	/**
@@ -521,22 +516,27 @@ public class LocalizationLUT extends FingerprintDbUtils {
 	public static void getPlainLookup(List<Long[]> SQLData, List<Double[]> coordinates, String map)
 			throws ClassNotFoundException, SQLException {
 		Class.forName(myDriver);
-		Connection conn = DriverManager.getConnection(URL, username, password);
-		PreparedStatement st = conn.prepareStatement("select * from " + DB + "." + map + " "
-				+ "Order By Xcoordinate ASC;");
-		ResultSet rs = st.executeQuery();
-		
-		while(rs.next()) {
-			Long [] RSS = new Long [Distance.VECTOR_SIZE];
-			Double [] Location = new Double [2];
-			Location[0] = rs.getDouble("Xcoordinate");	// 2
-			Location[1] = rs.getDouble("Ycoordinate");	// 3
-			// Start with 4....
-			for (int i = 0; i < Distance.VECTOR_SIZE; i++) {
-				RSS[i] = (long) rs.getInt(i + 4);
+		try (Connection conn = DriverManager.getConnection(URL, username, password);
+			 PreparedStatement st = conn.prepareStatement(
+					 "select * from " + DB + "." + map + " Order By Xcoordinate ASC;");
+			 ResultSet rs = st.executeQuery()) {
+
+			ResultSetMetaData meta = rs.getMetaData();
+			int totalColumns = meta.getColumnCount();
+			int rssStartIndex = 4; // Assuming columns 1:ID, 2:X, 3:Y, 4...:RSS
+			int rssCount = totalColumns - (rssStartIndex - 1);
+
+			while (rs.next()) {
+				Long[] RSS = new Long[rssCount];
+				Double[] Location = new Double[2];
+				Location[0] = rs.getDouble("Xcoordinate");
+				Location[1] = rs.getDouble("Ycoordinate");
+				for (int i = 0; i < rssCount; i++) {
+					RSS[i] = (long) rs.getInt(i + rssStartIndex);
+				}
+				SQLData.add(RSS);
+				coordinates.add(Location);
 			}
-			SQLData.add(RSS);
-			coordinates.add(Location);
 		}
 	}
 }

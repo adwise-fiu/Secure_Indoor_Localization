@@ -5,7 +5,6 @@ package edu.fiu.adwise.fingerprint_localization.database;
  * Licensed under the MIT License. See LICENSE file in the project root for details.
  */
 
-import edu.fiu.adwise.fingerprint_localization.distance_computation.Distance;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -36,7 +35,7 @@ public class FingerprintDbUtils {
     /** MySQL username, loaded from environment variable MYSQL_USER. */
     public static String username = System.getenv("MYSQL_USER") != null ? System.getenv("MYSQL_USER") : "";
 
-    /** MySQL password, loaded from environment variable MYSQL_PASSWORD. */
+    /** MySQL password, loaded from the environment variable MYSQL_PASSWORD. */
     public static String password = System.getenv("MYSQL_PASSWORD") != null ? System.getenv("MYSQL_PASSWORD") : "";
 
     /** Database name, loaded from environment variable DATABASE or defaults to "fiu". */
@@ -53,6 +52,9 @@ public class FingerprintDbUtils {
 
     /** Logger instance for FingerprintDbUtils. */
     private static final Logger logger = LogManager.getLogger(FingerprintDbUtils.class);
+
+    /** Feature Selection Factor: fraction of APs to filter (default 0.9). */
+    public static double FSF = 0.9;
 
     /**
      * Retrieves the list of MAC addresses (as column names) used for lookup tables for a given map.
@@ -71,7 +73,6 @@ public class FingerprintDbUtils {
             try (Connection conn = DriverManager.getConnection(URL, username, password);
                  Statement st = conn.createStatement()) {
 
-                ResultSet rs;
                 if (isProcessed()) {
                     try (ResultSet columns = st.executeQuery("SHOW COLUMNS FROM " + DB + "." + map + " ;")) {
                         int counter = 1;
@@ -86,14 +87,12 @@ public class FingerprintDbUtils {
                     }
                     common_aps.replaceAll(FingerprintDbUtils::getColumnName);
                 } else {
-                    if (Distance.VECTOR_SIZE == -1) {
-                        Distance.VECTOR_SIZE = getVectorSize(Distance.FSF);
-                    }
+                    int vector_size = getVectorSize(FSF, map);
                     String sql = "SELECT MACADDRESS, Count(MACADDRESS) as count "
                             + "from " + DB + "." + TRAININGDATA + " "
                             + "Where Map= ? "
                             + "group by MACADDRESS "
-                            + "ORDER BY count DESC LIMIT " + Distance.VECTOR_SIZE + ";";
+                            + "ORDER BY count DESC LIMIT " + vector_size + ";";
                     try (PreparedStatement state = conn.prepareStatement(sql)) {
                         state.setString(1, map);
                         try (ResultSet result = state.executeQuery()) {
@@ -123,7 +122,7 @@ public class FingerprintDbUtils {
      * @param percentile the percentile (between 0 and 1) used to filter access points
      * @return the number of access points to keep after filtering, or -1 if the percentile is out of range
      */
-    public static int getVectorSize(double percentile) {
+    public static int getVectorSize(double percentile, String map) throws ClassNotFoundException {
         if(percentile < 0 || percentile > 1) {
             logger.fatal("Invalid percentile value: {}. Must be between 0 and 1.", percentile);
             return -1;
@@ -133,21 +132,18 @@ public class FingerprintDbUtils {
         }
 
         List<Integer> AP_count = new ArrayList<>();
-        try {
-            Class.forName(myDriver);
-            try (Connection conn = DriverManager.getConnection(URL, username, password);
-                 Statement stmt = conn.createStatement();
-                 ResultSet vec = stmt.executeQuery(
-                         "SELECT Count(MACADDRESS) as count from\n" +
-                                 DB + "." + TRAININGDATA + "\n" +
-                                 "group by MACADDRESS\n" +
-                                 "ORDER BY count ASC\n")) {
-
+        Class.forName(myDriver);
+        try (Connection conn = DriverManager.getConnection(URL, username, password);
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT Count(MACADDRESS) as count FROM " + DB + "." + TRAININGDATA +
+                             " WHERE Map = ? GROUP BY MACADDRESS ORDER BY count ASC")) {
+            stmt.setString(1, map);
+            try (ResultSet vec = stmt.executeQuery()) {
                 while (vec.next()) {
                     AP_count.add(vec.getInt("count"));
                 }
             }
-        } catch (SQLException | ClassNotFoundException cnf) {
+        } catch (SQLException cnf) {
             logger.warn("Failed to the new vector size: {}", cnf.getMessage());
         }
         // same as get IDX of Percentile, Note the int is already sorted!
@@ -173,14 +169,14 @@ public class FingerprintDbUtils {
                  Statement stmt = conn.createStatement()) {
                 for (String map : maps) {
                     String[] ColumnNames = getColumnMAC(map);
+                    assert ColumnNames != null : "Column names cannot be null for map: " + map;
                     StringBuilder sql = new StringBuilder(
                             "CREATE TABLE " + DB + "." + map + " ("
                                     + "ID INTEGER not NULL, "
                                     + "Xcoordinate DOUBLE not NULL, "
                                     + "Ycoordinate DOUBLE not NULL, ");
-                    for (int i = 0; i < Distance.VECTOR_SIZE; i++) {
-                        assert ColumnNames != null;
-                        sql.append(makeColumnName(ColumnNames[i])).append(" INTEGER not NULL,");
+                    for (String columnName : ColumnNames) {
+                        sql.append(makeColumnName(columnName)).append(" INTEGER not NULL,");
                     }
                     sql.append(" PRIMARY KEY (ID));");
                     stmt.executeUpdate(sql.toString());

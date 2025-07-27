@@ -46,10 +46,6 @@ public class server implements Runnable {
 	protected boolean isStopped = false;
 	/** Reference to the running server thread. */
 	protected Thread runningThread = null;
-	/** Indicates if the lookup table has been preprocessed. */
-	public static boolean preprocessed = false;
-	/** Indicates if multi-phone lookup tables are enabled. */
-	public static boolean multi_phone = false;
 	/** Logger for server events and errors. */
 	private static final Logger logger = LogManager.getLogger(server.class);
 
@@ -133,14 +129,6 @@ public class server implements Runnable {
 		int port = 9254;
 
 		try {
-			// Check if LUT exists
-			server.preprocessed = LocalizationLUT.isProcessed();
-			// If made, update vector size now!
-			if (server.preprocessed) {
-				Distance.VECTOR_SIZE = LocalizationLUT.getVectorSize(Distance.FSF);
-				logger.info("NEW VECTOR SIZE: {}", Distance.VECTOR_SIZE);
-			}
-
 			// Custom Port if needed
 			if (args.length == 1) {
 				port = Integer.parseInt(args[0]);
@@ -152,9 +140,6 @@ public class server implements Runnable {
 					System.exit(1);
 				}
 			}
-		} catch (ClassNotFoundException | SQLException e) {
-			logger.fatal("Error loading database credentials or checking LUT: {}", e.getMessage());
-			System.exit(1);
 		} catch (NumberFormatException nfe) {
 			logger.warn("Please enter a valid custom port number");
 			System.exit(1);
@@ -179,9 +164,7 @@ public class server implements Runnable {
 				input = input.trim();
 				String[] commands = input.split(" ");
 
-				logger.info("Database preprocessed? {}", server.preprocessed);
-				logger.info("Vector size: {}", Distance.VECTOR_SIZE);
-				logger.info("APs in Training Data: {}", LocalizationLUT.getVectorSize(0.0));
+				logger.info("Database preprocessed? {}", LocalizationLUT.isProcessed());
 				logger.info("N_F: {}", LocalizationLUT.get_xy("BWY_FL_03", "Xcoordinate").length);
 				logger.info("Current value of K is: {}", Distance.k);
 
@@ -190,7 +173,7 @@ public class server implements Runnable {
 					System.out.println("\033[2J\033[;H");
 					System.out.flush();
 				} else if (commands[0].equalsIgnoreCase("print")) {
-					if (server.preprocessed) {
+					if (LocalizationLUT.isProcessed()) {
 						PrintTables.printTrainingData();
 						PrintTables.printLookupTables();
 					} else {
@@ -218,15 +201,15 @@ public class server implements Runnable {
 					if (fsf < 0 || fsf > 1) {
                         logger.info("Invalid FSF value! {}", fsf);
 					} else {
-                        logger.warn("Given FSF value: {} minimum AP match is: {}", fsf, LocalizationLUT.getVectorSize(fsf));
+                        logger.warn("Given FSF value: {} minimum AP match is: {}", fsf, LocalizationLUT.getVectorSize(fsf, "BWY_FL_03"));
 					}
 				} else if (commands[0].equalsIgnoreCase("FSF")) {
 					double fsf = Double.parseDouble(commands[1]);
 					if (fsf < 0 || fsf > 1) {
 						logger.info("Invalid FSF value to set! {}", fsf);
 					} else {
-						Distance.FSF = fsf;
-						if (server.preprocessed) {
+						LocalizationLUT.FSF = fsf;
+						if (LocalizationLUT.isProcessed()) {
 							logger.info("Please note for number of columns to change, you must re-build new Lookup table!");
 						}
 					}
@@ -239,17 +222,8 @@ public class server implements Runnable {
 				} else if (commands[0].equalsIgnoreCase("reset")) {
 					if (LocalizationLUT.reset()) {
 						logger.info("RESET SUCCESSFUL!");
-						server.preprocessed = false;
 					} else {
 						logger.info("RESET FAILED!");
-					}
-				} else if (commands[0].equalsIgnoreCase("switch")) {
-					if (server.multi_phone) {
-						logger.info("Server is switched to 1 LUT");
-						server.multi_phone = false;
-					} else {
-						logger.info("Server is switched to 1 LUT per Phone");
-						server.multi_phone = true;
 					}
 				} else if (commands[0].equalsIgnoreCase("exit")) {
 					break;

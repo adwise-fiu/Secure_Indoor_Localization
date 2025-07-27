@@ -55,8 +55,8 @@ public class DistancePaillier extends Distance {
 		S3 = in.S3;
 		S3_comp = in.S3_comp;
 		scanAPs = in.APs;
-		if(column == null) {
-			column = LocalizationLUT.getColumnMAC(in.map);
+		if(lookup_table_column == null) {
+			lookup_table_column = LocalizationLUT.getColumnMAC(in.map);
 		}
 		
 		// Read from Database, get S_1 and S_2 Parts!
@@ -95,8 +95,8 @@ public class DistancePaillier extends Distance {
 			S1_Row = PaillierCipher.encrypt(0, pk);
 			S2_Row = PaillierCipher.encrypt(0, pk);
 			
-			for (int j = 0; j < VECTOR_SIZE;j++) {
-				if(scanAPs[j].equals(column[j])) {
+			for (int j = 0; j < lookup_table_column.length; j++) {
+				if(scanAPs[j].equals(lookup_table_column[j])) {
 					S1_Row = PaillierCipher.add_plaintext(S1_Row, BigInteger.valueOf(RSS_ij.get(i)[j] * RSS_ij.get(i)[j]), pk);
 					S2_Row = PaillierCipher.add(S2_Row, PaillierCipher.multiply(S2[j], RSS_ij.get(i)[j], pk), pk);
 				} else {
@@ -133,8 +133,8 @@ public class DistancePaillier extends Distance {
 		for (int i = 0; i < RSS_ij.size();i++) {
 			// Step 1, Compute FSF
 			count = 0;
-			for (int j = 0; j < VECTOR_SIZE; j++) {
-				if(scanAPs[j].equals(column[j])) {
+			for (int j = 0; j < lookup_table_column.length; j++) {
+				if(scanAPs[j].equals(lookup_table_column[j])) {
 					++count;
 				}
 			}
@@ -149,8 +149,8 @@ public class DistancePaillier extends Distance {
 			S2_Row = PaillierCipher.encrypt(0, pk);
 			S3_Row = PaillierCipher.encrypt(0, pk);
 			
-			for (int j = 0; j < VECTOR_SIZE;j++) {
-				if(scanAPs[j].equals(column[j])) {
+			for (int j = 0; j < lookup_table_column.length; j++) {
+				if(scanAPs[j].equals(lookup_table_column[j])) {
 					S1_Row = PaillierCipher.add_plaintext(S1_Row, BigInteger.valueOf(RSS_ij.get(i)[j] * RSS_ij.get(i)[j]), pk);
 					S2_Row = PaillierCipher.add(S2_Row, PaillierCipher.multiply(S2[j], RSS_ij.get(i)[j], pk), pk);
 					S3_Row = PaillierCipher.add(S3_Row, S3_comp[j], pk);
@@ -170,7 +170,7 @@ public class DistancePaillier extends Distance {
 	 *
 	 * @param Niu instance of Alice for secure computation
 	 * @return array of encrypted location coordinates [x, y]
-	 * @throws ClassNotFoundException if database class is not found
+	 * @throws ClassNotFoundException if a database class is not found
 	 * @throws IOException if I/O error occurs
 	 * @throws IllegalArgumentException if arguments are invalid or protocol fails
 	 * @throws HomomorphicException if Paillier encryption fails

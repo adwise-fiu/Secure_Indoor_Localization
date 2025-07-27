@@ -5,7 +5,6 @@ package edu.fiu.adwise.fingerprint_localization.database;
  * Licensed under the MIT License. See LICENSE file in the project root for details.
  */
 
-import edu.fiu.adwise.fingerprint_localization.distance_computation.Distance;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -83,11 +82,11 @@ public class PrintTables extends FingerprintDbUtils {
         try {
             String[] all_maps = getMaps();
             for (String map : all_maps) {
-                String[] ColumnMac = getColumnMAC(map);
+                String [] ColumnMac = getColumnMAC(map);
                 StringBuilder header = new StringBuilder("Xcoordinate,Ycoordinate,");
-                for (int i = 0; i < Distance.VECTOR_SIZE; i++) {
-                    assert ColumnMac != null;
-                    if (i == Distance.VECTOR_SIZE - 1) {
+                assert ColumnMac != null;
+                for (int i = 0; i < ColumnMac.length; i++) {
+                    if (i == ColumnMac.length - 1) {
                         header.append(ColumnMac[i]);
                     } else {
                         header.append(ColumnMac[i]).append(",");
@@ -115,7 +114,7 @@ public class PrintTables extends FingerprintDbUtils {
                         // Skip ID, 1
                         tuple.append(PlainResult.getDouble(2)).append(",");
                         tuple.append(PlainResult.getDouble(3)).append(",");
-                        for (int i = 0; i < Distance.VECTOR_SIZE; i++) {
+                        for (int i = 0; i < ColumnMac.length; i++) {
                             String name = meta.getColumnName(i + 4);
                             tuple.append(PlainResult.getInt(name)).append(",");
                         }

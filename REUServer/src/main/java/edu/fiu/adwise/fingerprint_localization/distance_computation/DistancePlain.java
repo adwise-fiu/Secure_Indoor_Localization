@@ -39,8 +39,8 @@ public class DistancePlain extends Distance {
 	public DistancePlain(SendLocalizationData in) throws ClassNotFoundException, SQLException {
 		scanAPs = in.APs;
 		scanRSS = in.RSS;
-		if(column == null) {
-			column = LocalizationLUT.getColumnMAC(in.map);
+		if(lookup_table_column == null) {
+			lookup_table_column = LocalizationLUT.getColumnMAC(in.map);
 		}
 		// Read from Database
 		LocalizationLUT.getPlainLookup(this.RSS_ij, this.coordinates, in.map);
@@ -79,8 +79,8 @@ public class DistancePlain extends Distance {
 		long distance;
 		for (int i = 0; i < RSS_ij.size(); i++) {
 			distance = 0;
-			for (int j = 0; j < VECTOR_SIZE; j++) {
-				if(scanAPs[j].equals(column[j])) {
+			for (int j = 0; j < lookup_table_column.length; j++) {
+				if(scanAPs[j].equals(lookup_table_column[j])) {
 					distance += (RSS_ij.get(i)[j] - scanRSS[j]) * (RSS_ij.get(i)[j] - scanRSS[j]);	
 				} else {
 					distance += (long) (v_c - scanRSS[j]) * (v_c - scanRSS[j]);
@@ -106,8 +106,8 @@ public class DistancePlain extends Distance {
 		long matches;
 		for (int i = 0; i < RSS_ij.size();i++) {
 			matches = 0;
-			for (int j = 0; j < VECTOR_SIZE;j++) {
-				if (scanAPs[i].equals(column[i])) {
+			for (int j = 0; j < lookup_table_column.length; j++) {
+				if (scanAPs[i].equals(lookup_table_column[i])) {
 					distance = (RSS_ij.get(i)[j] - scanRSS[j]) * (RSS_ij.get(i)[j] - scanRSS[j]);
 					++matches;
 				}
