@@ -11,7 +11,8 @@ fi
 
 VERSION=$1
 DOMAIN=io/github/andrewquijano
-PROJECT=fingerprint_localization
+# match with settings.gradle
+PROJECT=fingerprint-indoor-localization
 
 # Use this script as a stop gap for manual uploading
 mkdir -p $DOMAIN/$PROJECT/$VERSION
