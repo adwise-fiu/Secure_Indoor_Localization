@@ -72,7 +72,7 @@ public class AddMapActivity extends Activity
         {
             byte [] encoded_image;
             try {
-                try (Socket ClientSocket = new Socket();) {
+                try (Socket ClientSocket = new Socket()) {
                     ClientSocket.connect(new InetSocketAddress(SQLDatabase, portNumber), TIMEOUT);
 
                     // Prepare I/O Stream

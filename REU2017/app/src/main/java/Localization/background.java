@@ -21,8 +21,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import Localization.structs.SendLocalizationData;
-import Localization.structs.LocalizationResult;
+import edu.fiu.adwise.fingerprint_localization.distance_computation.LOCALIZATION_SCHEME;
+import edu.fiu.adwise.fingerprint_localization.structs.SendLocalizationData;
+import edu.fiu.adwise.fingerprint_localization.structs.LocalizationResult;
 import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
 import ui.MainActivity;
 
@@ -34,7 +35,7 @@ import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPrivateKey;
 import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
 
 import static android.graphics.Color.RED;
-import static Localization.LOCALIZATION_SCHEME.*;
+import static edu.fiu.adwise.fingerprint_localization.distance_computation.LOCALIZATION_SCHEME.*;
 import static ui.LocalizeActivity.off_map;
 
 public final class background {
@@ -366,12 +367,12 @@ public final class background {
         float y = 0;
 
         for (int i = 0; i < MainActivity.k; i++) {
-            distanceSUM += fromServer.get(i).plainDistance;
+            distanceSUM += fromServer.get(i).getPlainDistance();
         }
 
         // Find value of all w_i
         for (int i = 0 ; i < MainActivity.k; i++) {
-            w_i[i] = ((double) fromServer.get(i).plainDistance/distanceSUM);
+            w_i[i] = ((double) fromServer.get(i).getPlainDistance()/distanceSUM);
             w_i[i] = 1.0 - w_i[i];
             w_i[i] = w_i[i]/(MainActivity.k - 1);
             x += (float) (w_i[i] * fromServer.get(i).getX());

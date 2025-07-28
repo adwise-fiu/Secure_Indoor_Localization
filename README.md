@@ -1,5 +1,6 @@
 # Security of Smart Things REU 2017  
-[![Build Status](https://travis-ci.com/AndrewQuijano/SSTREU2017.svg?branch=master)](https://travis-ci.com/AndrewQuijano/SSTREU2017)  
+[![Test Android and Fingerprint Server](https://github.com/adwise-fiu/Secure_Indoor_Localization/actions/workflows/parallel_tests.yml/badge.svg?branch=main)](https://github.com/adwise-fiu/Secure_Indoor_Localization/actions/workflows/parallel_tests.yml)
+
 [![codecov](https://codecov.io/gh/AndrewQuijano/SSTREU2017/branch/master/graph/badge.svg?token=E7ZKFWTE3D)](https://codecov.io/gh/AndrewQuijano/SSTREU2017)  
 This repository contains all the code used to complete the Security of Smart Things REU project of privacy preserving indoor localization.
 
