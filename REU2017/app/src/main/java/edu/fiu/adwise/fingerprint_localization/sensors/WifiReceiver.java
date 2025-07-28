@@ -1,4 +1,4 @@
-package sensors;
+package edu.fiu.adwise.fingerprint_localization.sensors;
 
 
 import android.Manifest;
@@ -16,7 +16,7 @@ import android.widget.ProgressBar;
 
 import java.util.List;
 
-import ui.MainActivity;
+import edu.fiu.adwise.fingerprint_localization.ui.MainActivity;
 
 import static android.widget.Toast.*;
 
@@ -66,8 +66,7 @@ public class WifiReceiver extends BroadcastReceiver implements Runnable {
 
     // Try this...
     // https://stackoverflow.com/questions/13238600/use-registerreceiver-for-non-activity-and-non-service-class
-    public void onReceive(Context context, Intent intent)
-    {
+    public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
         if (WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(action)) {
             get_data();

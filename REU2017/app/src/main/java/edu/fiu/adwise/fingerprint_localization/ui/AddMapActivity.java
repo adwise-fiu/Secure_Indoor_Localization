@@ -1,4 +1,4 @@
-package ui;
+package edu.fiu.adwise.fingerprint_localization.ui;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -16,30 +16,26 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.Toast;
 
-import Localization.KeyMaster;
+import edu.fiu.adwise.fingerprint_localization.localization.KeyMaster;
 import edu.fiu.reu2017.R;
 
-import static ui.MainActivity.SQLDatabase;
-import static ui.MainActivity.TIMEOUT;
-import static ui.MainActivity.portNumber;
+import static edu.fiu.adwise.fingerprint_localization.ui.MainActivity.SQLDatabase;
+import static edu.fiu.adwise.fingerprint_localization.ui.MainActivity.TIMEOUT;
+import static edu.fiu.adwise.fingerprint_localization.ui.MainActivity.portNumber;
 
-public class AddMapActivity extends Activity
-{
+public class AddMapActivity extends Activity {
     EditText textTargetUri;
     ImageView targetImage;
     Bitmap bitmap = null;
-
     private Switch mode;
     /** Called when the activity is first created. */
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_map);
         Button buttonLoadImage = findViewById(R.id.loadimage);
@@ -50,26 +46,19 @@ public class AddMapActivity extends Activity
         mode = findViewById(R.id.pick);
         Button send = findViewById(R.id.send);
         send.setOnClickListener(new communicate());
-        buttonLoadImage.setOnClickListener(new OnClickListener()
-        {
-            public void onClick(View arg0)
-            {
-                Intent intent = new Intent(Intent.ACTION_PICK,
-                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(intent, 0);
-            }
+        buttonLoadImage.setOnClickListener(arg0 -> {
+            Intent intent = new Intent(Intent.ACTION_PICK,
+                    android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            startActivityForResult(intent, 0);
         });
     }
 
-    private class communicate implements View.OnClickListener, Runnable
-    {
-        public void onClick(View v)
-        {
+    private class communicate implements View.OnClickListener, Runnable {
+        public void onClick(View v) {
             new Thread(this).start();
         }
 
-        public void run()
-        {
+        public void run() {
             byte [] encoded_image;
             try {
                 try (Socket ClientSocket = new Socket()) {
@@ -160,8 +149,7 @@ public class AddMapActivity extends Activity
 
     }
 
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK) {

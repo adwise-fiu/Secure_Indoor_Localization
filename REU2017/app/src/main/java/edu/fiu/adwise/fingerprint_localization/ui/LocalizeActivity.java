@@ -1,4 +1,4 @@
-package ui;
+package edu.fiu.adwise.fingerprint_localization.ui;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -19,11 +19,11 @@ import android.widget.Toast;
 import com.github.chrisbanes.photoview.OnPhotoTapListener;
 import com.github.chrisbanes.photoview.PhotoViewAttacher;
 
-import Localization.KeyMaster;
+import edu.fiu.adwise.fingerprint_localization.localization.KeyMaster;
 import edu.fiu.adwise.fingerprint_localization.distance_computation.LOCALIZATION_SCHEME;
 import edu.fiu.reu2017.R;
-import Localization.background;
-import sensors.WifiReceiver;
+import edu.fiu.adwise.fingerprint_localization.localization.background;
+import edu.fiu.adwise.fingerprint_localization.sensors.WifiReceiver;
 
 public class LocalizeActivity extends AppCompatActivity {
     protected WifiReceiver wifi_wrapper;
@@ -37,7 +37,6 @@ public class LocalizeActivity extends AppCompatActivity {
     private ImageView imageView;
     private Switch REU2017Mode;
     private boolean scan_complete;
-
     public static Toast off_map;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,7 +52,7 @@ public class LocalizeActivity extends AppCompatActivity {
         REU2017Mode = findViewById(R.id.REU2017);
 
         Intent i = getIntent();
-        SCHEME = i.getIntExtra("Localization", SCHEME);
+        SCHEME = i.getIntExtra("localization", SCHEME);
 
         location = BitmapFactory.decodeResource(getResources(), R.drawable.o);
         wifi_wrapper = new WifiReceiver(this, loading);
@@ -84,16 +83,12 @@ public class LocalizeActivity extends AppCompatActivity {
         }
     }
 
-    private class attach implements OnPhotoTapListener
-    {
+    private class attach implements OnPhotoTapListener {
         public void onPhotoTap (ImageView view, float x, float y) {
             // CLEAR RED DOT, RE-LOAD
-            imageView.post(new Runnable() {
-                public void run() {
+            imageView.post(() ->
                     imageView.setImageBitmap(Bitmap.createScaledBitmap(KeyMaster.map, imageView.getWidth(),
-                            imageView.getHeight(), false));
-                }
-            });
+                    imageView.getHeight(), false)));
             my_Attach.update();
 
             if(scan_complete) {

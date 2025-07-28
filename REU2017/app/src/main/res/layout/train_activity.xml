@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     android:weightSum="1"
-    tools:context="ui.TrainActivity"
+    tools:context="edu.fiu.adwise.fingerprint_localization.ui.TrainActivity"
     tools:layout_editor_absoluteY="81dp"
     tools:layout_editor_absoluteX="0dp"
     android:noHistory="true"

@@ -37,7 +37,7 @@
         <!-- The top two lines are needed to scale all images -->
 
         <activity
-            android:name="ui.MainActivity"
+            android:name="edu.fiu.adwise.fingerprint_localization.ui.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -45,14 +45,14 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="ui.TrainActivity"
+        <activity android:name="edu.fiu.adwise.fingerprint_localization.ui.TrainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="ui.TrainActivity" />
             </intent-filter>
         </activity>
 
-        <activity android:name="ui.LocalizeActivity"
+        <activity android:name="edu.fiu.adwise.fingerprint_localization.ui.LocalizeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="ui.LocalizeActivity" />
@@ -60,7 +60,7 @@
         </activity>
 
         <activity
-            android:name="ui.AddMapActivity"
+            android:name="edu.fiu.adwise.fingerprint_localization.ui.AddMapActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="ui.AddMapActivity" />
