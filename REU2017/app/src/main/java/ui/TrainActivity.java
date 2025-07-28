@@ -23,7 +23,7 @@ import Localization.ClientThread;
 import Localization.KeyMaster;
 import edu.fiu.reu2017.R;
 import sensors.WifiReceiver;
-import Localization.structs.SendTrainingData;
+import edu.fiu.adwise.fingerprint_localization.structs.SendTrainingData;
 
 import static android.graphics.Color.BLUE;
 import static ui.MainActivity.getDeviceName;

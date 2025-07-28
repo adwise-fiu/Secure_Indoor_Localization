@@ -1,4 +1,5 @@
 # Fingerprint-Based Indoor Localization Server
+[![Test Android and Fingerprint Server](https://github.com/adwise-fiu/Secure_Indoor_Localization/actions/workflows/parallel_tests.yml/badge.svg?branch=main)](https://github.com/adwise-fiu/Secure_Indoor_Localization/actions/workflows/parallel_tests.yml)
 
 Please refer to this [document for MySql set-up](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-22-04).
 

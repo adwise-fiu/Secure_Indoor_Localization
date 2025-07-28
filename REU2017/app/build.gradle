@@ -1,14 +1,25 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 35
+    compileSdkVersion 36
     defaultConfig {
         applicationId "edu.fiu.reu2017"
-        minSdkVersion 25
-        targetSdkVersion 35
+        minSdkVersion 26
+        targetSdkVersion 36
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    
+    packagingOptions {
+        resources {
+            excludes += '**/log4j2.xml'       // Excludes any file named log4j2.xml in any directory
+            excludes += '**/log4j.properties' // Example: Also exclude log4j.properties if present
+            excludes += '**/log4j2.component.properties' // Example: Another common Log4j file
+            // Add the new exclusion for META-INF/DEPENDENCIES
+            excludes += 'META-INF/DEPENDENCIES'
+            // Add more patterns if you identify other Log4j specific files causing issues
+        }
     }
     buildTypes
             {
@@ -19,10 +30,10 @@ android {
                         }
             }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
-    namespace 'edu.fiu.reu2017'
+    namespace = 'edu.fiu.reu2017'
 }
 
 dependencies
@@ -37,6 +48,8 @@ dependencies
             testImplementation 'junit:junit:4.13.2'
             // https://mvnrepository.com/artifact/io.github.andrewquijano/ciphercraft
             implementation 'io.github.andrewquijano:ciphercraft:1.0.6'
+            // https://mvnrepository.com/artifact/io.github.andrewquijano/fingerprint_localization
+            implementation 'io.github.andrewquijano:fingerprint_localization:1.0.0'
         }
 java {
     toolchain {

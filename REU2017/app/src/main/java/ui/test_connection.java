@@ -12,7 +12,7 @@ import static ui.MainActivity.portNumber;
 public class test_connection implements Runnable {
     boolean connected = false;
     public void run() {
-        try (Socket ClientSocket = new Socket()){
+        try (Socket ClientSocket = new Socket()) {
             ClientSocket.connect(new InetSocketAddress(SQLDatabase, portNumber), TIMEOUT);
             ObjectOutputStream toServer = new ObjectOutputStream(ClientSocket.getOutputStream());
             toServer.writeObject("Hello");

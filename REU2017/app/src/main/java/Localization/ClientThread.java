@@ -10,9 +10,9 @@ import java.net.Socket;
 import java.security.KeyPair;
 import java.util.ArrayList;
 
-import Localization.structs.SendLocalizationData;
-import Localization.structs.LocalizationResult;
-import Localization.structs.SendTrainingData;
+import edu.fiu.adwise.fingerprint_localization.structs.SendLocalizationData;
+import edu.fiu.adwise.fingerprint_localization.structs.LocalizationResult;
+import edu.fiu.adwise.fingerprint_localization.structs.SendTrainingData;
 import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
 import ui.MainActivity;
 import ui.TrainActivity;
@@ -20,6 +20,7 @@ import ui.TrainActivity;
 
 import static ui.MainActivity.SQLDatabase;
 import static ui.MainActivity.portNumber;
+import edu.fiu.adwise.fingerprint_localization.distance_computation.LOCALIZATION_SCHEME;
 
 import edu.fiu.adwise.homomorphic_encryption.dgk.DGKOperations;
 import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPrivateKey;
@@ -188,9 +189,6 @@ public class ClientThread implements Runnable
                 case DGK_MIN:
                 case DGK_MCA:
                 case DGK_DMA:
-                case EL_GAMAL_DMA:
-                case EL_GAMAL_MIN:
-                case EL_GAMAL_MCA:
                     localize();
                     break;
                 default:

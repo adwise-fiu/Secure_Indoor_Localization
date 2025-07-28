@@ -20,7 +20,7 @@ import com.github.chrisbanes.photoview.OnPhotoTapListener;
 import com.github.chrisbanes.photoview.PhotoViewAttacher;
 
 import Localization.KeyMaster;
-import Localization.LOCALIZATION_SCHEME;
+import edu.fiu.adwise.fingerprint_localization.distance_computation.LOCALIZATION_SCHEME;
 import edu.fiu.reu2017.R;
 import Localization.background;
 import sensors.WifiReceiver;
