@@ -1,4 +1,4 @@
-package Localization;
+package edu.fiu.adwise.fingerprint_localization.localization;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -25,7 +25,7 @@ import edu.fiu.adwise.fingerprint_localization.distance_computation.LOCALIZATION
 import edu.fiu.adwise.fingerprint_localization.structs.SendLocalizationData;
 import edu.fiu.adwise.fingerprint_localization.structs.LocalizationResult;
 import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
-import ui.MainActivity;
+import edu.fiu.adwise.fingerprint_localization.ui.MainActivity;
 
 import edu.fiu.adwise.homomorphic_encryption.dgk.DGKOperations;
 import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPrivateKey;
@@ -36,7 +36,7 @@ import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
 
 import static android.graphics.Color.RED;
 import static edu.fiu.adwise.fingerprint_localization.distance_computation.LOCALIZATION_SCHEME.*;
-import static ui.LocalizeActivity.off_map;
+import static edu.fiu.adwise.fingerprint_localization.ui.LocalizeActivity.off_map;
 
 public final class background {
     private final static String TAG = "LOCALIZE";
@@ -45,7 +45,6 @@ public final class background {
     List<LocalizationResult> fromServer = new ArrayList<>();
     Double [] coordinates = new Double[2];
     private final LOCALIZATION_SCHEME LOCALIZATION_SCHEME;
-
     //Keys and read Keys
     private static final PaillierPublicKey pk = KeyMaster.pk;
     private static final DGKPublicKey DGKpk = KeyMaster.DGKpk;
@@ -197,8 +196,7 @@ public final class background {
                         location[1] = fromServer.get(0).getY().floatValue();
                     }
                     else {
-                        Phase3();
-                        return location;
+                        return Phase3();
                     }
                     publishProgress(10);
                 }
@@ -211,8 +209,8 @@ public final class background {
                 try {
                     if(LOCALIZATION_SCHEME == DGK_DMA) {
                         for (int i = 0; i < MainActivity.VECTOR_SIZE; i++) {
-                            S2[i] = DGKOperations.encrypt(-2 * RSS_send[i], DGKpk);
-                            S3_comp[i] = DGKOperations.encrypt(RSS_send[i] * RSS_send[i], DGKpk);
+                            S2[i] = DGKOperations.encrypt(-2L * RSS_send[i], DGKpk);
+                            S3_comp[i] = DGKOperations.encrypt((long) RSS_send[i] * RSS_send[i], DGKpk);
                         }
                         t = new Thread( new ClientThread(
                                 new SendLocalizationData(MAC_send, S2, null, S3_comp,
@@ -222,8 +220,8 @@ public final class background {
                     }
                     else {
                         for (int i = 0; i < MainActivity.VECTOR_SIZE; i++) {
-                            S2[i] = DGKOperations.encrypt(-2 * RSS_send[i], DGKpk);
-                            S3_plaintext += RSS_send[i] * RSS_send[i];
+                            S2[i] = DGKOperations.encrypt(-2L * RSS_send[i], DGKpk);
+                            S3_plaintext += (long) RSS_send[i] * RSS_send[i];
                         }
 
                         try {
@@ -292,8 +290,8 @@ public final class background {
                 try {
                     if(LOCALIZATION_SCHEME == PAILLIER_DMA) {
                         for (int i = 0; i < MainActivity.VECTOR_SIZE; i++) {
-                            S2[i] = PaillierCipher.encrypt(-2 * RSS_send[i], pk);
-                            S3_comp[i] = PaillierCipher.encrypt(RSS_send[i] * RSS_send[i], pk);
+                            S2[i] = PaillierCipher.encrypt(-2L * RSS_send[i], pk);
+                            S3_comp[i] = PaillierCipher.encrypt((long) RSS_send[i] * RSS_send[i], pk);
                         }
                         (t = new Thread(new ClientThread(
                                 new SendLocalizationData(MAC_send, S2, null, S3_comp,
@@ -304,8 +302,8 @@ public final class background {
                     }
                     else {
                         for (int i = 0; i < MainActivity.VECTOR_SIZE; i++) {
-                            S2[i] = PaillierCipher.encrypt(-2 * RSS_send[i], pk);
-                            S3_plaintext += RSS_send[i] * RSS_send[i];
+                            S2[i] = PaillierCipher.encrypt(-2L * RSS_send[i], pk);
+                            S3_plaintext += (long) RSS_send[i] * RSS_send[i];
                         }
                         S3 = PaillierCipher.encrypt(S3_plaintext, pk);
 
