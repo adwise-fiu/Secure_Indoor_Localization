@@ -1,4 +1,4 @@
-package Localization;
+package edu.fiu.adwise.fingerprint_localization.localization;
 
 import android.graphics.Bitmap;
 
@@ -50,8 +50,7 @@ public final class KeyMaster implements Runnable {
         finished = true;
     }
 
-    public void run()
-    {
+    public void run() {
         try {
             init();
         } catch (HomomorphicException e) {

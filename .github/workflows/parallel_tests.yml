@@ -53,6 +53,11 @@ jobs:
           chmod +x gradlew
           ./gradlew test
 
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
   test-android:
     runs-on: ubuntu-latest
     steps:

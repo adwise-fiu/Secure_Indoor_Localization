@@ -1,4 +1,4 @@
-package ui;
+package edu.fiu.adwise.fingerprint_localization.ui;
 
 import android.Manifest;
 import android.content.Intent;
@@ -22,10 +22,10 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.HashMap;
 
-import Localization.ClientThread;
-import Localization.KeyMaster;
+import edu.fiu.adwise.fingerprint_localization.localization.ClientThread;
+import edu.fiu.adwise.fingerprint_localization.localization.KeyMaster;
 import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
-import sensors.WifiReceiver;
+import edu.fiu.adwise.fingerprint_localization.sensors.WifiReceiver;
 
 import static edu.fiu.reu2017.R.*;
 
@@ -34,7 +34,6 @@ public class MainActivity extends AppCompatActivity {
     public final static String SQLDatabase = "160.39.57.71";
     public final static int portNumber = 9254;
     public final static int TIMEOUT = 2 * 1000;
-    public final static boolean multi_phone = false;
     private static final int PERMISSIONS_REQUEST_CODE_ACCESS_COARSE_LOCATION = 1001;
     public static int VECTOR_SIZE = -1;
     //public final static int KEY_SIZE = 1024;
@@ -180,17 +179,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class train_data implements View.OnClickListener, Runnable {
-        boolean connected = false;
+    private class train_data implements View.OnClickListener {
         public void onClick(View v) {
-            Thread conn = new Thread(this);
-            conn.start();
+            test_connection t = new test_connection();
+            Thread th = new Thread(t);
+            th.start();
             try {
-                conn.join();
-            } catch (InterruptedException e) {
+                th.join();
+            }
+            catch (InterruptedException e) {
                 Log.e(this.getClass().getName(), "Thread Interrupted", e);
             }
-            if(connected) {
+            if(t.connected) {
                 if(KeyMaster.map_name.isEmpty() || KeyMaster.map == null) {
                     Toast.makeText(getApplicationContext(), "PICK A MAP!", Toast.LENGTH_LONG).show();
                 } else {
@@ -200,56 +200,29 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-
-        public void run() {
-            try (Socket ClientSocket = new Socket()) {
-                ClientSocket.connect(new InetSocketAddress(SQLDatabase, portNumber), TIMEOUT);
-                ObjectOutputStream toServer = new ObjectOutputStream(ClientSocket.getOutputStream());
-                toServer.writeObject("Hello");
-                toServer.flush();
-                connected = true;
-            } catch (IOException e) {
-                Wifi_needed.show();
-                connected = false;
-            }
-        }
     }
 
-    private class localize implements View.OnClickListener, Runnable {
-        boolean connected = false;
+    private class localize implements View.OnClickListener {
         public void onClick(View v) {
-            Thread conn = new Thread(this);
-            conn.start();
+            test_connection t = new test_connection();
+            Thread th = new Thread(t);
+            th.start();
             try {
-                conn.join();
+                th.join();
             }
             catch (InterruptedException e) {
                 Log.e(this.getClass().getName(), "Thread Interrupted", e);
             }
-            if(connected) {
+            if(t.connected) {
                 LOCALIZATION_SCHEME = LocalizationSelect.getValue();
                 if(KeyMaster.map == null || KeyMaster.map_name.isEmpty()) {
                     Toast.makeText(getApplicationContext(), "PICK A MAP!", Toast.LENGTH_LONG).show();
                 } else {
                     Toast.makeText(getApplicationContext(), "Loading Map: " + KeyMaster.map_name, Toast.LENGTH_LONG).show();
                     Intent Localize = new Intent(MainActivity.this, LocalizeActivity.class);
-                    Localize.putExtra("Localization", LOCALIZATION_SCHEME);
+                    Localize.putExtra("localization", LOCALIZATION_SCHEME);
                     startActivity(Localize);
                 }
-            }
-        }
-
-        public void run() {
-            try (Socket ClientSocket = new Socket()) {
-                ClientSocket.connect(new InetSocketAddress(SQLDatabase, portNumber), TIMEOUT);
-                ObjectOutputStream toServer = new ObjectOutputStream(ClientSocket.getOutputStream());
-                toServer.writeObject("Hello");
-                toServer.flush();
-                connected = true;
-            }
-            catch (IOException e) {
-                Wifi_needed.show();
-                connected = false;
             }
         }
     }
@@ -260,18 +233,21 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void run() {
-            try (Socket ClientSocket = new Socket()){
+            try (Socket ClientSocket = new Socket()) {
                 ClientSocket.connect(new InetSocketAddress(SQLDatabase, portNumber), TIMEOUT);
-
-                //Prepare I/O Stream
-                ObjectOutputStream toServer = new ObjectOutputStream(ClientSocket.getOutputStream());
-                ObjectInputStream fromServer = new ObjectInputStream(ClientSocket.getInputStream());
-                toServer.writeObject("RESET");
-                toServer.flush();
-                if (fromServer.readBoolean()) {
-                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), "RESET COMPLETE!", Toast.LENGTH_LONG).show());
-                } else {
-                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), "RESET FAILED!", Toast.LENGTH_LONG).show());
+                try (
+                        ObjectOutputStream toServer = new ObjectOutputStream(ClientSocket.getOutputStream());
+                        ObjectInputStream fromServer = new ObjectInputStream(ClientSocket.getInputStream());
+                ) {
+                    toServer.writeObject("RESET");
+                    toServer.flush();
+                    if (fromServer.readBoolean()) {
+                        runOnUiThread(() -> Toast.makeText(getApplicationContext(), "RESET COMPLETE!", Toast.LENGTH_LONG).show());
+                    } else {
+                        runOnUiThread(() -> Toast.makeText(getApplicationContext(), "RESET FAILED!", Toast.LENGTH_LONG).show());
+                    }
+                } catch (IOException e) {
+                    Wifi_needed.show();
                 }
             } catch (IOException e) {
                 Wifi_needed.show();
@@ -280,8 +256,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class undo implements View.OnClickListener, Runnable {
-        public void onClick(View v)
-        {
+        public void onClick(View v) {
             new Thread(this).start();
         }
 
@@ -289,21 +264,25 @@ public class MainActivity extends AppCompatActivity {
             try (Socket ClientSocket = new Socket()) {
                 ClientSocket.connect(new InetSocketAddress(SQLDatabase, portNumber), TIMEOUT);
 
-                // Prepare I/O Stream
-                ObjectOutputStream toServer = new ObjectOutputStream(ClientSocket.getOutputStream());
-                ObjectInputStream fromServer = new ObjectInputStream(ClientSocket.getInputStream());
-                toServer.writeObject("UNDO");
-                // Need to send Coordinates, Phone and DeviceName
-                toServer.writeObject(KeyMaster.last_coordinates);
-                toServer.writeObject(KeyMaster.map_name);
-                toServer.writeObject(KeyMaster.last_device);
-                toServer.flush();
+                try (
+                        ObjectOutputStream toServer = new ObjectOutputStream(ClientSocket.getOutputStream());
+                        ObjectInputStream fromServer = new ObjectInputStream(ClientSocket.getInputStream());
+                ) {
+                    toServer.writeObject("UNDO");
+                    // Need to send Coordinates, Phone and DeviceName
+                    toServer.writeObject(KeyMaster.last_coordinates);
+                    toServer.writeObject(KeyMaster.map_name);
+                    toServer.writeObject(KeyMaster.last_device);
+                    toServer.flush();
 
-                if (fromServer.readBoolean()) {
-                    runOnUiThread(() -> Toast.makeText(getApplicationContext(),"UNDO COMPLETE!", Toast.LENGTH_LONG).show());
-                }
-                else {
-                    runOnUiThread(() -> Toast.makeText(getApplicationContext(),"UNDO FAILED!", Toast.LENGTH_LONG).show());
+                    if (fromServer.readBoolean()) {
+                        runOnUiThread(() -> Toast.makeText(getApplicationContext(),"UNDO COMPLETE!", Toast.LENGTH_LONG).show());
+                    }
+                    else {
+                        runOnUiThread(() -> Toast.makeText(getApplicationContext(),"UNDO FAILED!", Toast.LENGTH_LONG).show());
+                    }
+                } catch (IOException e) {
+                    Wifi_needed.show();
                 }
             } catch (IOException e) {
                 Wifi_needed.show();
@@ -313,16 +292,6 @@ public class MainActivity extends AppCompatActivity {
 
     private class start_scan implements View.OnClickListener {
         public void onClick(View v) {
-            /*
-            if(mWifiManager.startScan())
-            {
-                Toast.makeText(getApplicationContext(), "Got reading from Wifi Manager", Toast.LENGTH_LONG).show();
-            }
-            else
-            {
-                Toast.makeText(getApplicationContext(), "Scanning Wi-Fi failed!", Toast.LENGTH_LONG).show();
-            }
-            */
             Intent map = new Intent(MainActivity.this, AddMapActivity.class);
             startActivity(map);
         }
@@ -372,28 +341,4 @@ public class MainActivity extends AppCompatActivity {
             return Character.toUpperCase(first) + s.substring(1);
         }
     }
-
-    /*
-    protected void MAC_to_AP_Name()
-    {
-        String line;
-        String [] tuple;
-        try
-        {
-            Resources res = getResources();
-            InputStream in_s = res.openRawResource(R.raw.broadwayfloormap);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in_s));
-            while((line = reader.readLine()) != null)
-            {
-                tuple = line.split(",");
-                AP_map.put(tuple[0], tuple[1]);
-                //answer.put(tuple[0], tuple[1]);
-            }
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-    }
-    */
 }

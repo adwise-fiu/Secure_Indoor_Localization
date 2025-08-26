@@ -29,6 +29,7 @@ jobs:
           increment: ${{ env.increment }}
 
   upload_release:
+    if: github.repository == 'adwise-fiu/Secure_Indoor_Localization'
     needs: [ create_release ]
     runs-on: ubuntu-latest
     steps:
@@ -71,10 +72,9 @@ jobs:
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           VERSION: ${{ env.RELEASE_VERSION }}
 
-      # You want to use the 'ciphercraft-<version>.jar' for your uses
       - name: Release the JAR file
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.create_release.outputs.v-version }}
-          files: REUServer/build/libs/fingerprint_localization*.jar
+          files: REUServer/build/libs/*.jar
           token: ${{ secrets.GITHUB_TOKEN }}

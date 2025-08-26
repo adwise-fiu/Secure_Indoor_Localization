@@ -1,4 +1,4 @@
-package ui;
+package edu.fiu.adwise.fingerprint_localization.ui;
 
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
@@ -19,14 +19,14 @@ import android.widget.Toast;
 import com.github.chrisbanes.photoview.OnPhotoTapListener;
 import com.github.chrisbanes.photoview.PhotoViewAttacher;
 
-import Localization.ClientThread;
-import Localization.KeyMaster;
+import edu.fiu.adwise.fingerprint_localization.localization.ClientThread;
+import edu.fiu.adwise.fingerprint_localization.localization.KeyMaster;
 import edu.fiu.reu2017.R;
-import sensors.WifiReceiver;
+import edu.fiu.adwise.fingerprint_localization.sensors.WifiReceiver;
 import edu.fiu.adwise.fingerprint_localization.structs.SendTrainingData;
 
 import static android.graphics.Color.BLUE;
-import static ui.MainActivity.getDeviceName;
+import static edu.fiu.adwise.fingerprint_localization.ui.MainActivity.getDeviceName;
 
 public class TrainActivity extends AppCompatActivity implements Runnable {
     private Bitmap mutableBitmap;
@@ -44,14 +44,11 @@ public class TrainActivity extends AppCompatActivity implements Runnable {
     public Double [] existingX = new Double[1];
     public Double [] existingY = new Double[1];
     private Bitmap trained_flag;
-
-    // ***********************************************************************
     public String OS, MODEL, DEVICE, PRODUCT;
     protected Thread get_flags;
     protected TrainActivity train_activity;
     protected ProgressBar loading;
     protected Button scan;
-
     private boolean scan_complete = false;
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,8 +146,7 @@ public class TrainActivity extends AppCompatActivity implements Runnable {
     }
 
     // Finish pre-populating the floor map with currently trained points!
-    public void run()
-    {
+    public void run() {
         BitMap_Width = mutableBitmap.getWidth();
         BitMap_Height = mutableBitmap.getHeight();
 

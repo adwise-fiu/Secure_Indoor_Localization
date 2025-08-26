@@ -1,4 +1,4 @@
-package Localization;
+package edu.fiu.adwise.fingerprint_localization.localization;
 
 import android.util.Log;
 
@@ -14,12 +14,12 @@ import edu.fiu.adwise.fingerprint_localization.structs.SendLocalizationData;
 import edu.fiu.adwise.fingerprint_localization.structs.LocalizationResult;
 import edu.fiu.adwise.fingerprint_localization.structs.SendTrainingData;
 import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
-import ui.MainActivity;
-import ui.TrainActivity;
+import edu.fiu.adwise.fingerprint_localization.ui.MainActivity;
+import edu.fiu.adwise.fingerprint_localization.ui.TrainActivity;
 
 
-import static ui.MainActivity.SQLDatabase;
-import static ui.MainActivity.portNumber;
+import static edu.fiu.adwise.fingerprint_localization.ui.MainActivity.SQLDatabase;
+import static edu.fiu.adwise.fingerprint_localization.ui.MainActivity.portNumber;
 import edu.fiu.adwise.fingerprint_localization.distance_computation.LOCALIZATION_SCHEME;
 
 import edu.fiu.adwise.homomorphic_encryption.dgk.DGKOperations;
@@ -30,22 +30,14 @@ import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPrivateKey;
 import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
 import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.bob;
 
-public class ClientThread implements Runnable
-{
+public class ClientThread implements Runnable {
     private final static String TAG = "CLIENT_THREAD";
-
-    private ObjectOutputStream toServer = null;
-    private ObjectInputStream fromServer = null;
-
     //Pass Data back to class by reference...
     private background findMe;
     private TrainActivity trainMe;
     private background getColumns;
-
-    //Data Objects
-    private SendTrainingData sendTraining;     //Training Data
-    private SendLocalizationData transmission;  //For Encrypted Paillier/DGK Transmission
-
+    private SendTrainingData sendTraining;
+    private SendLocalizationData transmission;
     // Have all Keys in case comparison is needed!!
     private final DGKPublicKey pubKey = KeyMaster.DGKpk;
     private final DGKPrivateKey privKey = KeyMaster.DGKsk;
@@ -53,8 +45,6 @@ public class ClientThread implements Runnable
     private final PaillierPrivateKey sk = KeyMaster.sk;
 
     private final LOCALIZATION_SCHEME LOCALIZATIONSCHEME;
-    private Socket clientSocket;
-
     // Get all currently trained points
     public ClientThread(TrainActivity trainActivity) {
         this.LOCALIZATIONSCHEME = LOCALIZATION_SCHEME.from_int(-3);
@@ -66,8 +56,7 @@ public class ClientThread implements Runnable
     Purpose: Force mySQL Database to process data from
     training data.
      */
-    public ClientThread()
-    {
+    public ClientThread() {
         this.LOCALIZATIONSCHEME = LOCALIZATION_SCHEME.from_int(-2);
     }
 
@@ -93,12 +82,11 @@ public class ClientThread implements Runnable
 
     public void run () {
         Object in;
-        try
-        {
-            clientSocket = new Socket(SQLDatabase, portNumber);
-            // Prepare I/O Stream
-            this.toServer = new ObjectOutputStream(clientSocket.getOutputStream());
-            this.fromServer = new ObjectInputStream(clientSocket.getInputStream());
+        try (
+                Socket clientSocket = new Socket(SQLDatabase, portNumber);
+                ObjectOutputStream toServer = new ObjectOutputStream(clientSocket.getOutputStream());
+                ObjectInputStream fromServer = new ObjectInputStream(clientSocket.getInputStream())
+                ) {
             Log.d(TAG, "I/O Streams set!");
 
             switch(LOCALIZATIONSCHEME) {
@@ -109,16 +97,6 @@ public class ClientThread implements Runnable
                     // Send the Map Name as well
                     toServer.writeObject(KeyMaster.map_name);
                     toServer.flush();
-
-                    // Following this patch the server needs to know the Phone as well
-                    if(MainActivity.multi_phone) {
-                        String [] phone_data = MainActivity.getPhoneData();
-                        for (String s: phone_data) {
-                            Log.d(TAG, s);
-                        }
-                        toServer.writeObject(phone_data);
-                        toServer.flush();
-                    }
 
                     in = fromServer.readObject();
                     if(in instanceof Double []) {
@@ -155,7 +133,6 @@ public class ClientThread implements Runnable
                     break;
                 case GET_COLUMN:
                     toServer.writeObject("Get Lookup Columns");
-
                     // Send the Map with all (x, y)
                     toServer.writeObject(KeyMaster.map_name);
                     toServer.flush();
@@ -179,7 +156,6 @@ public class ClientThread implements Runnable
                         MainActivity.bad_train.show();
                     }
                     break;
-
                 case PLAIN_MIN:
                 case PLAIN_DMA:
                 case PLAIN_MCA:
@@ -189,7 +165,7 @@ public class ClientThread implements Runnable
                 case DGK_MIN:
                 case DGK_MCA:
                 case DGK_DMA:
-                    localize();
+                    localize(clientSocket, toServer, fromServer);
                     break;
                 default:
                     Log.d(TAG, "Error at Thread run: No Valid Object was sent here");
@@ -209,7 +185,11 @@ public class ClientThread implements Runnable
         }
     }
 
-    private void localize() throws IOException, ClassNotFoundException, HomomorphicException {
+    private void localize(
+            Socket clientSocket,
+            ObjectOutputStream toServer,
+            ObjectInputStream fromServer
+    ) throws IOException, ClassNotFoundException, HomomorphicException {
         bob andrew;
         BigInteger [] location;
         BigInteger divisor;
