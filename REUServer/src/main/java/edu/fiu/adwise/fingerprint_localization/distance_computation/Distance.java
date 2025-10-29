@@ -7,8 +7,8 @@ import java.util.Collections;
 import java.util.List;
 
 import edu.fiu.adwise.fingerprint_localization.structs.LocalizationResult;
-import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
-import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
+import edu.fiu.adwise.ciphercraft.misc.HomomorphicException;
+import edu.fiu.adwise.ciphercraft.socialistmillionaire.alice;
 
 /**
  * Abstract base class for distance computation in Wi-Fi fingerprint localization.

@@ -25,11 +25,11 @@ import edu.fiu.adwise.fingerprint_localization.structs.SendLocalizationData;
 import edu.fiu.adwise.fingerprint_localization.structs.SendTrainingData;
 import edu.fiu.adwise.fingerprint_localization.database.LocalizationLUT;
 
-import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
-import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamalPublicKey;
-import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
-import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
-import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
+import edu.fiu.adwise.ciphercraft.dgk.DGKPublicKey;
+import edu.fiu.adwise.ciphercraft.elgamal.ElGamalPublicKey;
+import edu.fiu.adwise.ciphercraft.misc.HomomorphicException;
+import edu.fiu.adwise.ciphercraft.paillier.PaillierPublicKey;
+import edu.fiu.adwise.ciphercraft.socialistmillionaire.alice;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

@@ -5,10 +5,10 @@ import java.math.BigInteger;
 import java.util.List;
 
 import edu.fiu.adwise.fingerprint_localization.distance_computation.LOCALIZATION_SCHEME;
-import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
-import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamalPublicKey;
-import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamal_Ciphertext;
-import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
+import edu.fiu.adwise.ciphercraft.dgk.DGKPublicKey;
+import edu.fiu.adwise.ciphercraft.elgamal.ElGamalPublicKey;
+import edu.fiu.adwise.ciphercraft.elgamal.ElGamal_Ciphertext;
+import edu.fiu.adwise.ciphercraft.paillier.PaillierPublicKey;
 
 /**
  * Represents a data structure for transmitting localization data between client and server.

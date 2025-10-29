@@ -5,13 +5,13 @@ import android.graphics.Bitmap;
 import java.security.KeyPair;
 import java.security.SecureRandom;
 
-import edu.fiu.adwise.homomorphic_encryption.dgk.DGKKeyPairGenerator;
-import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPrivateKey;
-import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
-import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
-import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierKeyPairGenerator;
-import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPrivateKey;
-import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
+import edu.fiu.adwise.ciphercraft.dgk.DGKKeyPairGenerator;
+import edu.fiu.adwise.ciphercraft.dgk.DGKPrivateKey;
+import edu.fiu.adwise.ciphercraft.dgk.DGKPublicKey;
+import edu.fiu.adwise.ciphercraft.misc.HomomorphicException;
+import edu.fiu.adwise.ciphercraft.paillier.PaillierKeyPairGenerator;
+import edu.fiu.adwise.ciphercraft.paillier.PaillierPrivateKey;
+import edu.fiu.adwise.ciphercraft.paillier.PaillierPublicKey;
 
 public final class KeyMaster implements Runnable {
     private final static int KEY_SIZE = 2048;

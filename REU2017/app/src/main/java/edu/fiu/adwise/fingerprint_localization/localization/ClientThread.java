@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import edu.fiu.adwise.fingerprint_localization.structs.SendLocalizationData;
 import edu.fiu.adwise.fingerprint_localization.structs.LocalizationResult;
 import edu.fiu.adwise.fingerprint_localization.structs.SendTrainingData;
-import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
+import edu.fiu.adwise.ciphercraft.misc.HomomorphicException;
 import edu.fiu.adwise.fingerprint_localization.ui.MainActivity;
 import edu.fiu.adwise.fingerprint_localization.ui.TrainActivity;
 
@@ -22,13 +22,13 @@ import static edu.fiu.adwise.fingerprint_localization.ui.MainActivity.SQLDatabas
 import static edu.fiu.adwise.fingerprint_localization.ui.MainActivity.portNumber;
 import edu.fiu.adwise.fingerprint_localization.distance_computation.LOCALIZATION_SCHEME;
 
-import edu.fiu.adwise.homomorphic_encryption.dgk.DGKOperations;
-import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPrivateKey;
-import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
-import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierCipher;
-import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPrivateKey;
-import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
-import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.bob;
+import edu.fiu.adwise.ciphercraft.dgk.DGKOperations;
+import edu.fiu.adwise.ciphercraft.dgk.DGKPrivateKey;
+import edu.fiu.adwise.ciphercraft.dgk.DGKPublicKey;
+import edu.fiu.adwise.ciphercraft.paillier.PaillierCipher;
+import edu.fiu.adwise.ciphercraft.paillier.PaillierPrivateKey;
+import edu.fiu.adwise.ciphercraft.paillier.PaillierPublicKey;
+import edu.fiu.adwise.ciphercraft.socialistmillionaire.bob;
 
 public class ClientThread implements Runnable {
     private final static String TAG = "CLIENT_THREAD";
