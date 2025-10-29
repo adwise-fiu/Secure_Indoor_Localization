@@ -24,7 +24,7 @@ import java.util.HashMap;
 
 import edu.fiu.adwise.fingerprint_localization.localization.ClientThread;
 import edu.fiu.adwise.fingerprint_localization.localization.KeyMaster;
-import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
+import edu.fiu.adwise.ciphercraft.misc.HomomorphicException;
 import edu.fiu.adwise.fingerprint_localization.sensors.WifiReceiver;
 
 import static edu.fiu.reu2017.R.*;

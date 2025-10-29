@@ -47,14 +47,32 @@ dependencies
             implementation 'com.github.chrisbanes:PhotoView:2.3.0'
             testImplementation 'junit:junit:4.13.2'
             // https://mvnrepository.com/artifact/io.github.andrewquijano/ciphercraft
-            implementation 'io.github.andrewquijano:ciphercraft:1.0.6'
-            // https://mvnrepository.com/artifact/io.github.andrewquijano/fingerprint_localization
-            implementation 'io.github.andrewquijano:fingerprint_localization:1.0.0'
+            implementation 'io.github.andrewquijano:ciphercraft:1.0.7'
+            // https://mvnrepository.com/artifact/io.github.andrewquijano/fingerprint-indoor-localization
+            implementation 'io.github.andrewquijano:fingerprint-indoor-localization:1.0.3'
         }
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
+}
+
+tasks.register('generateJavadoc', Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    // If you're using libraries, you might need to add them to the classpath as well
+    // For example, to include all compile dependencies:
+    // Corrected line:
+    classpath += configurations.getByName("compileClasspath") // Or use implementation dependencies directly
+
+    // A more modern approach for Android libraries is often to use the 'implementation' configuration
+    // If the above still causes issues, try:
+    // classpath += configurations.implementation.get().files
+
+    // Exclude generated files like R.java and BuildConfig.java
+    exclude '**/R.java', '**/BuildConfig.java'
+    // You can set Javadoc options here if needed
+    // options.windowTitle = "My Awesome App API"
 }
 
 repositories {

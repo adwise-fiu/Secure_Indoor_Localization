@@ -8,10 +8,10 @@ import java.util.List;
 import edu.fiu.adwise.fingerprint_localization.database.LocalizationLUT;
 import edu.fiu.adwise.fingerprint_localization.structs.LocalizationResult;
 import edu.fiu.adwise.fingerprint_localization.structs.SendLocalizationData;
-import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
-import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierCipher;
-import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
-import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
+import edu.fiu.adwise.ciphercraft.misc.HomomorphicException;
+import edu.fiu.adwise.ciphercraft.paillier.PaillierCipher;
+import edu.fiu.adwise.ciphercraft.paillier.PaillierPublicKey;
+import edu.fiu.adwise.ciphercraft.socialistmillionaire.alice;
 
 
 /**

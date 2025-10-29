@@ -9,7 +9,7 @@ import java.util.List;
 import edu.fiu.adwise.fingerprint_localization.database.LocalizationLUT;
 import edu.fiu.adwise.fingerprint_localization.structs.LocalizationResult;
 import edu.fiu.adwise.fingerprint_localization.structs.SendLocalizationData;
-import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
+import edu.fiu.adwise.ciphercraft.socialistmillionaire.alice;
 
 /**
  * Implements plaintext distance computation for Wi-Fi fingerprint localization.

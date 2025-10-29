@@ -37,7 +37,7 @@ dependencies {
     implementation 'com.mysql:mysql-connector-j:9.3.0'
 
     // https://mvnrepository.com/artifact/io.github.andrewquijano/ciphercraft
-    implementation 'io.github.andrewquijano:ciphercraft:1.0.6'
+    implementation 'io.github.andrewquijano:ciphercraft:1.0.7'
 
     // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api
     implementation 'org.apache.logging.log4j:log4j-core:2.24.3'
@@ -89,9 +89,9 @@ publishing {
             from components.java
 
             pom {
-                name.set('fingerprint_localization')
+                name.set('Privacy-Preserving Indoor Localization using Wi-Fi Fingerprinting')
                 description.set('This package is the JAR file used for secure indoor localization using Wi-Fi fingerprints. ' +
-                        'This utilizes homomorphic encryption to preserve privacy')
+                        'This utilizes homomorphic encryption to preserve privacy.')
                 url.set('https://github.com/adwise-fiu/Secure_Indoor_Localization')
 
                 licenses {
@@ -101,16 +101,19 @@ publishing {
                     }
                 }
 
+                organization {
+                    name.set('ADWISE Research Lab, Florida International University')
+                    url.set('https://adwise.fiu.edu/')
+                }
+
                 developers {
                     developer {
                         id.set('AndrewQuijano')
                         name.set('Andrew Quijano')
                         email.set('andrew.quijano@nyu.edu')
                         roles.add('Lead Developer')
-                        organization {
-                            name.set('New York University')
-                            url.set('https://www.nyu.edu')
-                        }
+                        organization.set('New York University')
+                        organizationUrl.set('https://www.nyu.edu')
                     }
                 }
 

@@ -4,17 +4,17 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigInteger;
 
-import edu.fiu.adwise.homomorphic_encryption.dgk.DGKOperations;
-import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPrivateKey;
-import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
-import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamalCipher;
-import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamalPrivateKey;
-import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamalPublicKey;
-import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamal_Ciphertext;
-import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
-import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierCipher;
-import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPrivateKey;
-import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
+import edu.fiu.adwise.ciphercraft.dgk.DGKOperations;
+import edu.fiu.adwise.ciphercraft.dgk.DGKPrivateKey;
+import edu.fiu.adwise.ciphercraft.dgk.DGKPublicKey;
+import edu.fiu.adwise.ciphercraft.elgamal.ElGamalCipher;
+import edu.fiu.adwise.ciphercraft.elgamal.ElGamalPrivateKey;
+import edu.fiu.adwise.ciphercraft.elgamal.ElGamalPublicKey;
+import edu.fiu.adwise.ciphercraft.elgamal.ElGamal_Ciphertext;
+import edu.fiu.adwise.ciphercraft.misc.HomomorphicException;
+import edu.fiu.adwise.ciphercraft.paillier.PaillierCipher;
+import edu.fiu.adwise.ciphercraft.paillier.PaillierPrivateKey;
+import edu.fiu.adwise.ciphercraft.paillier.PaillierPublicKey;
 
 /**
  * Implements distance computation for Wi-Fi fingerprint localization using Paillier homomorphic encryption.
